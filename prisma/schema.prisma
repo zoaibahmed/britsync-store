@@ -1,0 +1,1199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// =========================================================================
+// 1. LOOKUP / REFERENCE MODELS (Replaces Enums for online migrations)
+// =========================================================================
+
+model UserRoleLookup {
+  code        String @id @db.VarChar(50)
+  description String @db.VarChar(255)
+  users       User[]
+}
+
+model VerificationTierLookup {
+  code         String         @id @db.VarChar(50)
+  description  String         @db.VarChar(255)
+  makers       MakerProfile[]
+  products     Product[]
+  pricingRules PricingRule[]
+}
+
+model ProductStatusLookup {
+  code        String    @id @db.VarChar(50)
+  description String    @db.VarChar(255)
+  products    Product[]
+}
+
+model OrderStatusLookup {
+  code        String  @id @db.VarChar(50)
+  description String  @db.VarChar(255)
+  orders      Order[]
+}
+
+// =========================================================================
+// 2. GEOGRAPHY & MEDIA LAYERS (Materialized path ltree alternative for MySQL)
+// =========================================================================
+
+model Location {
+  id           String     @id @default(uuid())
+  parentId     String?
+  parent       Location?  @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Location[] @relation("LocationHierarchy")
+  path         String     @db.VarChar(255) // Materialized path, e.g. "globe.europe.uk"
+  locationType String     @db.VarChar(50) // CONTINENT, COUNTRY, REGION, PROVINCE, CITY, VILLAGE
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime   @default(now())
+
+  translations LocationTranslation[]
+  makers       MakerProfile[]
+  products     Product[]
+  stories      MakerStory[]
+
+  @@index([path])
+}
+
+model LocationTranslation {
+  id           String   @id @default(uuid())
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  languageCode String   @db.VarChar(10)
+  name         String   @db.VarChar(255)
+  description  String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@unique([locationId, languageCode])
+}
+
+model Media {
+  id               String   @id @default(uuid())
+  originalFilename String   @db.VarChar(255)
+  mimeType         String   @db.VarChar(100)
+  fileSize         Int
+  storageProvider  String   @default("GCS") @db.VarChar(50)
+  storageKey       String   @db.VarChar(512)
+  createdAt        DateTime @default(now())
+
+  variants       MediaVariant[]
+  metadata       MediaMetadata[]
+  processingJobs MediaProcessingJob[]
+  makerCovers    MakerProfile[]       @relation("MakerCoverMedia")
+  makerFounders  MakerProfile[]       @relation("MakerFounderMedia")
+  storyHeroes    MakerStory[]         @relation("StoryHeroMedia")
+  productMaps    ProductMediaMap[]
+  reviewMaps     ReviewMedia[]
+  passportMaps   PassportMedia[]
+  StoryMedia     StoryMedia[]
+}
+
+model MediaVariant {
+  id         String   @id @default(uuid())
+  mediaId    String
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  width      Int
+  height     Int
+  storageKey String   @db.VarChar(512)
+  purpose    String   @db.VarChar(50) // THUMBNAIL, HERO, ZOOM
+  createdAt  DateTime @default(now())
+
+  @@index([mediaId, purpose])
+}
+
+model MediaMetadata {
+  id          String   @id @default(uuid())
+  mediaId     String
+  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  altText     String?  @db.VarChar(255)
+  credits     String?  @db.VarChar(255)
+  cameraModel String?  @db.VarChar(100)
+  exposure    String?  @db.VarChar(50)
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+}
+
+model MediaProcessingJob {
+  id           String   @id @default(uuid())
+  mediaId      String
+  media        Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  status       String   @default("PENDING") @db.VarChar(50) // PENDING, PROCESSING, COMPLETED, FAILED
+  errorMessage String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// =========================================================================
+// 3. CORE USERS & ARTISANS
+// =========================================================================
+
+model User {
+  id                 String         @id @default(uuid())
+  email              String         @unique
+  passwordHash       String         @db.VarChar(255)
+  name               String         @db.VarChar(255)
+  role               String         @default("BUYER") @db.VarChar(50)
+  roleLookup         UserRoleLookup @relation(fields: [role], references: [code])
+  isEmailVerified    Boolean        @default(false)
+  verificationToken  String?        @db.VarChar(255)
+  resetToken         String?        @db.VarChar(255)
+  resetTokenExpiry   DateTime?
+  languagePreference String         @default("en") @db.VarChar(10)
+  currencyPreference String         @default("GBP") @db.VarChar(3)
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+
+  makerProfile       MakerProfile?
+  inspectorProfile   InspectorProfile?
+  orders             Order[]
+  supportTickets     SupportTicket[]
+  loginHistory       LoginHistory[]
+  securityEvents     SecurityEvent[]
+  apiAccessLogs      ApiAccessLog[]
+  adminActions       AdminAction[]           @relation("AdminUserAction")
+  passportSignatures PassportSignature[]
+  passportHistories  PassportHistory[]
+  storyVersions      StoryVersion[]
+  markupHistories    MarkupHistory[]
+  paymentAccounts    PaymentAccount[]
+  notifications      Notification[]
+  notificationLogs   NotificationLog[]
+  reviews               Review[]
+  wishlists             Wishlist?
+  aiConversations       AiConversation[]
+  aiMemories            AiMemory[]
+  fraudCasesTarget      FraudCase[]             @relation("FraudTargetUser")
+  fraudCasesAnalyst     FraudCase[]             @relation("FraudAnalystUser")
+  fraudDecisions        ExecutedFraudDecision[]
+  SavedMaker            SavedMaker[]
+  ShippingAddress       ShippingAddress[]
+  cartItems             CartItem[]
+  reviewHelpfulVotes    ReviewHelpfulVote[]
+  reviewReports         ReviewReport[]
+  supportTicketReplies  SupportTicketReply[]
+}
+
+model MakerProfile {
+  id                 String                 @id @default(uuid())
+  userId             String                 @unique
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName       String                 @db.VarChar(255)
+  locationId         String
+  location           Location               @relation(fields: [locationId], references: [id])
+  verificationStatus String                 @default("GENERAL") @db.VarChar(50)
+  statusLookup       VerificationTierLookup @relation(fields: [verificationStatus], references: [code])
+  yearsInBusiness    Int                    @default(0)
+  employeeCount      Int                    @default(1)
+  geofence           String?                @db.Text // JSON string boundary of coordinates
+  coverMediaId       String?
+  coverMedia         Media?                 @relation("MakerCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  founderMediaId     String?
+  founderMedia       Media?                 @relation("MakerFounderMedia", fields: [founderMediaId], references: [id], onDelete: SetNull)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  deletedAt          DateTime?
+
+  products             Product[]
+  verificationRequests VerificationRequest[]
+  certificates         Certificate[]
+  wallet               Wallet?
+  stories              MakerStory?
+  sellerResponses      SellerResponse[]
+  makerMetrics         MakerMetrics?
+  inspectionReports    InspectionReport[]
+  SavedMaker           SavedMaker[]
+}
+
+model InspectorProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  regionScope String   @db.VarChar(255)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  verificationRequests VerificationRequest[]
+  inspections          InspectionReport[]
+}
+
+// =========================================================================
+// 4. CATEGORIES, PRODUCTS & PRICING ENGINE
+// =========================================================================
+
+model Category {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  translations CategoryTranslation[]
+  products     Product[]
+  pricingRules PricingRule[]
+}
+
+model CategoryTranslation {
+  id           String   @id @default(uuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  languageCode String   @db.VarChar(10)
+  name         String   @db.VarChar(100)
+  description  String?  @db.Text
+  createdAt    DateTime @default(now())
+
+  @@unique([categoryId, languageCode])
+}
+
+model Product {
+  id                 String                 @id @default(uuid())
+  makerProfileId     String
+  maker              MakerProfile           @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  categoryId         String
+  category           Category               @relation(fields: [categoryId], references: [id])
+  locationId         String
+  location           Location               @relation(fields: [locationId], references: [id]) // village node
+  desiredPrice       Float
+  inventory          Int                    @default(0)
+  verificationStatus String                 @default("GENERAL") @db.VarChar(50)
+  statusLookup       VerificationTierLookup @relation(fields: [verificationStatus], references: [code])
+  status             String                 @default("DRAFT") @db.VarChar(50)
+  productStatus      ProductStatusLookup    @relation(fields: [status], references: [code])
+  isEcoFriendly      Boolean                @default(false)
+  isWomenLed         Boolean                @default(false)
+  isHandmade         Boolean                @default(true)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  deletedAt          DateTime?
+
+  translations      ProductTranslation[]
+  mediaMaps         ProductMediaMap[]
+  inventoryLedgers  InventoryLedger[]
+  stockReservations StockReservation[]
+  pricingSnapshots  PricingSnapshot[]
+  orderItems        OrderItem[]
+  passport          ProductPassport?
+  certificates      Certificate[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+  metrics           ProductMetrics?
+  cartItems         CartItem[]
+}
+
+model ProductTranslation {
+  id               String   @id @default(uuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  languageCode     String   @db.VarChar(10)
+  name             String   @db.VarChar(255)
+  description      String   @db.Text
+  story            String?  @db.Text
+  careInstructions String?  @db.Text
+  shippingInfo     String?  @db.Text
+  returnPolicy     String?  @db.Text
+  createdAt        DateTime @default(now())
+
+  @@unique([productId, languageCode])
+}
+
+model ProductMediaMap {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  isHero    Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model InventoryLedger {
+  id            String   @id @default(uuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantityDelta Int
+  referenceType String   @db.VarChar(50) // STOCK_IN, SALE, RETURN, RESERVATION_EXPIRED
+  referenceId   String?
+  createdAt     DateTime @default(now())
+}
+
+model StockReservation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Int      @default(1)
+  sessionId   String   @db.VarChar(255)
+  expiresAt   DateTime
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model PricingRule {
+  id                 String                  @id @default(uuid())
+  ruleName           String                  @db.VarChar(100)
+  ruleType           String                  @db.VarChar(50) // CATEGORY, COUNTRY, TIER, LUXURY, CAMPAIGN_PROMOTIONAL, CAMPAIGN_SEASONAL
+  markupPercent      Float                   @default(0.00)
+  flatMargin         Float                   @default(0.00)
+  luxuryThreshold    Float?
+  startDate          DateTime?
+  endDate            DateTime?
+  isActive           Boolean                 @default(true)
+  categoryId         String?
+  category           Category?               @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  countryId          String?
+  country            Country?                @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  verificationStatus String?                 @db.VarChar(50)
+  tierLookup         VerificationTierLookup? @relation(fields: [verificationStatus], references: [code])
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  markupHistories MarkupHistory[]
+}
+
+model Country {
+  id                    String        @id @default(uuid())
+  name                  String        @unique
+  code                  String        @unique
+  markupModifierPercent Float         @default(0.00)
+  pricingRules          PricingRule[]
+  dailySales            DailySales[]
+}
+
+model PricingSnapshot {
+  id                     String   @id @default(uuid())
+  productId              String
+  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  calculatedSellingPrice Float
+  calculatedMargin       Float
+  appliedRules           String   @db.Text // JSON string rules details
+  createdAt              DateTime @default(now())
+
+  orderItems OrderItem[]
+}
+
+model MarkupHistory {
+  id               String      @id @default(uuid())
+  pricingRuleId    String
+  pricingRule      PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+  oldMarkupPercent Float
+  newMarkupPercent Float
+  oldFlatMargin    Float
+  newFlatMargin    Float
+  modifiedByUserId String?
+  modifiedByUser   User?       @relation(fields: [modifiedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime    @default(now())
+}
+
+// =========================================================================
+// 5. ACCOUNTING & LEDGER (Double-Entry Financial System)
+// =========================================================================
+
+model ExchangeRate {
+  id           String   @id @default(uuid())
+  fromCurrency String   @db.VarChar(3)
+  toCurrency   String   @db.VarChar(3)
+  rate         Float
+  retrievedAt  DateTime @default(now())
+}
+
+model LedgerAccount {
+  id          String   @id @default(uuid())
+  accountType String   @db.VarChar(50) // ASSET, LIABILITY, REVENUE, EXPENSE, EQUITY
+  name        String   @db.VarChar(150)
+  currency    String   @default("GBP") @db.VarChar(3)
+  createdAt   DateTime @default(now())
+
+  entries LedgerEntry[]
+}
+
+model LedgerTransaction {
+  id             String   @id @default(uuid())
+  description    String   @db.Text
+  idempotencyKey String?  @db.VarChar(255)
+  createdAt      DateTime @default(now())
+
+  entries LedgerEntry[]
+}
+
+model LedgerEntry {
+  id                  String            @id @default(uuid())
+  ledgerTransactionId String
+  ledgerTransaction   LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id], onDelete: Cascade)
+  ledgerAccountId     String
+  ledgerAccount       LedgerAccount     @relation(fields: [ledgerAccountId], references: [id])
+  amountDebit         Float             @default(0.00)
+  amountCredit        Float             @default(0.00)
+  createdAt           DateTime          @default(now())
+}
+
+// =========================================================================
+// 6. ORDERS, PAYMENTS, LOGISTICS, AND REFUNDS
+// =========================================================================
+
+model Order {
+  id             String            @id @default(uuid())
+  buyerId        String
+  buyer          User              @relation(fields: [buyerId], references: [id])
+  status         String            @default("PENDING") @db.VarChar(50)
+  statusLookup   OrderStatusLookup @relation(fields: [status], references: [code])
+  subtotal       Float
+  vat            Float             @default(0.00)
+  discount       Float             @default(0.00)
+  shippingCost   Float             @default(0.00)
+  totalAmount    Float
+  idempotencyKey String?           @db.VarChar(255)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  orderItems          OrderItem[]
+  paymentTransactions PaymentTransaction[]
+  shipments           Shipment[]
+  returnRequests      ReturnRequest[]
+  refunds             Refund[]
+  fraudCases          FraudCase[]
+}
+
+model OrderItem {
+  id                String           @id @default(uuid())
+  orderId           String
+  order             Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product          @relation(fields: [productId], references: [id])
+  quantity          Int              @default(1)
+  desiredPrice      Float
+  sellingPrice      Float
+  marginEarned      Float
+  pricingSnapshotId String?
+  pricingSnapshot   PricingSnapshot? @relation(fields: [pricingSnapshotId], references: [id], onDelete: SetNull)
+
+  returnItems ReturnItem[]
+}
+
+model PaymentProvider {
+  id       String           @id @default(uuid())
+  name     String           @db.VarChar(50) // STRIPE, PAYPAL, ADYEN, WISE
+  isActive Boolean          @default(true)
+  settings String?          @db.Text // JSON string settings
+  accounts PaymentAccount[]
+}
+
+model PaymentAccount {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentProviderId String
+  provider          PaymentProvider @relation(fields: [paymentProviderId], references: [id], onDelete: Cascade)
+  externalAccountId String          @db.VarChar(255) // e.g. Stripe Account ID
+  status            String          @default("ACTIVE") @db.VarChar(50)
+  createdAt         DateTime        @default(now())
+}
+
+model PaymentTransaction {
+  id                           String   @id @default(uuid())
+  orderId                      String
+  order                        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount                       Float
+  providerName                 String   @db.VarChar(50) // STRIPE, PAYPAL
+  providerTransactionReference String?  @db.VarChar(255)
+  status                       String   @db.VarChar(50) // PENDING, FUNDS_HELD, COMPLETED, FAILED
+  createdAt                    DateTime @default(now())
+}
+
+model Wallet {
+  id                String       @id @default(uuid())
+  makerProfileId    String       @unique
+  maker             MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  clearedBalance    Float        @default(0.00)
+  payoutHeldBalance Float        @default(0.00)
+  currency          String       @default("GBP") @db.VarChar(3)
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  walletTransactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount      Float
+  type        String   @db.VarChar(20) // CREDIT, DEBIT
+  description String   @db.Text
+  status      String   @default("PENDING") @db.VarChar(50)
+  createdAt   DateTime @default(now())
+}
+
+model Shipment {
+  id                   String    @id @default(uuid())
+  orderId              String
+  order                Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrierName          String    @db.VarChar(100) // DHL_EXPRESS, FEDEX
+  status               String    @default("MANIFESTED") @db.VarChar(50) // MANIFESTED, PICKED_UP, IN_TRANSIT, DELIVERED, EXCEPTION
+  estimatedDelivery    DateTime?
+  actualDelivery       DateTime?
+  customsInvoiceNumber String?   @db.VarChar(100)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  packages  ShipmentPackage[]
+  trackings ShipmentTracking[]
+  events    ShipmentEvent[]
+}
+
+model ShipmentPackage {
+  id                String   @id @default(uuid())
+  shipmentId        String
+  shipment          Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  weightKg          Float
+  widthCm           Float
+  heightCm          Float
+  depthCm           Float
+  isEliteWoodCrated Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
+
+model ShipmentTracking {
+  id             String   @id @default(uuid())
+  shipmentId     String
+  shipment       Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  trackingNumber String   @db.VarChar(100)
+  trackingUrl    String?  @db.VarChar(512)
+  createdAt      DateTime @default(now())
+}
+
+model ShipmentEvent {
+  id                  String   @id @default(uuid())
+  shipmentId          String
+  shipment            Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  eventTimestamp      DateTime
+  locationDescription String   @db.VarChar(255)
+  status              String   @db.VarChar(50)
+  details             String?  @db.Text
+  createdAt           DateTime @default(now())
+}
+
+model ReturnRequest {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status     String   @default("REQUESTED") @db.VarChar(50) // REQUESTED, APPROVED, SENT, RECEIVED, QC_PASSED, REJECTED, REFUNDED
+  reasonCode String   @db.VarChar(50) // e.g. DAMAGED_IN_CRATE, AUTHENTICITY_CLAIM
+  buyerNotes String?  @db.Text
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  returnItems ReturnItem[]
+  refunds     Refund[]
+}
+
+model ReturnItem {
+  id              String        @id @default(uuid())
+  returnRequestId String
+  returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  orderItemId     String
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id])
+  quantity        Int           @default(1)
+  createdAt       DateTime      @default(now())
+}
+
+model RefundReason {
+  id          String   @id @default(uuid())
+  code        String   @unique @db.VarChar(50)
+  description String   @db.VarChar(255)
+  createdAt   DateTime @default(now())
+  refunds     Refund[]
+}
+
+model Refund {
+  id                      String         @id @default(uuid())
+  orderId                 String
+  order                   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnRequestId         String?
+  returnRequest           ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+  refundReasonId          String
+  refundReason            RefundReason   @relation(fields: [refundReasonId], references: [id])
+  amount                  Float
+  providerRefundReference String?        @db.VarChar(255)
+  status                  String         @default("PENDING") @db.VarChar(50) // PENDING, COMPLETED, FAILED
+  createdAt               DateTime       @default(now())
+}
+
+// =========================================================================
+// 7. REVIEWS, WISHLIST, AND SOCIAL
+// =========================================================================
+
+model Review {
+  id                 String   @id @default(uuid())
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerUserId        String
+  buyer              User     @relation(fields: [buyerUserId], references: [id], onDelete: Cascade)
+  rating             Int
+  comment            String?  @db.Text
+  isVerifiedPurchase Boolean  @default(false)
+  moderationStatus   String   @default("PENDING_APPROVAL") @db.VarChar(50)
+  createdAt          DateTime @default(now())
+
+  mediaMaps      ReviewMedia[]
+  sellerResponse SellerResponse?
+  helpfulVotes   ReviewHelpfulVote[]
+  reports        ReviewReport[]
+}
+
+model ReviewMedia {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model SellerResponse {
+  id             String       @id @default(uuid())
+  reviewId       String       @unique
+  review         Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  makerProfileId String
+  maker          MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  responseText   String       @db.Text
+  createdAt      DateTime     @default(now())
+}
+
+model Wishlist {
+  id          String         @id @default(uuid())
+  buyerUserId String         @unique
+  buyer       User           @relation(fields: [buyerUserId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  items       WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+}
+
+// =========================================================================
+// 8. CRYPTOGRAPHIC PROVENANCE PASSPORTS & CERTIFICATES
+// =========================================================================
+
+model ProductPassport {
+  id             String   @id @default(uuid())
+  passportSerial String   @unique @db.VarChar(64)
+  productId      String   @unique
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  events     PassportEvent[]
+  mediaMaps  PassportMedia[]
+  signatures PassportSignature[]
+  histories  PassportHistory[]
+}
+
+model PassportEvent {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  eventType         String          @db.VarChar(50) // CREATED, INSPECTED, SEALED_IN_CRATE, CUSTOMS_CLEARED, DELIVERED, TRANSFERRED
+  eventTimestamp    DateTime        @default(now())
+  description       String          @db.Text
+  latitude          Float?
+  longitude         Float?
+  createdAt         DateTime        @default(now())
+}
+
+model PassportMedia {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  mediaId           String
+  media             Media           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+}
+
+model PassportSignature {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  signerUserId      String
+  signer            User            @relation(fields: [signerUserId], references: [id])
+  signatureRole     String          @db.VarChar(50) // INSPECTOR, MAKER, ADMIN
+  signatureHash     String          @db.VarChar(128)
+  signedAt          DateTime        @default(now())
+}
+
+model PassportHistory {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  fieldChanged      String          @db.VarChar(100)
+  oldValue          String?         @db.Text
+  newValue          String?         @db.Text
+  modifiedByUserId  String?
+  modifiedByUser    User?           @relation(fields: [modifiedByUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime        @default(now())
+}
+
+// =========================================================================
+// 9. STORIES LAYER
+// =========================================================================
+
+model MakerStory {
+  id             String       @id @default(uuid())
+  makerProfileId String       @unique
+  maker          MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  villageId      String
+  village        Location     @relation(fields: [villageId], references: [id])
+  heroMediaId    String?
+  heroMedia      Media?       @relation("StoryHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  isPublished    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  translations StoryTranslation[]
+  mediaMaps    StoryMedia[]
+  versions     StoryVersion[]
+}
+
+model StoryTranslation {
+  id           String     @id @default(uuid())
+  makerStoryId String
+  story        MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  languageCode String     @db.VarChar(10)
+  title        String     @db.VarChar(255)
+  excerpt      String     @db.Text
+  content      String     @db.Text
+  craftType    String     @db.VarChar(100)
+  createdAt    DateTime   @default(now())
+
+  @@unique([makerStoryId, languageCode])
+}
+
+model StoryMedia {
+  id           String     @id @default(uuid())
+  makerStoryId String
+  story        MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  mediaId      String
+  media        Media      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+}
+
+model StoryVersion {
+  id              String     @id @default(uuid())
+  makerStoryId    String
+  story           MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  changedByUserId String?
+  changedByUser   User?      @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+  storySnapshot   String     @db.Text // JSON string representation
+  createdAt       DateTime   @default(now())
+
+  @@unique([makerStoryId, versionNumber])
+}
+
+// =========================================================================
+// 10. NOTIFICATION ENGINE
+// =========================================================================
+
+model NotificationTemplate {
+  id              String   @id @default(uuid())
+  templateCode    String   @db.VarChar(100)
+  channel         String   @db.VarChar(20) // EMAIL, PUSH, SMS, IN_APP
+  subjectTemplate String?  @db.VarChar(255)
+  bodyTemplate    String   @db.Text
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs NotificationLog[]
+
+  @@unique([templateCode, channel])
+}
+
+model Notification {
+  id              String   @id @default(uuid())
+  recipientUserId String
+  recipient       User     @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+  title           String   @db.VarChar(255)
+  message         String   @db.Text
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model NotificationLog {
+  id                     String                @id @default(uuid())
+  recipientUserId        String
+  recipient              User                  @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+  notificationTemplateId String?
+  template               NotificationTemplate? @relation(fields: [notificationTemplateId], references: [id], onDelete: SetNull)
+  channel                String                @db.VarChar(20) // EMAIL, PUSH, SMS, IN_APP
+  destinationAddress     String                @db.VarChar(255)
+  subject                String?               @db.VarChar(255)
+  body                   String                @db.Text
+  status                 String                @default("PENDING") @db.VarChar(50) // PENDING, SENT, FAILED
+  errorMessage           String?               @db.Text
+  createdAt              DateTime              @default(now())
+}
+
+// =========================================================================
+// 11. NOVA AI ENGINE
+// =========================================================================
+
+model AiConversation {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String   @unique @db.VarChar(255)
+  mode      String   @db.VarChar(50) // shopping, support, seller
+  status    String   @default("ACTIVE") @db.VarChar(50)
+  createdAt DateTime @default(now())
+
+  messages AiMessage[]
+}
+
+model AiMessage {
+  id               String         @id @default(uuid())
+  aiConversationId String
+  conversation     AiConversation @relation(fields: [aiConversationId], references: [id], onDelete: Cascade)
+  role             String         @db.VarChar(50) // user, assistant, system
+  content          String         @db.Text
+  createdAt        DateTime       @default(now())
+
+  feedbacks AiFeedback[]
+}
+
+model AiMemory {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryKey       String   @db.VarChar(100)
+  memoryValue     String   @db.Text // JSON value representation
+  confidenceScore Float    @default(1.00)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, memoryKey])
+}
+
+model AiFeedback {
+  id            String    @id @default(uuid())
+  aiMessageId   String
+  message       AiMessage @relation(fields: [aiMessageId], references: [id], onDelete: Cascade)
+  feedbackScore Int
+  feedbackText  String?   @db.Text
+  createdAt     DateTime  @default(now())
+}
+
+model AiTrainingEvent {
+  id         String   @id @default(uuid())
+  eventType  String   @db.VarChar(100)
+  rawPayload String   @db.Text // JSON payload
+  createdAt  DateTime @default(now())
+}
+
+// =========================================================================
+// 12. FRAUD DETECTION
+// =========================================================================
+
+model FraudCase {
+  id                    String   @id @default(uuid())
+  targetUserId          String?
+  targetUser            User?    @relation("FraudTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  orderId               String?
+  order                 Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  score                 Int      @default(0)
+  status                String   @default("UNRESOLVED") @db.VarChar(50)
+  assignedAnalystUserId String?
+  assignedAnalyst       User?    @relation("FraudAnalystUser", fields: [assignedAnalystUserId], references: [id], onDelete: SetNull)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  signals   FraudSignal[]
+  decisions ExecutedFraudDecision[]
+}
+
+model FraudSignal {
+  id          String    @id @default(uuid())
+  fraudCaseId String
+  fraudCase   FraudCase @relation(fields: [fraudCaseId], references: [id], onDelete: Cascade)
+  signalType  String    @db.VarChar(100)
+  weight      Int
+  details     String?   @db.Text // JSON string details
+  createdAt   DateTime  @default(now()) @db.Timestamp()
+}
+
+model ExecutedFraudDecision {
+  id               String    @id @default(uuid())
+  fraudCaseId      String
+  fraudCase        FraudCase @relation(fields: [fraudCaseId], references: [id], onDelete: Cascade)
+  decisionTaken    String    @db.VarChar(100)
+  notes            String?   @db.Text
+  executedByUserId String?
+  executedByUser   User?     @relation(fields: [executedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+}
+
+// =========================================================================
+// 13. SECURITY LOGS & AUDIT LOGS
+// =========================================================================
+
+model LoginHistory {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddressHash String   @db.VarChar(64)
+  userAgent     String?  @db.VarChar(512)
+  isSuccess     Boolean
+  failureReason String?  @db.VarChar(255)
+  createdAt     DateTime @default(now())
+}
+
+model SecurityEvent {
+  id            String   @id @default(uuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  severity      String   @db.VarChar(20) // LOW, MEDIUM, HIGH, CRITICAL
+  eventType     String   @db.VarChar(100)
+  details       String?  @db.Text
+  ipAddressHash String?  @db.VarChar(64)
+  createdAt     DateTime @default(now())
+}
+
+model ApiAccessLog {
+  id             String   @id @default(uuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  requestPath    String   @db.VarChar(255)
+  requestMethod  String   @db.VarChar(10)
+  responseStatus Int
+  latencyMs      Int
+  ipAddressHash  String   @db.VarChar(64)
+  createdAt      DateTime @default(now())
+}
+
+model AdminAction {
+  id          String   @id @default(uuid())
+  adminUserId String
+  adminUser   User     @relation("AdminUserAction", fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String   @db.VarChar(100)
+  tableName   String?  @db.VarChar(100)
+  recordId    String?  @db.VarChar(100)
+  beforeState String?  @db.Text // JSON string before
+  afterState  String?  @db.Text // JSON string after
+  createdAt   DateTime @default(now())
+}
+
+// =========================================================================
+// 14. EVENTS OUTBOX (CQRS support)
+// =========================================================================
+
+model EventOutbox {
+  id          String   @id @default(uuid())
+  eventType   String   @db.VarChar(100)
+  payload     String   @db.Text // JSON event payload
+  isProcessed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// =========================================================================
+// 15. PERFORMANCE REPORTING & DATA MARTS
+// =========================================================================
+
+model DailySales {
+  id               String   @id @default(uuid())
+  saleDate         DateTime
+  countryId        String
+  country          Country  @relation(fields: [countryId], references: [id])
+  totalSalesAmount Float
+  itemsSold        Int
+  createdAt        DateTime @default(now())
+
+  @@unique([saleDate, countryId])
+}
+
+model DailyRevenue {
+  id              String   @id @default(uuid())
+  revenueDate     DateTime @unique
+  grossRevenue    Float
+  makerPayouts    Float
+  netMarkupEarned Float
+  discountsGiven  Float
+  createdAt       DateTime @default(now())
+}
+
+model ProductMetrics {
+  id             String   @id @default(uuid())
+  productId      String   @unique
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewsCount     Int      @default(0)
+  wishlistCount  Int      @default(0)
+  purchasedCount Int      @default(0)
+  averageRating  Float    @default(0.00)
+  updatedAt      DateTime @default(now())
+}
+
+model MakerMetrics {
+  id                    String       @id @default(uuid())
+  makerProfileId        String       @unique
+  maker                 MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  totalPayoutsCompleted Float        @default(0.00)
+  successfulDeliveries  Int          @default(0)
+  disputeCount          Int          @default(0)
+  updatedAt             DateTime     @default(now())
+}
+
+// =========================================================================
+// 16. MISC COMPATIBILITY RELATIONS & MIGRATION BLOCKS
+// =========================================================================
+
+model Certificate {
+  id                String       @id @default(uuid())
+  makerProfileId    String
+  maker             MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  productId         String?
+  product           Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  certificateNumber String       @unique
+  certificateType   String       @default("ELITE") @db.VarChar(50)
+  issueDate         DateTime     @default(now())
+  expiryDate        DateTime
+  pdfUrl            String?      @db.VarChar(512)
+  createdAt         DateTime     @default(now())
+}
+
+model SavedMaker {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  makerId   String
+  maker     MakerProfile @relation(fields: [makerId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, makerId])
+}
+
+model ShippingAddress {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String   @db.VarChar(255)
+  addressLine1 String   @db.VarChar(255)
+  addressLine2 String?  @db.VarChar(255)
+  city         String   @db.VarChar(100)
+  postcode     String   @db.VarChar(20)
+  country      String   @db.VarChar(100)
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model SupportTicket {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String   @db.VarChar(255)
+  description String   @db.Text
+  status      String   @default("OPEN") @db.VarChar(50) // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String   @default("MEDIUM") @db.VarChar(50) // LOW, MEDIUM, HIGH, URGENT
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  replies SupportTicketReply[]
+}
+
+model VerificationRequest {
+  id                 String            @id @default(uuid())
+  makerProfileId     String
+  maker              MakerProfile      @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  inspectorProfileId String?
+  inspector          InspectorProfile? @relation(fields: [inspectorProfileId], references: [id], onDelete: SetNull)
+  status             String            @default("PENDING") @db.VarChar(50) // PENDING, INSPECTOR_ASSIGNED, AUDITED, APPROVED, REJECTED
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model InspectionReport {
+  id                 String           @id @default(uuid())
+  inspectorProfileId String
+  inspector          InspectorProfile @relation(fields: [inspectorProfileId], references: [id], onDelete: Cascade)
+  makerProfileId     String
+  maker              MakerProfile     @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  notes              String?          @db.Text
+  qualityScore       Int
+  latitude           Float?
+  longitude          Float?
+  digitalSignature   String           @db.VarChar(255)
+  images             String?          @db.Text // JSON string list of urls
+  videos             String?          @db.Text // JSON string list of urls
+  status             String           @default("PENDING") @db.VarChar(50)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// =========================================================================
+// 17. NEW MODELS FOR MODULES 4-6
+// =========================================================================
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model SupportTicketReply {
+  id        String        @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String        @db.Text
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
+model ReviewHelpfulVote {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isHelpful Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
+}
+
+model ReviewReport {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String   @db.VarChar(255)
+  details   String?  @db.Text
+  status    String   @default("PENDING") @db.VarChar(50) // PENDING, REVIEWED, DISMISSED
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
+}

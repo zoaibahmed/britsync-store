@@ -1,0 +1,551 @@
+Continue developing the existing Britsync Market project.
+
+Do not redesign the website.
+
+Keep the current branding, colors, typography, layout and animations.
+
+Create a premium AI Commerce Assistant that is available on every page of the website.
+
+The assistant must become the primary support and shopping experience for buyers, makers and administrators.
+
+====================================================
+
+GLOBAL FLOATING AI ASSISTANT
+
+====================================================
+
+Create a floating AI Assistant button fixed to the bottom-right corner on every page.
+
+The assistant must remain visible while scrolling.
+
+Animate smoothly.
+
+Use Britsync branding.
+
+Primary Color
+
+#1F4B43
+
+Accent
+
+#C8A45D
+
+Display notification badges.
+
+Display unread message count.
+
+Display online status.
+
+====================================================
+
+PREMIUM CHAT WINDOW
+
+====================================================
+
+Create a premium chat interface.
+
+Include
+
+Britsync Logo
+
+Assistant Avatar
+
+Online Status
+
+Typing Animation
+
+Streaming Responses
+
+Message Time
+
+Attachments
+
+Emoji Support
+
+File Upload
+
+Image Upload
+
+Voice Recording Button
+
+Voice Playback
+
+Minimize
+
+Close
+
+Expand
+
+Dark Mode Support
+
+Glassmorphism Design
+
+Smooth Animations
+
+====================================================
+
+WELCOME EXPERIENCE
+
+====================================================
+
+Display
+
+Hello 👋
+
+Welcome to Britsync Market.
+
+I am your AI Commerce Assistant.
+
+I can help you discover products, answer questions, track orders, explain Elite Verification, help makers sell globally and connect you with our support team.
+
+How may I help you today?
+
+====================================================
+
+MULTI AI MODES
+
+====================================================
+
+Create three assistant modes.
+
+Shopping Assistant
+
+Customer Support
+
+Seller Assistant
+
+Users can switch between modes without losing conversation history.
+
+====================================================
+
+SHOPPING ASSISTANT
+
+====================================================
+
+Help buyers discover products.
+
+Example
+
+Show me handmade leather bags from Pakistan.
+
+Find Elite verified ceramic products.
+
+Recommend sustainable home decor.
+
+Show GI products.
+
+Recommend gifts under £100.
+
+Find women-led businesses.
+
+Compare two products.
+
+Suggest similar products.
+
+Recommend based on browsing history.
+
+====================================================
+
+CUSTOMER SUPPORT
+
+====================================================
+
+Help buyers with
+
+Order Tracking
+
+Shipping
+
+Payments
+
+Returns
+
+Refunds
+
+Account
+
+Wishlist
+
+Product Availability
+
+Authenticity Passport
+
+Elite Verification
+
+Gift Packaging
+
+Coupons
+
+FAQs
+
+====================================================
+
+SELLER ASSISTANT
+
+====================================================
+
+Help makers with
+
+Registration
+
+Product Upload
+
+Product Approval
+
+Elite Verification
+
+Inspection Requests
+
+Payments
+
+Orders
+
+Shipping
+
+Certificates
+
+Product Passport
+
+Dashboard
+
+Support
+
+====================================================
+
+SMART PRODUCT SEARCH
+
+====================================================
+
+Allow AI to search products.
+
+Search by
+
+Country
+
+Category
+
+Material
+
+Price
+
+Elite Products
+
+GI Products
+
+Story
+
+Maker
+
+Workshop
+
+Village
+
+Women Led
+
+Eco Friendly
+
+Handmade
+
+====================================================
+
+ORDER TRACKING
+
+====================================================
+
+If user enters
+
+Order Number
+
+Email
+
+Phone
+
+Display
+
+Order Status
+
+Estimated Delivery
+
+Courier
+
+Tracking Timeline
+
+====================================================
+
+AUTHENTICITY PASSPORT
+
+====================================================
+
+Allow users to ask
+
+Is this product authentic?
+
+Display
+
+Passport
+
+Inspection Report
+
+Certificates
+
+QR Code
+
+Origin
+
+Inspector
+
+Verification Date
+
+====================================================
+
+HUMAN SUPPORT
+
+====================================================
+
+If AI confidence is low
+
+Offer
+
+Talk to Human
+
+Create Ticket
+
+Schedule Call
+
+Leave Email
+
+====================================================
+
+SUPPORT TICKET SYSTEM
+
+====================================================
+
+Generate support tickets.
+
+Ticket Number
+
+Priority
+
+Status
+
+Assigned Agent
+
+Conversation History
+
+Attachments
+
+====================================================
+
+LIVE HUMAN CHAT
+
+====================================================
+
+Create architecture for live agents.
+
+Admin can
+
+Take Conversation
+
+Transfer Conversation
+
+Close Conversation
+
+Assign Conversation
+
+====================================================
+
+AI MEMORY
+
+====================================================
+
+Remember
+
+User Preferences
+
+Previous Chats
+
+Viewed Products
+
+Favourite Categories
+
+Saved Makers
+
+Wishlists
+
+Previous Orders
+
+====================================================
+
+RECOMMENDATION ENGINE
+
+====================================================
+
+Recommend products using
+
+Purchase History
+
+Browsing History
+
+Wishlist
+
+Country Preference
+
+Price Preference
+
+Favourite Makers
+
+====================================================
+
+VOICE SUPPORT
+
+====================================================
+
+Allow
+
+Voice Input
+
+Speech To Text
+
+Text To Speech
+
+Voice Replies
+
+====================================================
+
+MULTI LANGUAGE
+
+====================================================
+
+Support
+
+English
+
+French
+
+German
+
+Spanish
+
+Italian
+
+Arabic
+
+Urdu
+
+====================================================
+
+ADMIN PANEL
+
+====================================================
+
+Create Support Dashboard
+
+Live Conversations
+
+Resolved Tickets
+
+Open Tickets
+
+Average Response Time
+
+Customer Satisfaction
+
+Conversation Analytics
+
+Popular Questions
+
+====================================================
+
+API ARCHITECTURE
+
+====================================================
+
+Create modular services.
+
+services/ai
+
+services/chat
+
+services/tickets
+
+services/orders
+
+services/products
+
+services/search
+
+services/recommendations
+
+services/voice
+
+services/translation
+
+====================================================
+
+CONFIGURATION
+
+====================================================
+
+Never hardcode credentials.
+
+Read from environment variables.
+
+AI_PROVIDER
+
+AI_API_KEY
+
+AI_AGENT_ID
+
+AI_BASE_URL
+
+SUPABASE_URL
+
+SUPABASE_KEY
+
+OPENAI_API_KEY
+
+====================================================
+
+PERFORMANCE
+
+====================================================
+
+Persist chat history.
+
+Guest users use local storage.
+
+Authenticated users use database.
+
+Support streaming.
+
+Reconnect automatically.
+
+Retry failed messages.
+
+Lazy load conversations.
+
+====================================================
+
+DESIGN
+
+====================================================
+
+Use Framer Motion animations.
+
+Premium glassmorphism.
+
+Luxury shadows.
+
+Rounded corners.
+
+Responsive design.
+
+Desktop.
+
+Tablet.
+
+Mobile.
+
+The AI Assistant should feel more advanced than Intercom, Zendesk and Crisp while matching the premium Britsync brand identity.
+
+The implementation must be modular, scalable and production-ready so future AI providers can be integrated simply by updating environment variables without changing the frontend or business logic.

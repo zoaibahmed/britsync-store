@@ -1,0 +1,58 @@
+import type { Metadata } from "next";
+import { Inter, Outfit, Playfair_Display } from "next/font/google";
+import "./globals.css";
+import Navbar from "@/components/Navbar";
+import Footer from "@/components/Footer";
+import CookieBanner from "@/components/CookieBanner";
+import ToastContainer from "@/components/ToastContainer";
+import ChatAssistant from "@/components/ChatAssistant";
+import TransitionProvider from "@/components/TransitionProvider";
+
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
+const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
+const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
+
+export const metadata: Metadata = {
+  title: "Britsync Market",
+  description: "A premium global managed commerce ecosystem connecting you with authentic makers.",
+};
+
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Britsync Marketplace",
+  "url": "https://britsync.com",
+  "logo": "https://britsync.com/logo.svg",
+  "description": "A premium global managed commerce ecosystem connecting discerning patrons with authentic makers.",
+  "sameAs": [
+    "https://twitter.com/britsync",
+    "https://instagram.com/britsync"
+  ]
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${playfair.variable}`}>
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
+        />
+      </head>
+      <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <Navbar />
+        <TransitionProvider>
+          {children}
+        </TransitionProvider>
+        <CookieBanner />
+        <ToastContainer />
+        <ChatAssistant />
+        <Footer />
+      </body>
+    </html>
+  );
+}
