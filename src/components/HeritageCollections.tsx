@@ -15,15 +15,36 @@ interface HeritageCollectionsProps {
   collections: Collection[];
 }
 
+// ─── Masonry variant → card height ─────────────────────────────────────────
+type CardVariant = 'large' | 'small' | 'wide';
+
+// Editorial layout pattern repeating every 8 cards:
+// Row 1 (3 cols): large | small | small
+// Row 2 (3 cols): large | wide(2col) |
+// Row 3 (3 cols): small | large | wide(2col)
+const VARIANT_MAP: CardVariant[] = [
+  'large', 'small', 'small',
+  'large', 'wide',
+  'small', 'large', 'wide',
+];
+
+const CARD_HEIGHTS: Record<CardVariant, number> = {
+  large: 520,
+  small: 340,
+  wide:  420,
+};
+
 // ─── Individual card with 3D tilt, parallax layers, idle float ───────────────
 function CollectionCard({
   col,
   index,
   isTouch,
+  variant,
 }: {
   col: Collection;
   index: number;
   isTouch: boolean;
+  variant: CardVariant;
 }) {
   const cardRef = useRef<HTMLDivElement>(null);
   const frameRef = useRef<number>(0);
@@ -169,7 +190,7 @@ function CollectionCard({
             borderRadius: '22px',
             position: 'relative',
             overflow: 'hidden',
-            height: '400px',
+            height: `${CARD_HEIGHTS[variant]}px`,
             display: 'flex',
             alignItems: 'flex-end',
             border: '1px solid rgba(212,175,55,0.30)',
@@ -411,27 +432,70 @@ export default function HeritageCollections({ collections }: HeritageCollections
     return () => obs.disconnect();
   }, []);
 
+  // Inject all CSS client-side only — prevents SSR hydration mismatch
+  useEffect(() => {
+    const id = 'heritage-collections-styles';
+    if (document.getElementById(id)) return;
+    const el = document.createElement('style');
+    el.id = id;
+    el.textContent = `
+      @keyframes heritageFloat {
+        0%, 100% { margin-top: 0px; }
+        50% { margin-top: -3px; }
+      }
+      @keyframes heritageDustFloat {
+        0%   { transform: translate(0,0) scale(1); opacity: 0; }
+        20%  { opacity: 0.5; }
+        100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
+      }
+      .heritage-card-wrap:hover .cc-title { transform: translateY(-3px); }
+      .heritage-card-wrap:hover .cc-goldline { width: 44px !important; }
+      .heritage-card-wrap:hover .cc-arrow { transform: translateX(5px) !important; }
+      @media (min-width: 900px) {
+        .heritage-masonry {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-auto-rows: 170px;
+          gap: 2rem;
+        }
+        .hc-0 { grid-column: 1; grid-row: span 3; }
+        .hc-1 { grid-column: 2; grid-row: span 2; }
+        .hc-2 { grid-column: 3; grid-row: span 2; }
+        .hc-3 { grid-column: 2 / 4; grid-row: span 2; }
+        .hc-4 { grid-column: 1; grid-row: span 3; }
+        .hc-5 { grid-column: 2; grid-row: span 2; }
+        .hc-6 { grid-column: 3; grid-row: span 2; }
+        .hc-7 { grid-column: 2 / 4; grid-row: span 2; }
+      }
+      @media (max-width: 899px) {
+        .heritage-masonry {
+          display: grid;
+          grid-template-columns: repeat(2, 1fr);
+          grid-auto-rows: 300px;
+          gap: 1.6rem;
+        }
+        .hc-0,.hc-1,.hc-2,.hc-3,.hc-4,.hc-5,.hc-6,.hc-7 { grid-column: auto; grid-row: auto; }
+        .hc-0,.hc-4 { grid-row: span 2; }
+      }
+      @media (max-width: 560px) {
+        .heritage-masonry {
+          grid-template-columns: 1fr;
+          grid-auto-rows: 340px;
+          gap: 1.4rem;
+        }
+        .hc-0,.hc-1,.hc-2,.hc-3,.hc-4,.hc-5,.hc-6,.hc-7 { grid-column: auto !important; grid-row: auto !important; }
+      }
+      .heritage-masonry .heritage-card-wrap { height: 100%; }
+      .heritage-masonry .heritage-card-wrap > div,
+      .heritage-masonry .heritage-card-wrap > div > a,
+      .heritage-masonry .heritage-card-wrap > div > a > div { height: 100% !important; }
+    `;
+    document.head.appendChild(el);
+    return () => { document.getElementById(id)?.remove(); };
+  }, []);
+
   return (
     <>
-      {/* Keyframe definitions */}
-      <style>{`
-        @keyframes heritageFloat {
-          0%, 100% { margin-top: 0px; }
-          50% { margin-top: -3px; }
-        }
-        @keyframes heritageFadeUp {
-          from { opacity: 0; transform: translateY(20px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-        @keyframes heritageDustFloat {
-          0%   { transform: translate(0,0) scale(1); opacity: 0; }
-          20%  { opacity: 0.5; }
-          100% { transform: translate(var(--dx), var(--dy)) scale(0.4); opacity: 0; }
-        }
-        .heritage-card-wrap:hover .cc-title { transform: translateY(-3px); }
-        .heritage-card-wrap:hover .cc-goldline { width: 44px !important; }
-        .heritage-card-wrap:hover .cc-arrow { transform: translateX(5px) !important; }
-      `}</style>
 
       <main
         style={{
@@ -589,29 +653,39 @@ export default function HeritageCollections({ collections }: HeritageCollections
           </div>
         </section>
 
-        {/* ── Cards grid ──────────────────────────────────────────────────── */}
+        {/* ── Editorial Masonry Grid ──────────────────────────────────────── */}
         <section
           ref={sectionRef}
           style={{
-            padding: '5rem 2rem 0',
-            maxWidth: '1360px',
+            padding: '5rem 2.5rem 0',
+            maxWidth: '1400px',
             margin: '0 auto',
             position: 'relative',
             zIndex: 1,
           }}
         >
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
-              gap: '2.4rem',
-            }}
-          >
-            {collections.map((col, i) => (
-              <div key={col.name} className="heritage-card-wrap">
-                <CollectionCard col={col} index={i} isTouch={isTouch} />
-              </div>
-            ))}
+          {/*
+            3-column CSS Grid with explicit placements:
+            Pattern (8 cards):
+            [0] large  col 1, rows 1-2   [1] small  col 2, row 1   [2] small  col 3, row 1
+            [3] large  col 1, rows 3-4   [4] wide   col 2-3, row 2 (below 1+2)
+            [5] small  col 2, row 3      [6] large  col 3, rows 3-4 [7] wide   col 1-2, row 4 (fills below 3)
+          */}
+          <div className="heritage-masonry">
+            {collections.map((col, i) => {
+              const variant = VARIANT_MAP[i % VARIANT_MAP.length];
+              const posClass = `hc-${i % 8}`;
+              return (
+                <div key={col.name} className={`heritage-card-wrap ${posClass}`}>
+                  <CollectionCard
+                    col={col}
+                    index={i}
+                    isTouch={isTouch}
+                    variant={variant}
+                  />
+                </div>
+              );
+            })}
           </div>
         </section>
       </main>

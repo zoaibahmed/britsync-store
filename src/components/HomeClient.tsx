@@ -8,6 +8,7 @@ import ProductCard from './ProductCard';
 import { Icons } from './Icons';
 import LuxuryHero from './LuxuryHero';
 import MagneticCategoryCarousel from './MagneticCategoryCarousel';
+import ArtisanGlobeJourney from './ArtisanGlobeJourney';
 
 interface Product {
   id: string;
@@ -56,7 +57,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
 
   // Interactive Map Highlighted Country state
   const [activeCountry, setActiveCountry] = useState<string | null>(null);
-  const [selectedCategory, setSelectedCategory] = useState<string>('All');
+
   const [escrowAmount, setEscrowAmount] = useState<number>(500);
   const [activeStepIndex, setActiveStepIndex] = useState<number>(0);
 
@@ -89,12 +90,10 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
     }
   };
 
-  const filteredEliteProducts = selectedCategory === 'All'
-    ? eliteProducts
-    : eliteProducts.filter(p => p.category === selectedCategory);
+
 
   return (
-    <main style={{ backgroundColor: 'var(--background)', overflow: 'hidden' }}>
+    <main style={{ backgroundColor: 'var(--background)', overflow: 'clip' }}>
 
       {/* ════════════════════════════════════════════════════════════
           LUXURY CINEMATIC HERO — canvas sprite reveal + parallax
@@ -231,60 +230,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </section>
 
-      {/* 5. FEATURED PRODUCTS WITH INTERACTIVE CATEGORY TABS */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '1.5rem', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div>
-              <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Curation Standard</span>
-              <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Atelier Elite Masterworks</h2>
-            </div>
 
-            {/* Interactive Category Filter Pills */}
-            <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-              {['All', 'Textiles', 'Ceramics', 'Woodwork', 'Jewelry', 'Leather'].map((cat) => (
-                <button
-                  key={cat}
-                  onClick={() => setSelectedCategory(cat)}
-                  style={{
-                    padding: '0.5rem 1.2rem',
-                    borderRadius: '20px',
-                    fontSize: '0.75rem',
-                    letterSpacing: '1px',
-                    textTransform: 'uppercase',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    backgroundColor: selectedCategory === cat ? 'var(--primary)' : 'transparent',
-                    color: selectedCategory === cat ? 'var(--accent)' : 'var(--text)',
-                    border: selectedCategory === cat ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
-                    transition: 'all 0.3s ease',
-                  }}
-                >
-                  {cat}
-                </button>
-              ))}
-            </div>
-
-            <Link href="/search?tier=elite" style={{ color: 'var(--text)', fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 500, textDecoration: 'none', borderBottom: '1px solid var(--accent)', paddingBottom: '0.2rem' }}>
-              Explore Full Collection &rarr;
-            </Link>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2.5rem' }}>
-            {filteredEliteProducts.map((product, idx) => (
-              <motion.div
-                key={product.id}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: idx * 0.1 }}
-              >
-                <ProductCard product={product} />
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* 6. INTERACTIVE PASSPORT DEMO WITH HOLOGRAPHIC SCORE GAUGE */}
       <motion.section 
@@ -628,173 +574,8 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </section>
 
-      {/* 8. GLOBAL ARTISAN MAP WITH RADAR SWEEP */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={revealVariants}
-        style={{ padding: '9rem 3rem', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}
-      >
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Atelier Registry Locations</span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Global Artisan Registry Radar Map</h2>
-          </div>
-
-          {/* High-Resolution Interactive Dark Satellite Map Container */}
-          <div 
-            style={{ 
-              position: 'relative', 
-              width: '100%', 
-              height: '560px', 
-              border: '1px solid rgba(212,175,55,0.4)', 
-              borderRadius: '24px', 
-              backgroundImage: `linear-gradient(to bottom, rgba(10, 10, 12, 0.75) 0%, rgba(10, 10, 12, 0.9) 100%), url("https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?auto=format&fit=crop&q=80&w=1600")`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              overflow: 'hidden', 
-              boxShadow: '0 30px 70px rgba(0,0,0,0.6)' 
-            }}
-          >
-            {/* Top Interactive Node Selector Pills */}
-            <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', right: '1.5rem', zIndex: 30, display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
-                {countries.map((c) => (
-                  <button
-                    key={c.name}
-                    onClick={() => setActiveCountry(activeCountry === c.name ? null : c.name)}
-                    style={{
-                      padding: '0.4rem 1rem',
-                      borderRadius: '20px',
-                      fontSize: '0.72rem',
-                      letterSpacing: '1px',
-                      textTransform: 'uppercase',
-                      fontWeight: 600,
-                      cursor: 'pointer',
-                      backgroundColor: activeCountry === c.name ? 'var(--accent)' : 'rgba(10,10,12,0.8)',
-                      color: activeCountry === c.name ? '#0A0A0C' : '#FAF9F6',
-                      border: '1px solid rgba(212,175,55,0.4)',
-                      backdropFilter: 'blur(10px)',
-                      transition: 'all 0.3s ease',
-                    }}
-                  >
-                    {c.flag} {c.name}
-                  </button>
-                ))}
-              </div>
-              <div style={{ backgroundColor: 'rgba(10,10,12,0.8)', backdropFilter: 'blur(10px)', border: '1px solid rgba(212,175,55,0.4)', padding: '0.4rem 1rem', borderRadius: '20px', fontSize: '0.68rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '1.5px' }}>
-                🟢 5 GPS GEOFENCED ATELIERS ACTIVE
-              </div>
-            </div>
-
-            {/* GPS Latitude Crosshairs */}
-            <svg viewBox="0 0 1000 500" style={{ width: '100%', height: '100%', position: 'absolute', inset: 0, opacity: 0.25, pointerEvents: 'none' }}>
-              <g stroke="rgba(212, 175, 55, 0.4)" strokeWidth="0.5" strokeDasharray="3 3">
-                <line x1="0" y1="250" x2="1000" y2="250" />
-                <line x1="500" y1="0" x2="500" y2="500" />
-              </g>
-            </svg>
-
-            {/* Glowing Map Pins */}
-            {countries.map((country) => {
-              const isSelected = activeCountry === country.name;
-              return (
-                <div 
-                  key={country.name}
-                  onClick={() => setActiveCountry(isSelected ? null : country.name)}
-                  onMouseEnter={() => setActiveCountry(country.name)}
-                  style={{
-                    position: 'absolute',
-                    left: country.coords.x,
-                    top: country.coords.y,
-                    transform: 'translate(-50%, -50%)',
-                    cursor: 'pointer',
-                    zIndex: 20
-                  }}
-                >
-                  <motion.div
-                    animate={{ scale: isSelected ? [1, 2.8, 1] : [1, 2, 1], opacity: isSelected ? [0.9, 0.2, 0.9] : [0.6, 0, 0.6] }}
-                    transition={{ repeat: Infinity, duration: isSelected ? 1.5 : 2.5, ease: "easeInOut" }}
-                    style={{
-                      position: 'absolute',
-                      width: '32px',
-                      height: '32px',
-                      borderRadius: '50%',
-                      border: isSelected ? '2px solid var(--accent)' : '1px solid var(--accent)',
-                      left: '-12px',
-                      top: '-12px',
-                      boxShadow: isSelected ? '0 0 20px var(--accent)' : 'none'
-                    }}
-                  />
-                  <div style={{
-                    width: '14px',
-                    height: '14px',
-                    borderRadius: '50%',
-                    backgroundColor: 'var(--accent)',
-                    boxShadow: '0 0 20px var(--accent)',
-                    border: '2px solid #0A0A0C'
-                  }} />
-
-                  {/* Pin Flag Label floating tag */}
-                  <div style={{
-                    position: 'absolute',
-                    top: '-2.2rem',
-                    left: '50%',
-                    transform: 'translateX(-50%)',
-                    backgroundColor: 'rgba(10,10,12,0.9)',
-                    border: '1px solid var(--accent)',
-                    padding: '0.2rem 0.6rem',
-                    borderRadius: '12px',
-                    fontSize: '0.7rem',
-                    color: '#FAF9F6',
-                    whiteSpace: 'nowrap',
-                    backdropFilter: 'blur(10px)',
-                    fontWeight: 600
-                  }}>
-                    {country.flag} {country.name}
-                  </div>
-                </div>
-              );
-            })}
-
-            {/* Map Tooltip Drawer */}
-            <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem', padding: '1.8rem 2.2rem', border: '1px solid rgba(212,175,55,0.5)', borderRadius: '16px', backgroundColor: 'rgba(10, 10, 12, 0.92)', backdropFilter: 'blur(20px)', color: '#FAF9F6', transition: 'all 0.3s ease', opacity: activeCountry ? 1 : 0.85 }}>
-              {activeCountry ? (
-                (() => {
-                  const data = countries.find(c => c.name === activeCountry);
-                  return (
-                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                      <div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.4rem' }}>
-                          <span style={{ fontSize: '2rem' }}>{data?.flag}</span>
-                          <div>
-                            <strong style={{ fontSize: '1.3rem', textTransform: 'uppercase', letterSpacing: '1.5px', color: '#FAF9F6', fontFamily: 'var(--font-playfair), serif' }}>{data?.name} Guild Appellation</strong>
-                            <span style={{ display: 'block', fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>Studio: {data?.maker}</span>
-                          </div>
-                        </div>
-                        <p style={{ fontSize: '0.88rem', margin: 0, opacity: 0.85 }}>Certified Craft Heritage: <strong>{data?.craft}</strong></p>
-                      </div>
-                      <Link href={`/search?country=${data?.name}`} className="btn-accent" style={{ textDecoration: 'none', padding: '0.9rem 2rem', fontSize: '0.8rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600, borderRadius: '8px' }}>
-                        Explore {data?.name} Masterworks &rarr;
-                      </Link>
-                    </motion.div>
-                  );
-                })()
-              ) : (
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-                  <span style={{ fontSize: '0.85rem', opacity: 0.9, letterSpacing: '1.5px', textTransform: 'uppercase', color: '#FAF9F6' }}>
-                    Select or hover over any artisan node (Morocco, Turkey, Pakistan, India, Peru) to inspect certified atelier origins
-                  </span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>
-                    📍 Cryptographic GPS Active
-                  </span>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </motion.section>
+      {/* 8. GLOBAL ARTISAN REGISTRY — Scroll-scrubbed 3D globe journey */}
+      <ArtisanGlobeJourney />
 
       {/* 9. COUNTRY COLLECTIONS WITH 3D HOVER TILT */}
       <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)' }}>
