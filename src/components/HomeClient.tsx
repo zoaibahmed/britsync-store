@@ -6,6 +6,8 @@ import { motion, useScroll, useTransform, AnimatePresence, useInView, animate } 
 import { calculateSellingPrice } from '@/lib/pricing';
 import ProductCard from './ProductCard';
 import { Icons } from './Icons';
+import LuxuryHero from './LuxuryHero';
+import MagneticCategoryCarousel from './MagneticCategoryCarousel';
 
 interface Product {
   id: string;
@@ -48,76 +50,6 @@ function PremiumCounter({ value, suffix = "" }: { value: number; suffix?: string
 }
 
 export default function HomeClient({ eliteProducts, generalProducts }: HomeClientProps) {
-  // Hero Background state & parallax scroll setup
-  const [heroIndex, setHeroIndex] = useState(0);
-  const heroRef = useRef(null);
-  const { scrollYProgress } = useScroll({
-    target: heroRef,
-    offset: ["start start", "end start"]
-  });
-
-  const heroY = useTransform(scrollYProgress, [0, 1], ["0%", "30%"]);
-  const heroOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.2]);
-
-  const heroSlides = [
-    {
-      bg: 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1600',
-      tag: 'The World Registry for Rare Heritage Crafts',
-      title: 'Preserving Heritage',
-      titleAccent: 'One Masterpiece',
-      titleEnd: 'At A Time',
-      desc: 'Connecting discerning patrons directly with certified master artisans. Britsync is the digital registry safeguarding rare, hand-audited craft origins through cryptographic provenance passports.',
-      leftWidget: { title: 'LIVE AUDIT FEED', text: '📍 Hand-Spun Kilim Verified in Ait Bouguemez Valley (GPS: 31.79° N)' },
-      rightWidget: { title: 'PASSPORT SEALED', text: 'Block #49281 | 100% Cryptographic Provenance Hash Active' },
-      ctaText: 'Explore Elite Collection',
-      ctaLink: '/search?tier=elite'
-    },
-    {
-      bg: 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1600',
-      tag: 'Certified Appellations of Origin',
-      title: 'Generational Mastery',
-      titleAccent: 'Hand-Carved & Woven',
-      titleEnd: 'With Sacred Purity',
-      desc: 'Every piece is crafted in geofenced regional studios using zero synthetic materials or automated machinery, backed by immutable digital ledger stamps.',
-      leftWidget: { title: 'GI REGISTRY FEED', text: '📍 Royal Indigo Ajrak Verified in Sindh Studio (GPS: 25.39° N)' },
-      rightWidget: { title: 'LEDGER SEALED', text: 'Block #88210 | Organic Pigment Test Passed 100%' },
-      ctaText: 'Discover Royal Ajrak',
-      ctaLink: '/search?category=Textiles'
-    },
-    {
-      bg: 'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?auto=format&fit=crop&q=80&w=1600',
-      tag: 'Geographic Protection & Direct Payouts',
-      title: 'Patronage Redefined',
-      titleAccent: '95% Direct Escrow',
-      titleEnd: 'To Master Craftsmen',
-      desc: 'Eliminate intermediate markups. Your acquisition funds local artisan families directly upon cryptographic delivery confirmation.',
-      leftWidget: { title: 'ESCROW PAYOUT FEED', text: '💳 £1,250 Released to Iznik Ceramic Master in Anatolia' },
-      rightWidget: { title: 'AUDIT SEALED', text: 'Block #91024 | Direct Local Bank Transfer Verified' },
-      ctaText: 'View Escrow Model',
-      ctaLink: '/search?category=Ceramics'
-    },
-    {
-      bg: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=1600',
-      tag: 'Guardians of Ancient Craftsmanship',
-      title: 'Unrivaled Heritage',
-      titleAccent: 'Cryptographically Proven',
-      titleEnd: 'For Future Generations',
-      desc: 'Immerse yourself in authentic biographies, studio video archives, and GPS geofenced maps documenting the exact workshop of every creation.',
-      leftWidget: { title: 'ARTISAN CHRONICLES', text: '📜 Master Weaver Fatima’s 40-Year Alpaca Heritage Documented' },
-      rightWidget: { title: 'PASSPORT SEALED', text: 'Block #30491 | Certified Non-Industrial Production' },
-      ctaText: 'Explore Heritage Collections',
-      ctaLink: '/collections'
-    }
-  ];
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setHeroIndex((prev) => (prev + 1) % heroSlides.length);
-    }, 6500);
-    return () => clearInterval(interval);
-  }, [heroSlides.length]);
-
-  const currentSlide = heroSlides[heroIndex];
 
   // Interactive Passport State
   const [passportTab, setPassportTab] = useState<'origin' | 'audit' | 'ledger'>('origin');
@@ -163,187 +95,11 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
 
   return (
     <main style={{ backgroundColor: 'var(--background)', overflow: 'hidden' }}>
-      
-      {/* 1. LUXURY HERO CAROUSEL WITH DYNAMIC TEXT & WIDGETS */}
-      <section ref={heroRef} style={{ minHeight: '100vh', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', padding: '6rem 2rem' }}>
-        <motion.div style={{ position: 'absolute', inset: 0, y: heroY, opacity: heroOpacity }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSlide.bg}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 0.5, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.5, ease: "easeInOut" }}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                background: `url(${currentSlide.bg}) center/cover no-repeat`,
-              }}
-            />
-          </AnimatePresence>
-          <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10,10,12,0.92) 0%, rgba(10,10,12,0.6) 60%, var(--background) 100%)' }} />
-          <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} />
-          <div className="glow-orb" style={{ top: '15%', left: '10%', width: '600px', height: '600px' }} />
-          <div className="glow-orb" style={{ bottom: '15%', right: '10%', width: '500px', height: '500px', opacity: 0.5 }} />
-        </motion.div>
 
-        {/* Floating Hero Widget - Left */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide.leftWidget.title}
-            initial={{ opacity: 0, x: -40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -40 }}
-            transition={{ duration: 0.8 }}
-            style={{
-              position: 'absolute',
-              left: '3rem',
-              top: '30%',
-              backgroundColor: 'rgba(10, 10, 12, 0.85)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              borderRadius: '16px',
-              padding: '1.2rem 1.6rem',
-              color: '#FAF9F6',
-              maxWidth: '320px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-              zIndex: 15,
-            }}
-            className="desktop-hero-widget"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-              <span className="glow-dot" />
-              <span style={{ fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>
-                {currentSlide.leftWidget.title}
-              </span>
-            </div>
-            <p style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.5, opacity: 0.9 }}>
-              {currentSlide.leftWidget.text}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Floating Hero Widget - Right */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSlide.rightWidget.title}
-            initial={{ opacity: 0, x: 40 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 40 }}
-            transition={{ duration: 0.8 }}
-            style={{
-              position: 'absolute',
-              right: '3rem',
-              bottom: '25%',
-              backgroundColor: 'rgba(10, 10, 12, 0.85)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              borderRadius: '16px',
-              padding: '1.2rem 1.6rem',
-              color: '#FAF9F6',
-              maxWidth: '320px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
-              zIndex: 15,
-            }}
-            className="desktop-hero-widget"
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
-              <span style={{ fontSize: '0.9rem' }}>📜</span>
-              <span style={{ fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>
-                {currentSlide.rightWidget.title}
-              </span>
-            </div>
-            <p style={{ fontSize: '0.82rem', margin: 0, lineHeight: 1.5, opacity: 0.9, fontFamily: 'monospace' }}>
-              {currentSlide.rightWidget.text}
-            </p>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Dynamic Center Hero Content */}
-        <div style={{ position: 'relative', zIndex: 10, textAlign: 'center', color: '#FAF9F6', maxWidth: '950px', padding: '2rem' }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={heroIndex}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div 
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.8rem',
-                  backgroundColor: 'rgba(212, 175, 55, 0.15)',
-                  border: '1px solid rgba(212, 175, 55, 0.4)',
-                  padding: '0.5rem 1.4rem',
-                  borderRadius: '30px',
-                  marginBottom: '2rem',
-                  backdropFilter: 'blur(10px)',
-                }}
-              >
-                <span className="glow-dot" />
-                <span style={{ color: 'var(--accent)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2.5px', fontWeight: 600 }}>
-                  {currentSlide.tag}
-                </span>
-              </div>
-              
-              <h1 style={{ fontSize: '4.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', letterSpacing: '1px', marginBottom: '2rem', lineHeight: 1.1, fontWeight: 300 }}>
-                {currentSlide.title} <br />
-                <span style={{ fontStyle: 'italic', color: 'var(--accent)' }}>{currentSlide.titleAccent}</span> {currentSlide.titleEnd}
-              </h1>
-              
-              <p style={{ fontSize: '1.15rem', opacity: 0.9, marginBottom: '3.5rem', lineHeight: 1.8, maxWidth: '750px', margin: '0 auto 3.5rem', fontFamily: 'var(--font-inter)' }}>
-                {currentSlide.desc}
-              </p>
-              
-              <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap', alignItems: 'center' }}>
-                <Link href={currentSlide.ctaLink} className="btn-accent" style={{ textDecoration: 'none', border: '1px solid var(--accent)', padding: '1.1rem 2.5rem', borderRadius: '8px', fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>
-                  {currentSlide.ctaText} &rarr;
-                </Link>
-                <Link href="/stories" style={{ textDecoration: 'none', backgroundColor: 'rgba(255, 255, 255, 0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255, 255, 255, 0.3)', color: '#FAF9F6', padding: '1.1rem 2.5rem', borderRadius: '8px', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 500, transition: 'all 0.3s ease' }}>
-                  Artisan Chronicles
-                </Link>
-              </div>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Carousel Slide Indicators & Controls */}
-          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1.2rem', marginTop: '4rem' }}>
-            <button
-              onClick={() => setHeroIndex((prev) => (prev === 0 ? heroSlides.length - 1 : prev - 1))}
-              style={{ background: 'none', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent)', width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}
-            >
-              &larr;
-            </button>
-
-            <div style={{ display: 'flex', gap: '0.6rem' }}>
-              {heroSlides.map((_, i) => (
-                <button
-                  key={i}
-                  onClick={() => setHeroIndex(i)}
-                  style={{
-                    width: i === heroIndex ? '32px' : '10px',
-                    height: '8px',
-                    borderRadius: '4px',
-                    backgroundColor: i === heroIndex ? 'var(--accent)' : 'rgba(255,255,255,0.2)',
-                    border: 'none',
-                    cursor: 'pointer',
-                    transition: 'all 0.4s ease'
-                  }}
-                />
-              ))}
-            </div>
-
-            <button
-              onClick={() => setHeroIndex((prev) => (prev + 1) % heroSlides.length)}
-              style={{ background: 'none', border: '1px solid rgba(212,175,55,0.4)', color: 'var(--accent)', width: '36px', height: '36px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1rem' }}
-            >
-              &rarr;
-            </button>
-          </div>
-        </div>
-      </section>
+      {/* ════════════════════════════════════════════════════════════
+          LUXURY CINEMATIC HERO — canvas sprite reveal + parallax
+          ════════════════════════════════════════════════════════════ */}
+      <LuxuryHero />
 
       {/* 1B. EXPLORE CRAFT DISCIPLINES (RICH CATEGORY SHOWCASE) */}
       <section style={{ padding: '7rem 3rem', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--glass-border)', position: 'relative' }}>
@@ -356,60 +112,8 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2rem' }}>
-            {categories.map((cat, idx) => (
-              <motion.div
-                key={cat.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.08 }}
-              >
-                <Link href={`/search?category=${cat.name}`} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div
-                    className="card"
-                    style={{
-                      padding: 0,
-                      height: '320px',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      borderRadius: '12px',
-                      border: '1px solid var(--glass-border)',
-                      boxShadow: 'var(--shadow-md)'
-                    }}
-                  >
-                    <motion.div
-                      whileHover={{ scale: 1.08 }}
-                      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-                      style={{
-                        position: 'absolute',
-                        inset: 0,
-                        backgroundImage: `linear-gradient(to top, rgba(10,10,12,0.9) 0%, rgba(10,10,12,0.2) 60%, transparent 100%), url("${cat.image}")`,
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                      }}
-                    />
-                    
-                    <div style={{ position: 'absolute', top: '1.2rem', right: '1.2rem', backgroundColor: 'rgba(10,10,12,0.7)', backdropFilter: 'blur(10px)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--accent)', padding: '0.3rem 0.8rem', borderRadius: '20px', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '1px' }}>
-                      {cat.count}
-                    </div>
-
-                    <div style={{ position: 'absolute', bottom: '1.8rem', left: '1.8rem', right: '1.8rem', color: '#FAF9F6', zIndex: 2 }}>
-                      <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-playfair), serif', fontWeight: 300, marginBottom: '0.4rem', color: '#FAF9F6' }}>
-                        {cat.name}
-                      </h3>
-                      <p style={{ fontSize: '0.8rem', opacity: 0.8, margin: 0, lineHeight: 1.4 }}>
-                        {cat.desc}
-                      </p>
-                      <span style={{ display: 'inline-block', marginTop: '0.8rem', color: 'var(--accent)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>
-                        Explore Discipline &rarr;
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              </motion.div>
-            ))}
-          </div>
+          {/* Magnetic Carousel Section 2 */}
+          <MagneticCategoryCarousel categories={categories} />
         </div>
       </section>
 

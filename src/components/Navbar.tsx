@@ -32,8 +32,18 @@ export default function Navbar() {
     }
   };
 
+  const [heroActive, setHeroActive] = useState(false);
+
   useEffect(() => {
     let lastScroll = window.scrollY;
+
+    const checkHeroState = () => {
+      if (typeof document !== 'undefined') {
+        setHeroActive(document.documentElement.classList.contains('hero-active'));
+      }
+    };
+
+    checkHeroState();
 
     const handleScroll = () => {
       const currentScroll = window.scrollY;
@@ -51,12 +61,14 @@ export default function Navbar() {
     handleScroll();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('heroStateChange', checkHeroState);
     updateCounts();
     window.addEventListener('cartUpdate', updateCounts);
     window.addEventListener('wishlistUpdate', updateCounts);
 
     return () => {
       window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('heroStateChange', checkHeroState);
       window.removeEventListener('cartUpdate', updateCounts);
       window.removeEventListener('wishlistUpdate', updateCounts);
     };
@@ -90,15 +102,17 @@ export default function Navbar() {
   const CartIcon = () => <Icons.Cart size={17} />;
   const ProfileIcon = () => <Icons.Profile size={17} />;
 
+  const isNavVisible = visible && (!isHomepage || !heroActive);
+
   return (
     <>
       <nav style={{
         position: 'fixed',
         top: scrolled ? '1.5rem' : '0',
         left: '50%',
-        transform: visible 
+        transform: isNavVisible 
           ? 'translateX(-50%) translateY(0)' 
-          : 'translateX(-50%) translateY(-120%)',
+          : 'translateX(-50%) translateY(-150%)',
         width: scrolled ? '92%' : '100%',
         maxWidth: scrolled ? '1400px' : '100%',
         zIndex: 1000,

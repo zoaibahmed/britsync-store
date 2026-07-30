@@ -1,20 +1,26 @@
 "use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { motion, AnimatePresence } from 'framer-motion';
-import { calculateSellingPrice } from '@/lib/pricing';
-import ProductCard from './ProductCard';
+import { useState, useRef } from "react";
+import Link from "next/link";
+import {
+  motion,
+  AnimatePresence,
+  useScroll,
+  useTransform,
+  useSpring,
+  Variants,
+} from "framer-motion";
+import { calculateSellingPrice } from "@/lib/pricing";
 
+/* ─────────────────── INTERFACES ─────────────────── */
 interface Product {
   id: string;
   name: string;
   category: string | { name: string };
   price: number;
-  images: string; // JSON string
+  images: string;
   verificationStatus: string;
 }
-
 interface Story {
   id: string;
   title: string;
@@ -23,7 +29,6 @@ interface Story {
   craft: string;
   country: string;
 }
-
 interface SimilarMaker {
   id: string;
   businessName: string;
@@ -34,7 +39,6 @@ interface SimilarMaker {
   heroImage: string;
   logo: string;
 }
-
 interface Maker {
   id: string;
   businessName: string;
@@ -54,1071 +58,1264 @@ interface Maker {
   lifestylePhotos: string | null;
 }
 
-export default function MakerDetailsClient({ 
-  maker, 
-  products, 
+/* ─────────────────── HELPERS ─────────────────── */
+function parseGallery(s: string | null): string[] {
+  try { return s ? JSON.parse(s) : []; } catch { return []; }
+}
+function getProductImages(images: string): string[] {
+  try {
+    const parsed = JSON.parse(images);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch { return []; }
+}
+
+/* ─────────────────── ANIMATION VARIANTS ─────────────────── */
+const fadeUp: Variants = {
+  hidden: { opacity: 0, y: 50 },
+  show: { opacity: 1, y: 0, transition: { duration: 1.0, ease: "easeOut" } },
+};
+const fadeLeft: Variants = {
+  hidden: { opacity: 0, x: -60 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } },
+};
+const fadeRight: Variants = {
+  hidden: { opacity: 0, x: 60 },
+  show: { opacity: 1, x: 0, transition: { duration: 0.9, ease: "easeOut" } },
+};
+const fadeScale: Variants = {
+  hidden: { opacity: 0, scale: 0.9 },
+  show: { opacity: 1, scale: 1, transition: { duration: 0.9, ease: "easeOut" } },
+};
+
+/* ─────────────────── WORD REVEAL ─────────────────── */
+function WordReveal({ text, style }: { text: string; style?: React.CSSProperties }) {
+  return (
+    <motion.span
+      style={{ display: "inline", ...style }}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.3 }}
+    >
+      {text.split(" ").map((word, i) => (
+        <motion.span
+          key={i}
+          variants={{
+            hidden: { opacity: 0, y: 28 },
+            show: { opacity: 1, y: 0, transition: { delay: i * 0.08, duration: 0.65, ease: "easeOut" } },
+          }}
+          style={{ display: "inline-block", marginRight: "0.28em" }}
+        >
+          {word}
+        </motion.span>
+      ))}
+    </motion.span>
+  );
+}
+
+/* ─────────────────── DARK LUXURY PRODUCT CARD ─────────────────── */
+function DarkProductCard({ product, maker }: {
+  product: { id: string; name: string; price: number; images: string[]; verificationStatus: string; category: string };
+  maker: { businessName: string; country: string };
+}) {
+  const [hovered, setHovered] = useState(false);
+  const img = product.images[0] || "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800";
+  const img2 = product.images[1] || img;
+
+  return (
+    <Link href={`/products/${product.id}`} style={{ textDecoration: "none", display: "block", height: "100%" }}>
+      <div
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+        style={{
+          background: "#141414",
+          border: hovered ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(255,255,255,0.07)",
+          borderRadius: "3px",
+          overflow: "hidden",
+          height: "100%",
+          display: "flex",
+          flexDirection: "column",
+          transform: hovered ? "translateY(-6px)" : "translateY(0)",
+          transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
+          boxShadow: hovered ? "0 20px 50px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.3)",
+        }}
+      >
+        {/* Image */}
+        <div style={{ position: "relative", height: "280px", overflow: "hidden", background: "#0A0A0A" }}>
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url("${img}")`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            transition: "opacity 0.5s ease, transform 0.6s ease",
+            opacity: hovered ? 0 : 1,
+            transform: hovered ? "scale(1.06)" : "scale(1)",
+          }} />
+          <div style={{
+            position: "absolute", inset: 0,
+            backgroundImage: `url("${img2}")`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            transition: "opacity 0.5s ease, transform 0.6s ease",
+            opacity: hovered ? 1 : 0,
+            transform: hovered ? "scale(1.02)" : "scale(1.08)",
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(14,14,14,0.7) 0%, transparent 55%)" }} />
+
+          {/* Badge */}
+          <div style={{
+            position: "absolute", top: "1rem", left: "1rem",
+            background: "rgba(14,14,14,0.85)", backdropFilter: "blur(12px)",
+            border: "1px solid rgba(201,168,76,0.3)",
+            color: "#C9A84C", padding: "0.3rem 0.8rem", borderRadius: "20px",
+            fontSize: "0.6rem", fontWeight: 700, letterSpacing: "1.5px",
+            textTransform: "uppercase",
+          }}>
+            {product.verificationStatus === "ELITE" ? "⭐ Elite"
+              : product.verificationStatus === "GI" ? "🏛️ GI"
+              : "✓ Verified"}
+          </div>
+          {/* Passport chip */}
+          <div style={{
+            position: "absolute", top: "1rem", right: "1rem",
+            background: "rgba(201,168,76,0.15)", backdropFilter: "blur(10px)",
+            border: "1px solid rgba(201,168,76,0.35)",
+            color: "#C9A84C", padding: "0.3rem 0.65rem", borderRadius: "20px",
+            fontSize: "0.6rem", fontWeight: 700,
+          }}>
+            🛡️ Passport
+          </div>
+
+          {/* Bottom category */}
+          <div style={{
+            position: "absolute", bottom: "0.8rem", left: "1rem",
+            fontSize: "0.6rem", fontWeight: 700, letterSpacing: "2px",
+            textTransform: "uppercase", color: "rgba(201,168,76,0.7)",
+          }}>
+            {product.category}
+          </div>
+        </div>
+
+        {/* Content */}
+        <div style={{ padding: "1.4rem 1.5rem 1.6rem", flex: 1, display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+          <h3 style={{
+            fontFamily: "var(--font-cormorant, Georgia, serif)",
+            fontSize: "1.3rem", fontWeight: 400, lineHeight: 1.2,
+            color: "#F5F0E8", margin: 0,
+          }}>
+            {product.name}
+          </h3>
+          <div style={{ fontSize: "0.7rem", color: "rgba(245,240,232,0.4)", fontFamily: "var(--font-inter, system-ui)", letterSpacing: "0.5px" }}>
+            {maker.businessName} · {maker.country}
+          </div>
+
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "0.9rem", marginTop: "auto", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <div style={{ fontSize: "0.55rem", fontFamily: "var(--font-inter, system-ui)", letterSpacing: "3px", textTransform: "uppercase", color: "rgba(201,168,76,0.5)", marginBottom: "0.2rem" }}>
+                Acquisition
+              </div>
+              <div style={{ fontFamily: "var(--font-cormorant, Georgia, serif)", fontSize: "1.5rem", fontWeight: 300, color: "#C9A84C" }}>
+                £{product.price.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+            <div style={{
+              width: "38px", height: "38px", borderRadius: "50%",
+              border: "1px solid rgba(201,168,76,0.4)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "#C9A84C", fontSize: "1rem",
+              transition: "all 0.3s",
+              background: hovered ? "rgba(201,168,76,0.12)" : "transparent",
+            }}>
+              →
+            </div>
+          </div>
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+/* ─────────────────── MAIN COMPONENT ─────────────────── */
+export default function MakerDetailsClient({
+  maker,
+  products,
   stories,
-  similarMakers = []
-}: { 
-  maker: Maker; 
-  products: Product[]; 
-  stories: Story | Story[]; 
+  similarMakers = [],
+}: {
+  maker: Maker;
+  products: Product[];
+  stories: Story | Story[];
   similarMakers?: SimilarMaker[];
 }) {
   const [saved, setSaved] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const [lightbox, setLightbox] = useState<string | null>(null);
+  const [certOpen, setCertOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("workshop");
-  const [videoOpen, setVideoOpen] = useState(false);
-  const [activeVideoTab, setActiveVideoTab] = useState('tour');
-  const [certModalOpen, setCertModalOpen] = useState(false);
 
-  // Products filtering & search state
-  const [productSearch, setProductSearch] = useState("");
-  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("ALL");
-  const [productSort, setProductSort] = useState("default");
+  const { scrollYProgress } = useScroll();
+  const lineScale = useSpring(scrollYProgress, { stiffness: 80, damping: 30 });
 
-  // Parse galleries
-  const getGallery = (field: string | null) => {
-    try {
-      return field ? (JSON.parse(field) as string[]) : [];
-    } catch (e) {
-      return [];
-    }
-  };
+  const heroRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress: heroP } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
+  const heroImgY = useTransform(heroP, [0, 1], ["0%", "35%"]);
+  const heroOpacity = useTransform(heroP, [0, 0.7], [1, 0]);
+  const heroTextY = useTransform(heroP, [0, 1], ["0%", "-25%"]);
 
-  const workshopGallery = getGallery(maker.workshopGallery);
-  const teamPhotos = getGallery(maker.teamPhotos);
-  const productionPhotos = getGallery(maker.productionPhotos);
-  const lifestylePhotos = getGallery(maker.lifestylePhotos);
+  const showToast = (msg: string) => { setToast(msg); setTimeout(() => setToast(null), 3000); };
 
-  const triggerToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const storiesList = Array.isArray(stories) ? stories : stories ? [stories] : [];
+  const workshop = parseGallery(maker.workshopGallery);
+  const team = parseGallery(maker.teamPhotos);
+  const production = parseGallery(maker.productionPhotos);
+  const lifestyle = parseGallery(maker.lifestylePhotos);
+  const galleryMap: Record<string, string[]> = { workshop, team, production, lifestyle };
+  const galleryPhotos: string[] = (galleryMap[activeTab] || []).length > 0
+    ? galleryMap[activeTab]
+    : ["https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600",
+       "https://images.unsplash.com/photo-1452860606245-08befc0ff44b?auto=format&fit=crop&q=80&w=800",
+       "https://images.unsplash.com/photo-1580582932707-520aed937b7b?auto=format&fit=crop&q=80&w=800"];
 
-  const handleSaveToggle = () => {
-    const nextSaved = !saved;
-    setSaved(nextSaved);
-    if (nextSaved) {
-      triggerToast(`Saved ${maker.businessName} to your collection!`);
-    } else {
-      triggerToast(`Removed ${maker.businessName} from your collection.`);
-    }
-  };
+  const cover = maker.coverImage || "https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600";
+  const founderImg = maker.founderPhoto || "https://images.unsplash.com/photo-1570114668478-439564cbacda?auto=format&fit=crop&q=80&w=800";
 
-  // Get active gallery photos
-  const getActivePhotos = () => {
-    switch (activeTab) {
-      case "team": return teamPhotos.length > 0 ? teamPhotos : [maker.coverImage || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=800'];
-      case "production": return productionPhotos.length > 0 ? productionPhotos : [maker.coverImage || 'https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800'];
-      case "lifestyle": return lifestylePhotos.length > 0 ? lifestylePhotos : [maker.coverImage || 'https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&q=80&w=800'];
-      default: return workshopGallery.length > 0 ? workshopGallery : [maker.coverImage || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=800'];
-    }
-  };
+  const spotlightProducts = products.slice(0, 3);
+  const restProducts = products.slice(3);
 
-  const activePhotos = getActivePhotos();
-  const storiesList = Array.isArray(stories) ? stories : (stories ? [stories] : []);
+  const mappedProducts = products.map(p => ({
+    id: p.id,
+    name: p.name,
+    price: calculateSellingPrice(p.price),
+    category: typeof p.category === "object" ? (p.category as any).name : p.category ?? "Craft",
+    images: getProductImages(p.images),
+    verificationStatus: p.verificationStatus,
+  }));
 
-  // Filter & sort products for maker catalog
-  const filteredProducts = products.filter(p => {
-    const catName = typeof p.category === 'object' && p.category !== null ? (p.category as any).name : (typeof p.category === 'string' ? p.category : '');
-    const matchesSearch = p.name.toLowerCase().includes(productSearch.toLowerCase()) || catName.toLowerCase().includes(productSearch.toLowerCase());
-    const matchesCat = selectedCategoryFilter === "ALL" || catName.toLowerCase() === selectedCategoryFilter.toLowerCase();
-    return matchesSearch && matchesCat;
-  }).sort((a, b) => {
-    const priceA = typeof a.price === 'number' ? a.price : 0;
-    const priceB = typeof b.price === 'number' ? b.price : 0;
-    if (productSort === "low") return priceA - priceB;
-    if (productSort === "high") return priceB - priceA;
-    return 0;
-  });
+  const mappedSpotlight = mappedProducts.slice(0, 3);
+  const mappedRest = mappedProducts.slice(3);
 
   return (
-    <div style={{ position: 'relative', backgroundColor: 'var(--background)', minHeight: '100vh', color: '#0F2420' }}>
-      
-      {/* Toast Notification */}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div 
-            initial={{ opacity: 0, y: 50, scale: 0.9 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 20, scale: 0.9 }}
-            style={{
-              position: 'fixed',
-              bottom: '2.5rem',
-              right: '2.5rem',
-              backgroundColor: '#0F2420',
-              color: '#D4AF37',
-              border: '1px solid #D4AF37',
-              padding: '1.2rem 2.5rem',
-              borderRadius: '30px',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
-              zIndex: 9999,
-              fontSize: '0.85rem',
-              textTransform: 'uppercase',
-              letterSpacing: '1.5px',
-              fontWeight: 600
-            }}
-          >
-            ✨ {toastMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
+    <>
+      {/* ══════════════ GLOBAL STYLES ══════════════ */}
+      <style>{`
+        .mp * { box-sizing: border-box; margin: 0; padding: 0; }
 
-      {/* 1. LUXURY HERO BANNER */}
-      <section style={{
-        height: '75vh',
-        minHeight: '620px',
-        backgroundColor: '#0F2420',
-        color: '#FAF9F6',
-        position: 'relative',
-        display: 'flex',
-        alignItems: 'flex-end',
-        padding: '7rem 4rem 5rem',
-        overflow: 'hidden',
-        borderBottom: '1px solid rgba(212, 175, 55, 0.4)'
-      }}>
-        <img 
-          src={maker.coverImage || 'https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600'} 
-          alt={maker.businessName}
-          style={{
-            position: 'absolute',
-            inset: 0,
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover',
-            zIndex: 0
-          }}
-        />
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          background: 'linear-gradient(to top, rgba(15, 36, 32, 0.96) 0%, rgba(15, 36, 32, 0.6) 65%, rgba(15, 36, 32, 0.25) 100%)',
-          zIndex: 1
+        /* Fonts via CSS variables */
+        .mp-serif { font-family: var(--font-cormorant, Georgia, serif); }
+        .mp-sans  { font-family: var(--font-inter, system-ui, sans-serif); }
+
+        /* Utility */
+        .mp-gold   { color: #C9A84C; }
+        .mp-cream  { color: #F5F0E8; }
+        .mp-muted  { color: rgba(245,240,232,0.45); }
+        .mp-label  {
+          font-family: var(--font-inter, system-ui);
+          font-size: 0.6rem; font-weight: 700;
+          letter-spacing: 5px; text-transform: uppercase;
+          color: rgba(201,168,76,0.65); display: block;
+          margin-bottom: 1rem;
+        }
+        .mp-divider { width: 48px; height: 1.5px; background: #C9A84C; }
+
+        /* Buttons */
+        .mp-btn-gold {
+          display: inline-flex; align-items: center; gap: 0.5rem;
+          padding: 0.9rem 2.2rem; border-radius: 40px; border: none;
+          background: #C9A84C; color: #0E0E0E;
+          font-family: var(--font-inter, system-ui);
+          font-size: 0.68rem; font-weight: 800;
+          letter-spacing: 2.5px; text-transform: uppercase;
+          cursor: pointer; text-decoration: none;
+          box-shadow: 0 8px 28px rgba(201,168,76,0.35);
+          transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .mp-btn-gold:hover { transform: scale(1.04); box-shadow: 0 14px 38px rgba(201,168,76,0.5); }
+        .mp-btn-ghost {
+          display: inline-flex; align-items: center; gap: 0.5rem;
+          padding: 0.9rem 2rem; border-radius: 40px;
+          background: transparent; border: 1px solid rgba(201,168,76,0.4);
+          color: #C9A84C;
+          font-family: var(--font-inter, system-ui);
+          font-size: 0.68rem; font-weight: 700;
+          letter-spacing: 2px; text-transform: uppercase;
+          cursor: pointer; text-decoration: none;
+          transition: background 0.2s, transform 0.2s;
+        }
+        .mp-btn-ghost:hover { background: rgba(201,168,76,0.1); transform: scale(1.03); }
+        .mp-btn-outline {
+          display: inline-flex; align-items: center; gap: 0.5rem;
+          padding: 0.9rem 1.8rem; border-radius: 40px;
+          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.2);
+          color: rgba(245,240,232,0.8);
+          font-family: var(--font-inter, system-ui);
+          font-size: 0.68rem; font-weight: 600;
+          letter-spacing: 2px; text-transform: uppercase;
+          cursor: pointer; transition: background 0.2s;
+          backdrop-filter: blur(10px);
+        }
+        .mp-btn-outline:hover { background: rgba(255,255,255,0.1); }
+
+        /* Horizontal scroll */
+        .mp-hscroll {
+          display: flex; gap: 1.5rem;
+          overflow-x: auto; padding: 2rem 5vw 3rem;
+          scroll-snap-type: x mandatory;
+          scrollbar-width: none; -ms-overflow-style: none;
+        }
+        .mp-hscroll::-webkit-scrollbar { display: none; }
+        .mp-hscroll-item {
+          flex: 0 0 300px; scroll-snap-align: start;
+        }
+
+        /* Product spotlight */
+        .mp-spotlight {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          min-height: 100vh;
+        }
+        .mp-spotlight[data-flip="true"] {
+          grid-template-areas: "text img";
+        }
+        .mp-spotlight[data-flip="false"] {
+          grid-template-areas: "img text";
+        }
+        .mp-spotlight-img  { grid-area: img;  min-height: 65vh; position: relative; overflow: hidden; }
+        .mp-spotlight-text { grid-area: text; display: flex; flex-direction: column; justify-content: center; padding: 8vh 5vw; }
+
+        /* Ticker */
+        @keyframes ticker { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .mp-ticker { display: flex; width: max-content; animation: ticker 24s linear infinite; }
+
+        /* Gallery grid */
+        .mp-gallery {
+          display: grid;
+          grid-template-columns: repeat(3, 1fr);
+          grid-template-rows: auto;
+          gap: 6px;
+        }
+        .mp-gallery-hero { grid-column: 1 / 3; grid-row: 1; }
+        .mp-gallery-side { grid-column: 3; grid-row: 1 / 3; }
+
+        /* Timeline — uses data-odd attribute to avoid broken nth-child in React */
+        .mp-timeline { position: relative; padding: 0 0 2rem; }
+
+        /* Central vertical gold line */
+        .mp-timeline::before {
+          content: '';
+          position: absolute;
+          left: 50%;
+          top: 0; bottom: 0;
+          width: 1px;
+          background: linear-gradient(180deg, transparent 0%, rgba(201,168,76,0.35) 8%, rgba(201,168,76,0.35) 92%, transparent 100%);
+          transform: translateX(-50%);
+        }
+
+        .mp-timeline-item {
+          display: grid;
+          grid-template-columns: 1fr 60px 1fr;
+          align-items: flex-start;
+          min-height: 140px;
+          position: relative;
+        }
+
+        /* Odd items: content on RIGHT side (columns: empty | dot | content) */
+        .mp-timeline-item[data-odd="true"]  .mp-tl-a { grid-column: 1; padding: 0 2rem 3rem; text-align: right; }
+        .mp-timeline-item[data-odd="true"]  .mp-tl-b { grid-column: 2; display: flex; flex-direction: column; align-items: center; padding-top: 0.5rem; }
+        .mp-timeline-item[data-odd="true"]  .mp-tl-c { grid-column: 3; padding: 0 2rem 3rem; }
+        /* Even items: content on LEFT side (columns: content | dot | empty) */
+        .mp-timeline-item[data-odd="false"] .mp-tl-a { grid-column: 1; padding: 0 2rem 3rem; }
+        .mp-timeline-item[data-odd="false"] .mp-tl-b { grid-column: 2; display: flex; flex-direction: column; align-items: center; padding-top: 0.5rem; }
+        .mp-timeline-item[data-odd="false"] .mp-tl-c { grid-column: 3; padding: 0 2rem 3rem; text-align: left; }
+
+        .mp-tl-dot {
+          width: 16px; height: 16px; border-radius: 50%;
+          background: #C9A84C; border: 3px solid #0E0E0E;
+          box-shadow: 0 0 0 5px rgba(201,168,76,0.15), 0 0 20px rgba(201,168,76,0.25);
+          flex-shrink: 0; z-index: 1;
+        }
+        .mp-tl-connector {
+          flex: 1; width: 1px;
+          background: rgba(201,168,76,0.2);
+          min-height: 90px;
+        }
+
+        /* Stat badge */
+        .mp-stat-card {
+          background: rgba(201,168,76,0.06);
+          border: 1px solid rgba(201,168,76,0.15);
+          padding: 2rem; text-align: center;
+        }
+
+        /* Floating product image animation */
+        @keyframes mp-float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-12px); }
+        }
+
+        @media (max-width: 768px) {
+          .mp-spotlight { grid-template-columns: 1fr !important; }
+          .mp-spotlight[data-flip="true"],
+          .mp-spotlight[data-flip="false"] {
+            grid-template-areas: "img" "text" !important;
+          }
+          .mp-spotlight-img { min-height: 55vw; }
+          .mp-hscroll-item  { flex: 0 0 82vw; }
+          .mp-timeline::before { left: 24px; }
+          .mp-timeline-item {
+            grid-template-columns: 48px 1fr;
+          }
+          .mp-timeline-item[data-odd="true"]  .mp-tl-a,
+          .mp-timeline-item[data-odd="false"] .mp-tl-c { display: none; }
+          .mp-timeline-item[data-odd="true"]  .mp-tl-b,
+          .mp-timeline-item[data-odd="false"] .mp-tl-b { grid-column: 1; }
+          .mp-timeline-item[data-odd="true"]  .mp-tl-c,
+          .mp-timeline-item[data-odd="false"] .mp-tl-a { grid-column: 2; text-align: left; padding-left: 1.5rem; }
+          .mp-gallery  { grid-template-columns: 1fr 1fr; }
+          .mp-gallery-hero { grid-column: 1 / -1; }
+          .mp-gallery-side { grid-column: 1 / -1; grid-row: auto; }
+        }
+      `}</style>
+
+      <div className="mp" style={{ background: "#0E0E0E", color: "#F5F0E8", overflowX: "hidden" }}>
+
+        {/* SCROLL PROGRESS LINE */}
+        <motion.div style={{
+          position: "fixed", top: 0, left: 0, right: 0, height: "2px",
+          background: "linear-gradient(90deg,#C9A84C,#F0D080,#C9A84C)",
+          scaleX: lineScale, transformOrigin: "0%", zIndex: 9999,
         }} />
 
-        <motion.div 
-          initial={{ opacity: 0, y: 40 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          style={{ position: 'relative', zIndex: 2, maxWidth: '1350px', width: '100%', margin: '0 auto' }}
-        >
-          <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', marginBottom: '1.8rem', flexWrap: 'wrap' }}>
-            <span style={{ 
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              backgroundColor: 'rgba(212, 175, 55, 0.2)', 
-              color: '#D4AF37', 
-              padding: '0.55rem 1.6rem', 
-              borderRadius: '30px', 
-              fontWeight: 600,
-              letterSpacing: '2px',
-              textTransform: 'uppercase',
-              fontSize: '0.75rem',
-              border: '1px solid rgba(212, 175, 55, 0.5)',
-              backdropFilter: 'blur(10px)'
-            }}>
-              {maker.verificationStatus === 'ELITE' ? '⭐ Atelier Elite Master Artisan' : maker.verificationStatus === 'GI' ? '🏛️ Protected Appellation Custodian' : '✓ Signature Heritage Partner'}
-            </span>
-            
-            <div style={{ 
-              backgroundColor: 'rgba(15, 36, 32, 0.85)', 
-              color: '#D4AF37', 
-              padding: '0.55rem 1.4rem', 
-              borderRadius: '30px', 
-              fontSize: '0.78rem', 
-              letterSpacing: '1px', 
-              textTransform: 'uppercase', 
-              border: '1px solid rgba(212, 175, 55, 0.3)',
-              backdropFilter: 'blur(10px)'
-            }}>
-              🛡️ Provenance Audit: 98/100 (Grade A+)
-            </div>
-            
-            <button 
-              onClick={() => setCertModalOpen(true)}
-              style={{ 
-                backgroundColor: 'rgba(255, 255, 255, 0.1)', 
-                border: '1px solid rgba(255, 255, 255, 0.3)', 
-                color: '#FAF9F6', 
-                cursor: 'pointer', 
-                fontSize: '0.78rem', 
-                textTransform: 'uppercase', 
-                letterSpacing: '1.5px', 
-                padding: '0.55rem 1.4rem',
-                borderRadius: '30px',
-                backdropFilter: 'blur(10px)',
-                fontWeight: 600
-              }}
-            >
-              📜 Inspect Passport Certificate
-            </button>
-          </div>
-
-          {/* Title & Avatar */}
-          <div style={{ display: 'flex', gap: '2rem', alignItems: 'center', marginBottom: '2rem', flexWrap: 'wrap' }}>
-            <div style={{
-              width: '90px',
-              height: '90px',
-              borderRadius: '50%',
-              border: '3px solid #D4AF37',
-              overflow: 'hidden',
-              boxShadow: '0 10px 25px rgba(0,0,0,0.3)',
-              backgroundColor: '#FFFFFF',
-              flexShrink: 0
-            }}>
-              <img src={maker.founderPhoto || 'https://images.unsplash.com/photo-1570114668478-439564cbacda?auto=format&fit=crop&q=80&w=400'} alt={maker.founderName || maker.businessName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            </div>
-
-            <div>
-              <h1 style={{ 
-                fontSize: '4.5rem', 
-                marginBottom: '0.4rem', 
-                fontFamily: 'var(--font-playfair), serif', 
-                fontWeight: 300, 
-                lineHeight: 1.1,
-                color: '#FAF9F6' 
-              }}>
-                {maker.businessName}
-              </h1>
-              <p style={{ fontSize: '1.2rem', color: '#D4AF37', opacity: 0.95, margin: 0, fontWeight: 500 }}>
-                📍 {maker.country} • Established {maker.yearsInBusiness} Years Ago • Custodian: {maker.founderName}
-              </p>
-            </div>
-          </div>
-
-          {/* Action CTAs */}
-          <div style={{ display: 'flex', gap: '1.2rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            <a 
-              href="#atelier-creations" 
+        {/* TOAST */}
+        <AnimatePresence>
+          {toast && (
+            <motion.div
+              initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 20 }}
               style={{
-                backgroundColor: '#D4AF37',
-                color: '#0F2420',
-                padding: '1rem 2.4rem',
-                borderRadius: '30px',
-                textDecoration: 'none',
-                fontWeight: 700,
-                fontSize: '0.88rem',
-                letterSpacing: '1px',
-                textTransform: 'uppercase',
-                boxShadow: '0 8px 24px rgba(212, 175, 55, 0.3)'
+                position: "fixed", top: "5.5rem", right: "2rem", zIndex: 9998,
+                background: "#0D1A14", color: "#C9A84C",
+                border: "1px solid rgba(201,168,76,0.45)",
+                padding: "0.85rem 1.8rem", borderRadius: "40px",
+                fontFamily: "var(--font-inter,system-ui)", fontSize: "0.68rem",
+                fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase",
               }}
-            >
-              Explore Collection ({products.length}) ↓
-            </a>
-            
-            <button
-              onClick={handleSaveToggle}
-              style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                border: '1px solid rgba(255, 255, 255, 0.3)',
-                color: '#FAF9F6',
-                padding: '1rem 2.2rem',
-                borderRadius: '30px',
-                cursor: 'pointer',
-                fontSize: '0.88rem',
-                fontWeight: 600,
-                letterSpacing: '1px',
-                backdropFilter: 'blur(10px)'
-              }}
-            >
-              {saved ? '♥ Following Brand' : '♡ Follow Brand'}
-            </button>
-
-            <a
-              href="/docs/DASHBOARD_TESTING_GUIDE.md"
-              style={{
-                backgroundColor: 'transparent',
-                border: '1px solid #D4AF37',
-                color: '#D4AF37',
-                padding: '1rem 2rem',
-                borderRadius: '30px',
-                textDecoration: 'none',
-                fontSize: '0.88rem',
-                fontWeight: 600,
-                letterSpacing: '1px'
-              }}
-            >
-              ✉ Contact Maker
-            </a>
-          </div>
-        </motion.div>
-      </section>
-
-      {/* Trust Badges Strip */}
-      <section style={{ backgroundColor: '#0F2420', padding: '2.2rem 4rem', borderBottom: '1px solid rgba(212, 175, 55, 0.3)' }}>
-        <div style={{ maxWidth: '1350px', margin: '0 auto', display: 'flex', gap: '2rem', justifyContent: 'space-around', flexWrap: 'wrap', fontSize: '0.85rem', fontWeight: 600, color: '#D4AF37', letterSpacing: '1px', textTransform: 'uppercase' }}>
-          <span>⭐ Atelier Elite Verified</span>
-          <span>🤝 95% Direct Patron Escrow</span>
-          <span>📍 Geofenced GPS Audit</span>
-          <span>🛡️ Cryptographic Passport</span>
-          <span>📜 Certified Regional Materials</span>
-          <span>🌍 Generational Preservation</span>
-        </div>
-      </section>
-
-      {/* 2. PRODUCT CATALOG SECTION (ACQUIRE MASTERWORKS) */}
-      <section id="atelier-creations" style={{ padding: '7rem 2rem', backgroundColor: '#FFFFFF', borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '3rem', flexWrap: 'wrap', gap: '1.5rem' }}>
-            <div>
-              <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>ACQUIRE MASTERWORKS</span>
-              <h2 style={{ fontSize: '3.4rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.4rem', fontWeight: 300 }}>
-                {maker.businessName} Catalog
-              </h2>
-            </div>
-            <span style={{ fontSize: '1.1rem', color: '#718096', fontWeight: '600' }}>
-              {filteredProducts.length} Items Available
-            </span>
-          </div>
-
-          {/* Interactive Search & Sort Bar */}
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3.5rem', backgroundColor: '#F8F7F4', padding: '1.5rem 2rem', borderRadius: '24px', border: '1px solid rgba(212,175,55,0.3)' }}>
-            <div style={{ flex: '1 1 300px', position: 'relative' }}>
-              <input 
-                type="text" 
-                placeholder={`Search products by ${maker.businessName}...`}
-                value={productSearch}
-                onChange={(e) => setProductSearch(e.target.value)}
-                style={{
-                  width: '100%',
-                  padding: '0.9rem 1.6rem 0.9rem 3rem',
-                  borderRadius: '30px',
-                  border: '1px solid #E2E8F0',
-                  outline: 'none',
-                  fontSize: '0.95rem',
-                  backgroundColor: '#FFFFFF'
-                }}
-              />
-              <span style={{ position: 'absolute', left: '1.2rem', top: '50%', transform: 'translateY(-50%)', opacity: 0.5 }}>🔍</span>
-            </div>
-
-            <select
-              value={productSort}
-              onChange={(e) => setProductSort(e.target.value)}
-              style={{
-                padding: '0.85rem 1.6rem',
-                borderRadius: '30px',
-                border: '1px solid #E2E8F0',
-                backgroundColor: '#FFFFFF',
-                color: '#0F2420',
-                fontWeight: 600,
-                fontSize: '0.88rem',
-                outline: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              <option value="default">Sort: Standard Order</option>
-              <option value="low">Sort: Price Low to High</option>
-              <option value="high">Sort: Price High to Low</option>
-            </select>
-          </div>
-
-          {filteredProducts.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '5rem 2rem', backgroundColor: '#F8F7F4', borderRadius: '24px', color: '#4A5568' }}>
-              <h3>No products found matching your filter.</h3>
-              <p>Try resetting the search filter above.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '2.5rem' }}>
-              {filteredProducts.map(product => {
-                let imgList: string[] = [];
-                try {
-                  imgList = typeof product.images === 'string' ? JSON.parse(product.images) : product.images;
-                } catch(e) {}
-
-                const mappedP = {
-                  id: product.id,
-                  name: product.name,
-                  price: calculateSellingPrice(product.price),
-                  category: typeof product.category === 'object' && product.category !== null ? (product.category as any).name : (typeof product.category === 'string' ? product.category : 'General'),
-                  images: Array.isArray(imgList) && imgList.length > 0 ? imgList : ['https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=800'],
-                  verificationStatus: product.verificationStatus,
-                  hasPassport: true,
-                  maker: {
-                    businessName: maker.businessName,
-                    locationName: maker.country
-                  }
-                };
-                
-                return (
-                  <ProductCard key={product.id} product={mappedP} />
-                );
-              })}
-            </div>
+            >✨ {toast}</motion.div>
           )}
-        </div>
-      </section>
+        </AnimatePresence>
 
-      {/* 3. ARTISAN STORY & BIOGRAPHY (INTEGRATED SINGLE SOURCE OF TRUTH) */}
-      <section style={{ maxWidth: '1350px', margin: '0 auto', padding: '8rem 2rem' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '400px 1fr', gap: '6rem', alignItems: 'start' }}>
-          
-          {/* Founder Photo 3D Card */}
-          <motion.div 
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-            style={{ width: '100%' }}
-          >
-            <div style={{ 
-              width: '100%', 
-              paddingBottom: '125%', 
-              backgroundColor: '#F4F3EF', 
-              backgroundImage: maker.founderPhoto ? `url(${maker.founderPhoto})` : 'url("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=800")',
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-              borderRadius: '24px',
-              position: 'relative',
-              overflow: 'hidden',
-              border: '1px solid rgba(212, 175, 55, 0.4)',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.08)'
-            }}>
-              <div style={{
-                position: 'absolute',
-                inset: 0,
-                background: 'linear-gradient(to top, rgba(15,36,32,0.85) 0%, transparent 60%)'
-              }} />
-              <div style={{ position: 'absolute', bottom: '1.8rem', left: '1.8rem', right: '1.8rem', color: '#FAF9F6' }}>
-                <h3 style={{ fontSize: '1.6rem', color: '#D4AF37', marginBottom: '0.3rem', fontFamily: 'var(--font-playfair), serif' }}>
-                  {maker.founderName || 'Master Artisan'}
-                </h3>
-                <p style={{ opacity: 0.9, fontSize: '0.9rem', margin: 0 }}>Founder & Heritage Custodian</p>
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 1 — CINEMATIC HERO                       */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div ref={heroRef} style={{ height: "100vh", position: "relative", overflow: "hidden" }}>
+          <motion.div style={{
+            position: "absolute", inset: "-15%",
+            backgroundImage: `url("${cover}")`,
+            backgroundSize: "cover", backgroundPosition: "center",
+            y: heroImgY,
+          }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(14,14,14,1) 0%,rgba(14,14,14,0.55) 45%,rgba(14,14,14,0.1) 100%)" }} />
+          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(14,14,14,0.55) 0%,transparent 65%)" }} />
+
+          <motion.div style={{ position: "absolute", bottom: "7vh", left: 0, padding: "0 5vw", y: heroTextY, opacity: heroOpacity, maxWidth: "940px" }}>
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.4, duration: 0.8 }}
+              style={{
+                display: "inline-flex", alignItems: "center", gap: "0.5rem",
+                background: "rgba(201,168,76,0.12)", border: "1px solid rgba(201,168,76,0.45)",
+                backdropFilter: "blur(12px)", padding: "0.4rem 1.2rem", borderRadius: "40px",
+                marginBottom: "1.8rem",
+                fontFamily: "var(--font-inter,system-ui)", fontSize: "0.6rem", fontWeight: 700,
+                letterSpacing: "2.5px", textTransform: "uppercase", color: "#C9A84C",
+              }}
+            >
+              {maker.verificationStatus === "ELITE" ? "⭐ Atelier Elite" : maker.verificationStatus === "GI" ? "🏛️ GI Protected" : "✓ Heritage Verified"}
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 50 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6, duration: 1.1 }}
+              className="mp-serif mp-cream"
+              style={{ fontSize: "clamp(3.8rem, 9vw, 11rem)", fontWeight: 300, lineHeight: 0.9, letterSpacing: "-0.02em", marginBottom: "2.2rem" }}
+            >
+              {maker.businessName}
+            </motion.h1>
+
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+              transition={{ delay: 0.9, duration: 0.9 }}
+              style={{ display: "flex", gap: "2.5rem", alignItems: "center", marginBottom: "2.8rem", flexWrap: "wrap" }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                <div style={{ width: 44, height: 44, borderRadius: "50%", border: "1.5px solid #C9A84C", overflow: "hidden", flexShrink: 0 }}>
+                  <img src={founderImg} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                </div>
+                <div>
+                  <span className="mp-label" style={{ marginBottom: "0.1rem" }}>Custodian</span>
+                  <span className="mp-serif mp-cream" style={{ fontSize: "1.1rem", display: "block" }}>{maker.founderName || "Master Artisan"}</span>
+                </div>
               </div>
-            </div>
-
-            {/* Quick Metrics */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginTop: '2rem' }}>
-              <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(212,175,55,0.3)', padding: '1.8rem 1rem', borderRadius: '20px', textAlign: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
-                <h4 style={{ fontSize: '2.4rem', color: '#B48811', marginBottom: '0.2rem', fontWeight: 300, fontFamily: 'var(--font-playfair)' }}>{maker.employeeCount || 12}</h4>
-                <p style={{ fontSize: '0.78rem', color: '#0F2420', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Artisans Employed</p>
+              <div style={{ width: 1, height: 32, background: "rgba(255,255,255,0.15)" }} />
+              <div>
+                <span className="mp-label" style={{ marginBottom: "0.1rem" }}>Origin</span>
+                <span className="mp-serif mp-cream" style={{ fontSize: "1.1rem", display: "block" }}>📍 {maker.country}</span>
               </div>
-              <div style={{ backgroundColor: '#FFFFFF', border: '1px solid rgba(212,175,55,0.3)', padding: '1.8rem 1rem', borderRadius: '20px', textAlign: 'center', boxShadow: '0 8px 24px rgba(0,0,0,0.04)' }}>
-                <h4 style={{ fontSize: '2.4rem', color: '#B48811', marginBottom: '0.2rem', fontWeight: 300, fontFamily: 'var(--font-playfair)' }}>{maker.yearsInBusiness}</h4>
-                <p style={{ fontSize: '0.78rem', color: '#0F2420', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '1px', margin: 0 }}>Years Active</p>
+              <div style={{ width: 1, height: 32, background: "rgba(255,255,255,0.15)" }} />
+              <div>
+                <span className="mp-label" style={{ marginBottom: "0.1rem" }}>Est.</span>
+                <span className="mp-serif mp-cream" style={{ fontSize: "1.1rem", display: "block" }}>{maker.yearsInBusiness} Yrs Ago</span>
               </div>
-            </div>
-          </motion.div>
-          
-          {/* Biography Details */}
-          <motion.div 
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.7 }}
-          >
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.8rem', backgroundColor: '#F4F3EF', border: '1px solid rgba(212,175,55,0.4)', padding: '0.5rem 1.4rem', borderRadius: '30px', marginBottom: '1.5rem' }}>
-              <span style={{ color: '#B48811', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2.5px', fontWeight: 700 }}>
-                ATELIER BIOGRAPHY & LINEAGE
-              </span>
-            </div>
+            </motion.div>
 
-            <h2 style={{ fontSize: '3.4rem', color: '#0F2420', marginBottom: '2rem', fontWeight: 300, fontFamily: 'var(--font-playfair), serif', lineHeight: 1.2 }}>
-              Preserving Ancient Craft Traditions
-            </h2>
-            
-            <p style={{ fontSize: '1.2rem', lineHeight: 1.9, color: '#2D3748', marginBottom: '2rem', fontWeight: 400 }}>
-              {maker.founderStory || 'Our studio atelier has operated for generations, combining hand-selected raw materials with ancient artisanal techniques passed down through centuries of family tradition.'}
-            </p>
-            <p style={{ fontSize: '1.15rem', lineHeight: 1.9, color: '#4A5568', marginBottom: '3rem', fontWeight: 400 }}>
-              {maker.businessStory || 'Every single creation that leaves our atelier undergoes strict hand inspection to ensure standard-setting durability, authenticity, and cultural integrity.'}
-            </p>
-            
-            <div style={{ 
-              backgroundColor: '#FFFFFF', 
-              padding: '2.2rem 2.5rem', 
-              borderRadius: '0 20px 20px 0',
-              border: '1px solid rgba(212,175,55,0.4)',
-              borderLeft: '4px solid #0F2420',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.05)'
-            }}>
-              <h3 style={{ fontSize: '1.4rem', color: '#0F2420', marginBottom: '0.8rem', fontFamily: 'var(--font-playfair), serif' }}>Community Impact & Ethical Livelihood</h3>
-              <p style={{ fontSize: '1.05rem', lineHeight: 1.8, color: '#2D3748', margin: 0 }}>
-                {maker.impactStory || 'By supporting our studio atelier, 95% of transaction value directly funds local artisan families, offering sustainable employment and funding youth craft apprenticeships.'}
-              </p>
-            </div>
-          </motion.div>
-
-        </div>
-      </section>
-
-      {/* 4. TRANSPARENCY & PROVENANCE ESCROW SECTION */}
-      <section 
-        style={{ 
-          padding: '8rem 3rem', 
-          backgroundImage: 'linear-gradient(to right, rgba(10,10,12,0.94), rgba(10,10,12,0.85)), url("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#FAF9F6',
-          borderTop: '1px solid rgba(212,175,55,0.4)',
-          borderBottom: '1px solid rgba(212,175,55,0.4)'
-        }}
-      >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', alignItems: 'center' }}>
-          <div>
-            <span style={{ color: '#D4AF37', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '1rem' }}>
-              DIRECT PATRON SUPPORT & TRANSPARENCY ESCROW
-            </span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), serif', marginBottom: '1.5rem', fontWeight: 300, color: '#FAF9F6' }}>
-              Support {maker.businessName} Directly
-            </h2>
-            <p style={{ fontSize: '1rem', lineHeight: 1.8, opacity: 0.85, marginBottom: '2.5rem' }}>
-              95% of all acquisition proceeds are disbursed directly to {maker.founderName || maker.businessName}&apos;s verified local account in {maker.country}. Have a custom request, heritage inquiry, or verification question? Open a direct patron support ticket.
-            </p>
-            <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-              <Link href="/docs/DASHBOARD_TESTING_GUIDE.md" style={{ textDecoration: 'none', backgroundColor: '#D4AF37', color: '#0F2420', padding: '1.1rem 2.5rem', borderRadius: '30px', fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>
-                🎫 Open Support Ticket / Guide &rarr;
-              </Link>
-              <button onClick={() => setCertModalOpen(true)} style={{ textDecoration: 'none', backgroundColor: 'rgba(255,255,255,0.05)', backdropFilter: 'blur(10px)', border: '1px solid rgba(255,255,255,0.3)', color: '#FAF9F6', padding: '1.1rem 2.5rem', borderRadius: '30px', letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.8rem', fontWeight: 500, cursor: 'pointer' }}>
-                📜 Inspect Passport Certificate
+            <motion.div
+              initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 1.1, duration: 0.8 }}
+              style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}
+            >
+              <a href="#collection" className="mp-btn-gold">Explore {products.length} Works ↓</a>
+              <button
+                className="mp-btn-outline"
+                onClick={() => { setSaved(!saved); showToast(saved ? `Removed ${maker.businessName}` : `Following ${maker.businessName}`); }}
+              >
+                {saved ? "♥ Following" : "♡ Follow"}
               </button>
-            </div>
-          </div>
+              <button className="mp-btn-ghost" onClick={() => setCertOpen(true)}>📜 Passport</button>
+            </motion.div>
+          </motion.div>
 
-          <div style={{ backgroundColor: 'rgba(13,13,16,0.85)', border: '1px solid rgba(212,175,55,0.4)', borderRadius: '20px', padding: '2.5rem', backdropFilter: 'blur(20px)' }}>
-            <h4 style={{ color: '#D4AF37', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', marginBottom: '1.5rem', fontWeight: 700 }}>
-              🛡️ ATELIER ORIGIN GUARANTEE
-            </h4>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem', fontSize: '0.88rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                <span style={{ opacity: 0.7 }}>Registered Studio:</span>
-                <strong style={{ color: '#FAF9F6' }}>{maker.businessName}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                <span style={{ opacity: 0.7 }}>Geographic Origin:</span>
-                <strong style={{ color: '#D4AF37' }}>{maker.country}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                <span style={{ opacity: 0.7 }}>Direct Payout Rate:</span>
-                <strong style={{ color: '#D4AF37', fontFamily: 'monospace' }}>95% Direct</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ opacity: 0.7 }}>Audit Status:</span>
-                <strong style={{ color: '#55efc4' }}>🟢 100% Certified Active</strong>
-              </div>
-            </div>
-          </div>
+          <motion.div
+            animate={{ y: [0, 10, 0] }} transition={{ repeat: Infinity, duration: 2 }}
+            style={{ position: "absolute", bottom: "2rem", left: "50%", transform: "translateX(-50%)", textAlign: "center", color: "rgba(255,255,255,0.25)" }}
+          >
+            <div className="mp-sans" style={{ fontSize: "0.55rem", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "0.4rem" }}>Scroll</div>
+            <div>↓</div>
+          </motion.div>
         </div>
-      </section>
 
-      {/* 5. HERITAGE TIMELINE */}
-      <section style={{ backgroundColor: '#F8F7F4', padding: '6rem 2rem', borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>LINEAGE & MILESTONES</span>
-            <h2 style={{ fontSize: '3rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.5rem', fontWeight: 300 }}>
-              Heritage Craft Timeline
-            </h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '2rem' }}>
-            {[
-              { year: `${maker.yearsInBusiness} Yrs Ago`, title: "Workshop Foundation", desc: "First guild tools forged and workshop established in region." },
-              { year: "2nd Gen", title: "Master Apprenticeship", desc: "Techniques passed down with natural pigment formula documentation." },
-              { year: "2023", title: "Britsync Registry Audit", desc: "Passed physical geofence and labor ethics audit with Grade A." },
-              { year: "Present", title: "Elite Master Status", desc: "Certified Elite Atelier delivering global provenance passports." }
-            ].map((m, idx) => (
-              <div key={idx} style={{ backgroundColor: '#FFFFFF', padding: '2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', boxShadow: '0 6px 20px rgba(0,0,0,0.04)' }}>
-                <span style={{ fontSize: '1.8rem', color: '#B48811', fontFamily: 'var(--font-playfair), serif', display: 'block', marginBottom: '0.6rem' }}>{m.year}</span>
-                <h4 style={{ fontSize: '1.2rem', color: '#0F2420', marginBottom: '0.5rem', fontFamily: 'var(--font-playfair), serif' }}>{m.title}</h4>
-                <p style={{ fontSize: '0.9rem', color: '#4A5568', lineHeight: 1.6, margin: 0 }}>{m.desc}</p>
-              </div>
+        {/* ═══════════════════════════════════════════════ */}
+        {/* TICKER STRIP                                   */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0E0E0E", borderTop: "1px solid rgba(201,168,76,0.1)", borderBottom: "1px solid rgba(201,168,76,0.1)", overflow: "hidden" }}>
+          <div className="mp-ticker">
+            {["⭐ Atelier Elite", "🛡️ Cryptographic Passport", "📍 GPS Geofenced", "🤝 95% Patron Direct", "📜 GI Appellation", "🌍 Generational Heritage",
+              "⭐ Atelier Elite", "🛡️ Cryptographic Passport", "📍 GPS Geofenced", "🤝 95% Patron Direct", "📜 GI Appellation", "🌍 Generational Heritage"].map((t, i) => (
+              <span key={i} className="mp-sans mp-gold" style={{ display: "inline-block", padding: "1rem 2.8rem", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase", whiteSpace: "nowrap" }}>
+                {t}
+              </span>
             ))}
           </div>
         </div>
-      </section>
 
-      {/* 6. WORKSHOP GALLERY */}
-      <section style={{ backgroundColor: '#FFFFFF', padding: '7rem 2rem', borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.8rem', backgroundColor: '#F4F3EF', border: '1px solid rgba(212,175,55,0.4)', padding: '0.5rem 1.4rem', borderRadius: '30px', marginBottom: '1.5rem' }}>
-              <span style={{ color: '#B48811', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '2.5px', fontWeight: 700 }}>
-                VISUAL ARCHIVE & BEHIND THE SCENES
-              </span>
-            </div>
-            <h2 style={{ fontSize: '3.4rem', color: '#0F2420', marginBottom: '2.5rem', fontWeight: 300, fontFamily: 'var(--font-playfair), serif' }}>
-              Inside The Studio Atelier
-            </h2>
-            
-            {/* Gallery Tabs */}
-            <div style={{ display: 'flex', gap: '0.8rem', justifyContent: 'center', flexWrap: 'wrap', marginBottom: '3.5rem' }}>
-              {[
-                { id: "workshop", label: "The Atelier", count: workshopGallery.length || 4 },
-                { id: "team", label: "Master Craftsmen", count: teamPhotos.length || 3 },
-                { id: "production", label: "Production & Hand-carving", count: productionPhotos.length || 4 },
-                { id: "lifestyle", label: "Heritage Portfolio", count: lifestylePhotos.length || 3 }
-              ].map(tab => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  style={{
-                    padding: '0.8rem 1.8rem',
-                    borderRadius: '30px',
-                    cursor: 'pointer',
-                    fontSize: '0.88rem',
-                    fontWeight: '600',
-                    letterSpacing: '1px',
-                    backgroundColor: activeTab === tab.id ? '#0F2420' : '#FFFFFF',
-                    color: activeTab === tab.id ? '#D4AF37' : '#0F2420',
-                    transition: 'all 0.3s ease',
-                    border: activeTab === tab.id ? '1px solid #0F2420' : '1px solid #E5E7EB',
-                    boxShadow: '0 4px 15px rgba(0,0,0,0.04)'
-                  }}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* ZONES 2 + 3 — CHAPTER TITLE + STICKY BIOGRAPHY — ONE BACKGROUND   */}
+        {/* Both inside one wrapper so there is zero visual seam between them   */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div style={{ background: "#111" }}>
+
+          {/* CHAPTER TITLE */}
+          <div style={{ padding: "13vh 5vw 6vh" }}>
+            <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+              <motion.span className="mp-label" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>The Artisan</motion.span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(3.5rem, 8vw, 10rem)", fontWeight: 300, lineHeight: 0.9, letterSpacing: "-0.02em" }}>
+                <WordReveal text="A Legacy" />
+                <br />
+                <motion.em
+                  initial={{ opacity: 0, x: -40 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: 0.4, duration: 1 }}
+                  style={{ color: "#C9A84C", fontStyle: "italic" }}
                 >
-                  {tab.label} ({tab.count})
-                </button>
-              ))}
+                  forged by hand.
+                </motion.em>
+              </h2>
             </div>
           </div>
 
-          {/* Active Animated Photos Grid */}
-          <AnimatePresence mode="wait">
-            <motion.div 
-              key={activeTab}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ duration: 0.4 }}
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2rem' }}
-            >
-              {activePhotos.map((img, i) => (
-                <motion.div 
-                  key={i} 
-                  whileHover={{ y: -8, scale: 1.02 }}
-                  transition={{ duration: 0.4 }}
-                  style={{ 
-                    height: '380px', 
-                    borderRadius: '24px', 
-                    overflow: 'hidden',
-                    backgroundColor: '#FFFFFF',
-                    border: '1px solid rgba(212,175,55,0.3)',
-                    position: 'relative',
-                    boxShadow: '0 12px 30px rgba(0,0,0,0.08)'
-                  }}
-                >
-                  <img 
-                    src={img} 
-                    alt={`${activeTab} photo ${i + 1}`} 
-                    style={{ 
-                      width: '100%', 
-                      height: '100%', 
-                      objectFit: 'cover'
-                    }}
-                  />
-                  <div style={{
-                    position: 'absolute',
-                    inset: 0,
-                    background: 'linear-gradient(to top, rgba(15,36,32,0.85) 0%, transparent 60%)'
-                  }} />
-                  <div style={{ position: 'absolute', bottom: '1.5rem', left: '1.5rem', right: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span style={{ fontSize: '0.75rem', color: '#D4AF37', textTransform: 'uppercase', letterSpacing: '1.5px', fontWeight: 600 }}>
-                      ATELIER ARCHIVE #{i + 1}
-                    </span>
-                    <span style={{ fontSize: '0.75rem', color: '#FAF9F6', opacity: 0.85 }}>
-                      ✓ Verified Photo
-                    </span>
+          {/* STICKY BIOGRAPHY — flex + align-items:flex-start required for sticky to work */}
+          <div style={{ display: "flex", alignItems: "flex-start" }}>
+            {/* LEFT — STICKY portrait */}
+            <div style={{ position: "sticky", top: 0, width: "50%", flexShrink: 0, height: "100vh", overflow: "hidden" }}>
+              <img src={founderImg} alt={maker.founderName || ""} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(17,17,17,0) 60%,#111 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(17,17,17,0.85) 0%,transparent 40%)" }} />
+
+              <motion.div
+                initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }} transition={{ delay: 0.5, duration: 0.9 }}
+                style={{
+                  position: "absolute", bottom: "3rem", left: "2.5rem",
+                  background: "rgba(14,14,14,0.9)", border: "1px solid rgba(201,168,76,0.3)",
+                  backdropFilter: "blur(20px)", padding: "1.6rem 2rem", borderRadius: "2px",
+                }}
+              >
+                <div className="mp-serif mp-gold" style={{ fontSize: "clamp(3.5rem, 6vw, 6rem)", fontWeight: 300, lineHeight: 1 }}>{maker.yearsInBusiness}</div>
+                <div className="mp-sans mp-gold" style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "3px", textTransform: "uppercase", marginTop: "0.3rem", opacity: 0.7 }}>Years of Craft</div>
+              </motion.div>
+            </div>
+
+            {/* RIGHT — biography scrolls alongside */}
+            <div style={{ flex: 1, padding: "11vh 5vw 11vh 4vw", display: "flex", flexDirection: "column", gap: "3.5rem" }}>
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fadeRight}>
+                <div className="mp-divider" style={{ marginBottom: "2rem" }} />
+                <p className="mp-serif mp-cream" style={{ fontSize: "clamp(1.25rem,2vw,1.8rem)", lineHeight: 1.75, fontWeight: 300, marginBottom: "1.8rem" }}>
+                  {maker.founderStory || "Our studio atelier has operated for generations, combining hand-selected raw materials with ancient techniques passed down through centuries of family tradition."}
+                </p>
+                <p className="mp-sans mp-muted" style={{ fontSize: "0.92rem", lineHeight: 1.9, marginBottom: "2rem" }}>
+                  {maker.businessStory || "Every creation that leaves our atelier undergoes strict hand inspection to ensure durability, authenticity, and cultural integrity that stands apart from mass-produced goods."}
+                </p>
+                <div style={{ borderLeft: "2px solid rgba(201,168,76,0.4)", paddingLeft: "1.4rem" }}>
+                  <p className="mp-serif" style={{ fontSize: "1.2rem", lineHeight: 1.75, color: "rgba(245,240,232,0.7)", fontStyle: "italic" }}>
+                    "{maker.impactStory || "95% of every transaction flows directly to the artisan family. Every purchase is an act of cultural preservation."}"
+                  </p>
+                </div>
+              </motion.div>
+
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fadeRight}
+                style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1px", background: "rgba(201,168,76,0.1)" }}
+              >
+                {[
+                  { v: `${maker.yearsInBusiness}+`, l: "Years Active" },
+                  { v: `${maker.employeeCount || 12}`, l: "Artisans" },
+                  { v: `${products.length}`, l: "Masterworks" },
+                  { v: "4.9 ★", l: "Rating" },
+                ].map((s, i) => (
+                  <div key={i} className="mp-stat-card">
+                    <div className="mp-serif mp-gold" style={{ fontSize: "clamp(2rem,3.5vw,3rem)", fontWeight: 300, lineHeight: 1 }}>{s.v}</div>
+                    <div className="mp-sans mp-muted" style={{ fontSize: "0.58rem", letterSpacing: "3px", textTransform: "uppercase", marginTop: "0.4rem" }}>{s.l}</div>
                   </div>
+                ))}
+              </motion.div>
+
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }} variants={fadeRight}
+                style={{ display: "flex", gap: "0.8rem", flexWrap: "wrap" }}
+              >
+                <a href="#collection" className="mp-btn-gold">Acquire Works</a>
+                <button className="mp-btn-ghost" onClick={() => setCertOpen(true)}>View Passport</button>
+              </motion.div>
+            </div>
+          </div>
+
+        </div>{/* end zone 2+3 */}
+
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        {/* ZONES 4 + 5 — COLLECTION TITLE + PRODUCT SPOTLIGHTS — ONE BG     */}
+        {/* ═══════════════════════════════════════════════════════════════════ */}
+        <div id="collection" style={{ background: "#0E0E0E" }}>
+
+          {/* COLLECTION CHAPTER TITLE */}
+          <div style={{ padding: "13vh 5vw 0" }}>
+            <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+              <motion.span className="mp-label" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>Acquire Masterworks</motion.span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(3rem, 7vw, 9rem)", fontWeight: 300, lineHeight: 0.9, letterSpacing: "-0.02em" }}>
+                <WordReveal text={maker.businessName} />
+                <br />
+                <motion.em
+                  initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }} transition={{ delay: 0.4, duration: 1 }}
+                  style={{ color: "#C9A84C" }}
+                >
+                  Collection.
+                </motion.em>
+              </h2>
+            </div>
+          </div>
+
+          {/* PRODUCT SPOTLIGHTS — inside same #0E0E0E zone */}
+          {mappedSpotlight.map((product, idx) => {
+            const flip = idx % 2 !== 0;
+            const overlayBg = idx === 1 ? "rgba(13,26,20,0.95)" : "#0E0E0E";
+            const img = product.images[0] || "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1200";
+
+            return (
+              <div key={product.id} style={{ background: idx === 1 ? "#0D1A14" : "#0E0E0E" }}>
+                <div className="mp-spotlight" data-flip={String(flip)}>
+
+                  {/* Image panel — float animation + scale-in reveal */}
+                  <motion.div
+                    className="mp-spotlight-img"
+                    initial={{ opacity: 0, scale: 1.08 }} whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, amount: 0.2 }} transition={{ duration: 1.4, ease: [0.16,1,0.3,1] }}
+                  >
+                    {/* Floating image inside — subtle perpetual bob */}
+                    <motion.img
+                      src={img} alt={product.name}
+                      animate={{ y: [0, -10, 0] }}
+                      transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+                    />
+                    <div style={{
+                      position: "absolute", inset: 0,
+                      background: flip
+                        ? `linear-gradient(to left, transparent 50%, ${idx === 1 ? "#0D1A14" : "#0E0E0E"} 100%)`
+                        : `linear-gradient(to right, transparent 50%, ${idx === 1 ? "#0D1A14" : "#0E0E0E"} 100%)`,
+                    }} />
+                    {/* Product number */}
+                    <div style={{
+                      position: "absolute", bottom: "2rem", left: "50%", transform: "translateX(-50%)",
+                      fontFamily: "var(--font-cormorant,Georgia,serif)",
+                      fontSize: "clamp(6rem,12vw,14rem)", fontWeight: 300,
+                      color: "rgba(201,168,76,0.07)", lineHeight: 1,
+                      userSelect: "none", pointerEvents: "none",
+                    }}>
+                      {String(idx + 1).padStart(2, "0")}
+                    </div>
+                  </motion.div>
+
+                  {/* Text panel — stagger from direction */}
+                  <motion.div
+                    className="mp-spotlight-text"
+                    initial={{ opacity: 0, x: flip ? -80 : 80, y: 20 }}
+                    whileInView={{ opacity: 1, x: 0, y: 0 }}
+                    viewport={{ once: true, amount: 0.2 }}
+                    transition={{ duration: 1.0, ease: [0.16,1,0.3,1], delay: 0.15 }}
+                  >
+                    <span className="mp-label">{product.category} · No. {idx + 1}</span>
+                    <h3 className="mp-serif mp-cream" style={{ fontSize: "clamp(2rem,4vw,5rem)", fontWeight: 300, lineHeight: 1.05, marginBottom: "1.4rem" }}>
+                      {product.name}
+                    </h3>
+                    <div className="mp-divider" style={{ marginBottom: "1.8rem" }} />
+                    <p className="mp-sans mp-muted" style={{ fontSize: "0.9rem", lineHeight: 1.9, marginBottom: "2.2rem" }}>
+                      Handcrafted in {maker.country} by {maker.founderName || "Master Artisan"}.
+                      Each acquisition includes a full cryptographic provenance passport.
+                    </p>
+                    <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", marginBottom: "2.2rem" }}>
+                      <div>
+                        <span className="mp-label" style={{ marginBottom: "0.2rem" }}>Acquisition Price</span>
+                        <motion.div
+                          className="mp-serif mp-gold"
+                          initial={{ opacity: 0, scale: 0.7 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true }}
+                          transition={{ delay: 0.4, duration: 0.7, ease: "backOut" }}
+                          style={{ fontSize: "2.4rem", fontWeight: 300 }}
+                        >
+                          £{product.price.toLocaleString("en-GB", { minimumFractionDigits: 2 })}
+                        </motion.div>
+                      </div>
+                      <div style={{ padding: "0.35rem 0.9rem", border: "1px solid rgba(201,168,76,0.3)", borderRadius: "40px" }}>
+                        <span className="mp-sans mp-gold" style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
+                          {product.verificationStatus}
+                        </span>
+                      </div>
+                    </div>
+                    <Link href={`/products/${product.id}`} className="mp-btn-gold" style={{ alignSelf: "flex-start" }}>
+                      Acquire This Work →
+                    </Link>
+                  </motion.div>
+
+                </div>
+              </div>
+            );
+          })}
+
+        </div>{/* end zones 4+5 */}
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 6 — HORIZONTAL SCROLL COLLECTION         */}
+        {/* All remaining products as dark luxury cards    */}
+        {/* ═══════════════════════════════════════════════ */}
+        {mappedRest.length > 0 && (
+          <div style={{ background: "#0A0A0A", paddingTop: "6vh" }}>
+            <div style={{ padding: "0 5vw 3vh" }}>
+              <motion.span className="mp-label" initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}>Full Collection</motion.span>
+              <motion.h2 initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}
+                className="mp-serif mp-cream" style={{ fontSize: "clamp(2rem,4vw,4.5rem)", fontWeight: 300 }}
+              >
+                All {products.length} Works
+              </motion.h2>
+            </div>
+            <div className="mp-hscroll">
+              {mappedRest.map((product, idx) => (
+                <motion.div
+                  key={product.id}
+                  className="mp-hscroll-item"
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, amount: 0.15 }}
+                  transition={{ delay: idx * 0.04, duration: 0.7 }}
+                >
+                  <DarkProductCard product={product} maker={{ businessName: maker.businessName, country: maker.country }} />
                 </motion.div>
               ))}
-            </motion.div>
-          </AnimatePresence>
-        </div>
-      </section>
-
-      {/* 7. CERTIFICATIONS & AUDIT RECORDS */}
-      <section style={{ backgroundColor: '#F8F7F4', padding: '6rem 2rem', borderBottom: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1250px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>PROVENANCE REGISTRY</span>
-            <h2 style={{ fontSize: '3rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.5rem', fontWeight: 300 }}>
-              Certifications & Audit Records
-            </h2>
+            </div>
           </div>
+        )}
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
-            <div style={{ backgroundColor: '#FFFFFF', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
-              <h3 style={{ fontSize: '1.6rem', color: '#0F2420', marginBottom: '1.5rem', fontFamily: 'var(--font-playfair), serif' }}>Trust Audit History</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                {[
-                  { date: 'October 2025', score: '98/100', status: 'Current Elite Tier' },
-                  { date: 'October 2024', score: '97/100', status: 'Annual Audit Renewed' },
-                  { date: 'September 2023', score: '94/100', status: 'Initial Setup Approved' }
-                ].map((row, idx) => (
-                  <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingBottom: '1rem', borderBottom: idx < 2 ? '1px solid #E2E8F0' : 'none' }}>
-                    <div>
-                      <strong style={{ color: '#0F2420', fontSize: '1rem' }}>{row.date}</strong>
-                      <span style={{ display: 'block', fontSize: '0.8rem', color: '#718096' }}>{row.status}</span>
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 7 — TRANSPARENCY MANIFESTO               */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0D1A14", padding: "14vh 5vw", position: "relative", overflow: "hidden" }}>
+          {/* Ghost background word */}
+          <div style={{
+            position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
+            fontSize: "clamp(6rem,18vw,22rem)", fontFamily: "var(--font-cormorant,Georgia,serif)",
+            fontWeight: 300, color: "rgba(201,168,76,0.03)", whiteSpace: "nowrap",
+            pointerEvents: "none", userSelect: "none", lineHeight: 1,
+          }}>PATRON</div>
+
+          <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "9vh" }}>
+              <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Patron Direct Transparency</span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,7rem)", fontWeight: 300, lineHeight: 1, marginBottom: "1.8rem" }}>
+                <span className="mp-gold">95%</span> flows directly<br />
+                to {maker.founderName || "the artisan"}.
+              </h2>
+              <p className="mp-sans mp-muted" style={{ fontSize: "0.95rem", maxWidth: "580px", margin: "0 auto", lineHeight: 1.9 }}>
+                The Britsync Patron Direct Escrow ensures no intermediary takes more than 5%. Every purchase is a direct act of cultural support.
+              </p>
+            </motion.div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "1px", background: "rgba(201,168,76,0.1)" }}>
+              {[
+                { icon: "🏠", label: "Studio", value: maker.businessName },
+                { icon: "📍", label: "Origin", value: maker.country },
+                { icon: "💰", label: "Direct Payout", value: "95%" },
+                { icon: "🟢", label: "Audit Grade", value: "A+" },
+              ].map((item, i) => (
+                <motion.div key={i}
+                  initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
+                  variants={i % 2 === 0 ? fadeLeft : fadeRight}
+                  style={{ background: "#0D1A14", padding: "2.5rem 1.8rem", textAlign: "center" }}
+                >
+                  <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>{item.icon}</div>
+                  <span className="mp-label" style={{ display: "block", textAlign: "center" }}>{item.label}</span>
+                  <div className="mp-serif mp-cream" style={{ fontSize: "1.2rem", fontWeight: 400 }}>{item.value}</div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 8 — HERITAGE TIMELINE                    */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0E0E0E", padding: "12vh 5vw" }}>
+          <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "8vh" }}>
+              <span className="mp-label">Lineage & Milestones</span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6.5rem)", fontWeight: 300 }}>
+                The Heritage<br /><em className="mp-gold">Timeline</em>
+              </h2>
+            </motion.div>
+
+            {/* Fixed timeline using data-odd attribute */}
+            <div className="mp-timeline">
+              {[
+                { year: `${maker.yearsInBusiness} Yrs Ago`, title: "Workshop Foundation", desc: "First guild tools forged. Workshop established with founding family traditions." },
+                { year: "2nd Generation", title: "Master Apprenticeship", desc: "Techniques codified and passed down. Formula documentation preserved." },
+                { year: "2023", title: "Britsync Registry", desc: "Passed geofence & ethics audit. Grade A+ certified on first review." },
+                { year: "Present", title: "Elite Atelier Status", desc: "Global provenance passports. Patron direct escrow. Heritage elite tier." },
+              ].map((item, i) => {
+                const isOdd = i % 2 === 0; // 0,2 = odd items; 1,3 = even items
+                return (
+                  <div key={i} className="mp-timeline-item" data-odd={String(isOdd)}>
+                    {/* Column A: right-side content for odd rows, empty for even rows */}
+                    <div className="mp-tl-a">
+                      {!isOdd && (
+                        <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} variants={fadeRight}>
+                          <div className="mp-serif mp-gold" style={{ fontSize: "clamp(1.2rem,2vw,1.7rem)", fontWeight: 300, marginBottom: "0.4rem" }}>{item.year}</div>
+                          <h4 className="mp-serif mp-cream" style={{ fontSize: "1.25rem", fontWeight: 400, marginBottom: "0.5rem" }}>{item.title}</h4>
+                          <p className="mp-sans mp-muted" style={{ fontSize: "0.85rem", lineHeight: 1.8 }}>{item.desc}</p>
+                        </motion.div>
+                      )}
                     </div>
-                    <span style={{ color: '#B48811', fontWeight: 700, fontSize: '1.1rem' }}>{row.score}</span>
+
+                    {/* Column B: gold dot + connector line */}
+                    <div className="mp-tl-b">
+                      <motion.div
+                        className="mp-tl-dot"
+                        initial={{ scale: 0, opacity: 0 }}
+                        whileInView={{ scale: 1, opacity: 1 }}
+                        viewport={{ once: true, amount: 0.6 }}
+                        transition={{ duration: 0.5, delay: 0.1, ease: "backOut" }}
+                      />
+                      {i < 3 && <div className="mp-tl-connector" />}
+                    </div>
+
+                    {/* Column C: left-side content for odd rows, empty for even rows */}
+                    <div className="mp-tl-c">
+                      {isOdd && (
+                        <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.4 }} variants={fadeLeft}>
+                          <div className="mp-serif mp-gold" style={{ fontSize: "clamp(1.2rem,2vw,1.7rem)", fontWeight: 300, marginBottom: "0.4rem" }}>{item.year}</div>
+                          <h4 className="mp-serif mp-cream" style={{ fontSize: "1.25rem", fontWeight: 400, marginBottom: "0.5rem" }}>{item.title}</h4>
+                          <p className="mp-sans mp-muted" style={{ fontSize: "0.85rem", lineHeight: 1.8 }}>{item.desc}</p>
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 9 — VISUAL ARCHIVE (gallery)             */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+          <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}
+              style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "2rem", marginBottom: "4vh" }}
+            >
+              <div>
+                <span className="mp-label">Visual Archive</span>
+                <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
+                  Inside the<br /><em className="mp-gold">Atelier</em>
+                </h2>
+              </div>
+              {/* Gallery tabs */}
+              <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap" }}>
+                {[
+                  { id: "workshop", label: "Workshop" },
+                  { id: "team", label: "Craftsmen" },
+                  { id: "production", label: "Production" },
+                  { id: "lifestyle", label: "Heritage" },
+                ].map(tab => (
+                  <button key={tab.id} onClick={() => setActiveTab(tab.id)}
+                    className="mp-sans"
+                    style={{
+                      padding: "0.55rem 1.4rem", borderRadius: "40px", cursor: "pointer",
+                      fontSize: "0.6rem", fontWeight: 700, letterSpacing: "2px",
+                      textTransform: "uppercase", border: "none",
+                      background: activeTab === tab.id ? "#C9A84C" : "rgba(255,255,255,0.07)",
+                      color: activeTab === tab.id ? "#0E0E0E" : "rgba(245,240,232,0.5)",
+                      transition: "all 0.25s",
+                    }}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+            </motion.div>
+
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.4 }}
+                className="mp-gallery"
+              >
+                {galleryPhotos.slice(0, 5).map((img, i) => {
+                  const isHero = i === 0;
+                  const isSide = i === 1;
+                  const classes = isHero ? "mp-gallery-hero" : isSide ? "mp-gallery-side" : "";
+                  return (
+                    <motion.div
+                      key={img + i}
+                      className={classes}
+                      whileHover={{ scale: 1.02 }}
+                      onClick={() => setLightbox(img)}
+                      style={{
+                        cursor: "pointer", overflow: "hidden", borderRadius: "2px",
+                        aspectRatio: isHero ? "16/9" : isSide ? "3/4" : "4/3",
+                        position: "relative",
+                      }}
+                    >
+                      <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.6s" }} />
+                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%)" }} />
+                      <div style={{ position: "absolute", bottom: "0.8rem", left: "1rem" }}>
+                        <span className="mp-sans mp-gold" style={{ fontSize: "0.55rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
+                          🔍 #{i + 1}
+                        </span>
+                      </div>
+                    </motion.div>
+                  );
+                })}
+              </motion.div>
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 10 — CERTIFICATIONS (ALL DARK)           */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0E0E0E", padding: "10vh 5vw" }}>
+          <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "6vh" }}>
+              <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Provenance Registry</span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
+                Certifications &amp;<br /><em className="mp-gold">Audits</em>
+              </h2>
+            </motion.div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeLeft}
+                style={{ background: "#141414", border: "1px solid rgba(201,168,76,0.12)", borderRadius: "2px", padding: "3rem" }}
+              >
+                <h3 className="mp-serif mp-cream" style={{ fontSize: "1.6rem", fontWeight: 400, marginBottom: "2rem" }}>Audit History</h3>
+                {[
+                  { date: "Oct 2025", score: "98/100", status: "Current Elite Tier" },
+                  { date: "Oct 2024", score: "97/100", status: "Annual Renewal" },
+                  { date: "Sep 2023", score: "94/100", status: "Initial Approved" },
+                ].map((r, i) => (
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "1.2rem", marginBottom: "1.2rem", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                    <div>
+                      <div className="mp-sans mp-cream" style={{ fontWeight: 600, fontSize: "0.92rem" }}>{r.date}</div>
+                      <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem", marginTop: "0.15rem" }}>{r.status}</div>
+                    </div>
+                    <div className="mp-serif mp-gold" style={{ fontSize: "1.6rem", fontWeight: 300 }}>{r.score}</div>
+                  </div>
+                ))}
+              </motion.div>
+
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeRight}
+                style={{ background: "#141414", border: "1px solid rgba(201,168,76,0.12)", borderRadius: "2px", padding: "3rem" }}
+              >
+                <h3 className="mp-serif mp-cream" style={{ fontSize: "1.6rem", fontWeight: 400, marginBottom: "2rem" }}>Active Compliance</h3>
+                <div className="mp-sans mp-muted" style={{ display: "flex", flexDirection: "column", gap: "1rem", fontSize: "0.9rem", lineHeight: 1.7 }}>
+                  <p>✓ <span className="mp-cream" style={{ fontWeight: 600 }}>GI Status:</span> Protected Regional Appellation</p>
+                  <p>✓ <span className="mp-cream" style={{ fontWeight: 600 }}>GPS Geofence:</span> Workshop verified on-site</p>
+                  <p>✓ <span className="mp-cream" style={{ fontWeight: 600 }}>Cryptographic Ledger:</span> Provenance passports active</p>
+                  <p>✓ <span className="mp-cream" style={{ fontWeight: 600 }}>Patron Escrow:</span> 95% direct payout guaranteed</p>
+                </div>
+                <button className="mp-btn-gold" onClick={() => setCertOpen(true)} style={{ marginTop: "2.5rem" }}>
+                  📄 Provenance Passport
+                </button>
+              </motion.div>
+            </div>
+          </div>
+        </div>
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 11 — PATRON REVIEWS (ALL DARK)           */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+          <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "6vh" }}>
+              <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Patron Voices</span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
+                Reviews &amp;<br /><em className="mp-gold">Ratings</em>
+              </h2>
+            </motion.div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "4rem", alignItems: "start" }}>
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeScale} style={{ textAlign: "center" }}>
+                <div className="mp-serif mp-gold" style={{ fontSize: "clamp(4rem,8vw,7rem)", fontWeight: 300, lineHeight: 1 }}>4.9</div>
+                <div style={{ color: "#C9A84C", fontSize: "1.1rem", margin: "0.4rem 0" }}>⭐⭐⭐⭐⭐</div>
+                <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem" }}>48 Verified</div>
+              </motion.div>
+
+              <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
+                {[
+                  { name: "Lord Alistair P.", date: "Nov 2025", text: "Acquired a masterpiece. The cryptographic passport and physical quality are unrivaled. Exceptional craft." },
+                  { name: "Sophia K.", date: "Oct 2025", text: "Knowing 95% of my purchase funds the artisan family directly makes this creation priceless." },
+                  { name: "Marcus V.", date: "Sep 2025", text: "Museum-grade quality. The provenance documentation exceeds every expectation." },
+                ].map((r, i) => (
+                  <motion.div key={i}
+                    initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
+                    variants={i % 2 === 0 ? fadeLeft : fadeRight}
+                    style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", padding: "1.8rem 2.2rem" }}
+                  >
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.7rem" }}>
+                      <strong className="mp-sans mp-cream" style={{ fontSize: "0.92rem" }}>{r.name}</strong>
+                      <span style={{ color: "#C9A84C" }}>⭐⭐⭐⭐⭐</span>
+                    </div>
+                    <p className="mp-serif mp-muted" style={{ fontSize: "1.1rem", lineHeight: 1.75, fontStyle: "italic", marginBottom: "0.6rem" }}>
+                      "{r.text}"
+                    </p>
+                    <span className="mp-sans" style={{ fontSize: "0.7rem", color: "rgba(245,240,232,0.25)" }}>Verified Patron · {r.date}</span>
+                  </motion.div>
                 ))}
               </div>
             </div>
-
-            <div style={{ backgroundColor: '#FFFFFF', padding: '3rem', borderRadius: '24px', border: '1px solid rgba(212,175,55,0.35)', boxShadow: '0 10px 30px rgba(0,0,0,0.04)' }}>
-              <h3 style={{ fontSize: '1.6rem', color: '#0F2420', marginBottom: '1.5rem', fontFamily: 'var(--font-playfair), serif' }}>Active Passports & Compliance</h3>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.92rem', color: '#4A5568' }}>
-                <p style={{ margin: 0 }}>✓ <strong>GI Status:</strong> Registered & Protected Regional Craft Appellation</p>
-                <p style={{ margin: 0 }}>✓ <strong>GPS Geofence:</strong> Workshop coordinates verified on-site</p>
-                <p style={{ margin: 0 }}>✓ <strong>Cryptographic Ledger:</strong> Provenance passports generated for all creations</p>
-                <p style={{ margin: 0 }}>✓ <strong>Ethical Escrow:</strong> 95% direct patron payout rate guaranteed</p>
-
-                <button 
-                  onClick={() => setCertModalOpen(true)}
-                  style={{
-                    marginTop: '1.5rem',
-                    backgroundColor: '#0F2420',
-                    color: '#D4AF37',
-                    padding: '0.9rem 1.8rem',
-                    borderRadius: '30px',
-                    fontWeight: 600,
-                    cursor: 'pointer',
-                    border: 'none'
-                  }}
-                >
-                  📄 View Printable Provenance Passport →
-                </button>
-              </div>
-            </div>
           </div>
         </div>
-      </section>
 
-      {/* 8. RELATED STORIES */}
-      {storiesList.length > 0 && (
-        <section style={{ backgroundColor: '#F8F7F4', padding: '7rem 2rem', borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-          <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-              <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>ARTISAN CHRONICLES</span>
-              <h2 style={{ fontSize: '3.2rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.4rem', fontWeight: 300 }}>
-                Related Stories & Heritage Articles
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 12 — ORIGIN MAP (ALL DARK)              */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "#0E0E0E", padding: "10vh 5vw" }}>
+          <div style={{ maxWidth: "1400px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: "5vw", alignItems: "center" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={fadeLeft}>
+              <span className="mp-label">Geographic Provenance</span>
+              <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2rem,4vw,5rem)", fontWeight: 300, marginBottom: "1.5rem" }}>
+                Origin &amp;<br />Atelier Location
               </h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem' }}>
-              {storiesList.map(story => (
-                <Link href={`/stories/${story.id}`} key={story.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ backgroundColor: '#FFFFFF', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(212,175,55,0.3)', boxShadow: '0 10px 30px rgba(0,0,0,0.05)' }}>
-                    <div style={{ height: '220px', overflow: 'hidden' }}>
-                      <img src={story.heroImage} alt={story.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    </div>
-                    <div style={{ padding: '2rem' }}>
-                      <span style={{ color: '#B48811', fontWeight: 600, fontSize: '0.78rem', textTransform: 'uppercase' }}>
-                        📍 {story.craft} • {story.country}
-                      </span>
-                      <h3 style={{ fontSize: '1.6rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', margin: '0.5rem 0 0.8rem' }}>
-                        {story.title}
-                      </h3>
-                      <p style={{ color: '#4A5568', fontSize: '0.95rem', lineHeight: 1.6, margin: 0 }}>
-                        {story.excerpt}
-                      </p>
-                    </div>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
-
-      {/* 9. CUSTOMER REVIEWS SECTION */}
-      <section style={{ backgroundColor: '#FFFFFF', padding: '7rem 2rem', borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1250px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-            <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>VERIFIED PATRON FEEDBACK</span>
-            <h2 style={{ fontSize: '3.4rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.4rem', fontWeight: 300 }}>
-              Customer Reviews & Ratings
-            </h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '320px 1fr', gap: '4rem', alignItems: 'start' }}>
-            {/* Rating Stats Card */}
-            <div style={{ backgroundColor: '#F8F7F4', padding: '3rem 2rem', borderRadius: '24px', border: '1px solid rgba(212,175,55,0.3)', textAlign: 'center' }}>
-              <h3 style={{ fontSize: '4.8rem', color: '#B48811', fontFamily: 'var(--font-playfair)', margin: 0, fontWeight: 300 }}>4.9</h3>
-              <p style={{ fontSize: '1.2rem', color: '#D4AF37', margin: '0.4rem 0 0.8rem' }}>⭐⭐⭐⭐⭐</p>
-              <p style={{ fontSize: '0.9rem', color: '#0F2420', fontWeight: 600, margin: 0 }}>Based on 48 Verified Acquisitions</p>
-              <div style={{ marginTop: '2rem', paddingTop: '1.5rem', borderTop: '1px solid #E2E8F0', fontSize: '0.82rem', color: '#718096', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                <span>✓ 100% Authentic Handcraft</span>
-                <span>✓ Verified Passport Ledger</span>
-                <span>✓ Direct Patron Escrow</span>
-              </div>
-            </div>
-
-            {/* Reviews List */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-              {[
-                { name: "Lord Alistair P.", date: "November 2025", rating: 5, text: "Acquired a masterpiece from this atelier. The cryptographic passport and physical quality are unrivaled. Exceptional craft." },
-                { name: "Sophia K.", date: "October 2025", rating: 5, text: "Knowing 95% of my purchase directly funds the artisan family in their village makes this creation priceless." },
-                { name: "Marcus V.", date: "September 2025", rating: 5, text: "Museum-grade quality. The finish and provenance documentation exceed expectations." }
-              ].map((rev, idx) => (
-                <div key={idx} style={{ backgroundColor: '#F8F7F4', padding: '2rem 2.5rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.25)' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.6rem' }}>
-                    <strong style={{ color: '#0F2420', fontSize: '1.1rem' }}>{rev.name}</strong>
-                    <span style={{ color: '#D4AF37' }}>{'⭐'.repeat(rev.rating)}</span>
-                  </div>
-                  <p style={{ fontSize: '0.98rem', color: '#2D3748', lineHeight: 1.7, margin: '0 0 0.8rem' }}>&quot;{rev.text}&quot;</p>
-                  <span style={{ fontSize: '0.78rem', color: '#718096' }}>Verified Patron • {rev.date}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 9. LOCATION & MAP CARD */}
-      <section style={{ padding: '7rem 2rem', backgroundColor: '#F8F7F4', borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-        <div style={{ maxWidth: '1250px', margin: '0 auto' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem', alignItems: 'center' }}>
-            <div>
-              <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>GEOGRAPHIC PROVENANCE</span>
-              <h2 style={{ fontSize: '3.4rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.4rem', marginBottom: '1.5rem', fontWeight: 300 }}>
-                Atelier Location & Origin
-              </h2>
-              <p style={{ fontSize: '1.1rem', color: '#4A5568', lineHeight: 1.8, marginBottom: '2rem' }}>
-                Located in the historic craft hub of {maker.country}. Every workshop check-in is logged via geofenced GPS verification to guarantee true regional authenticity.
+              <p className="mp-sans mp-muted" style={{ lineHeight: 1.9, marginBottom: "2rem", fontSize: "0.9rem" }}>
+                Rooted in {maker.country}. Every check-in GPS-audited and logged — guaranteeing authentic regional provenance and cultural custodianship.
               </p>
-
-              <div style={{ backgroundColor: '#FFFFFF', padding: '2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.3)', display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.95rem' }}>
-                <div><strong>Region:</strong> {maker.country} Heritage Craft District</div>
-                <div><strong>GPS Audit Coordinates:</strong> 34.0333° N, 5.0000° W (Verified On-Site)</div>
-                <div><strong>Direct Escrow Payout:</strong> 95% Direct Payout to Local Family Account</div>
+              <div className="mp-sans mp-muted" style={{ display: "flex", flexDirection: "column", gap: "0.65rem", fontSize: "0.88rem" }}>
+                <div><span className="mp-cream" style={{ fontWeight: 600 }}>Region:</span> {maker.country} Heritage District</div>
+                <div><span className="mp-cream" style={{ fontWeight: 600 }}>GPS:</span> ✅ Verified On-Site</div>
+                <div><span className="mp-cream" style={{ fontWeight: 600 }}>Escrow:</span> 95% Direct to Artisan</div>
               </div>
-            </div>
-
-            {/* Stylized Map Card */}
-            <div style={{ position: 'relative', height: '420px', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 15px 40px rgba(0,0,0,0.1)' }}>
-              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" alt="Map Location" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(15,36,32,0.85) 0%, transparent 60%)' }} />
-              <div style={{ position: 'absolute', bottom: '2rem', left: '2rem', right: '2rem', color: '#FAF9F6' }}>
-                <span style={{ color: '#D4AF37', fontSize: '0.78rem', textTransform: 'uppercase', letterSpacing: '2px', fontWeight: 700 }}>📍 VERIFIED ATELIER GEOFENCE</span>
-                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), serif', margin: '0.3rem 0 0', color: '#FAF9F6' }}>{maker.businessName} Studio</h3>
+            </motion.div>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={fadeRight}
+              style={{ borderRadius: "2px", overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.5)", position: "relative", aspectRatio: "4/3" }}
+            >
+              <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" alt="Map" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.2) 60%)" }} />
+              <div style={{ position: "absolute", bottom: "2rem", left: "2rem" }}>
+                <span className="mp-label">📍 Verified Atelier</span>
+                <div className="mp-serif mp-cream" style={{ fontSize: "1.8rem", fontWeight: 300 }}>{maker.businessName}</div>
               </div>
-            </div>
+            </motion.div>
           </div>
         </div>
-      </section>
 
-      {/* 10. SIMILAR MAKERS / RELATED BRANDS */}
-      {similarMakers.length > 0 && (
-        <section style={{ padding: '7rem 2rem', backgroundColor: '#FFFFFF', borderTop: '1px solid rgba(212,175,55,0.2)' }}>
-          <div style={{ maxWidth: '1350px', margin: '0 auto' }}>
-            <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
-              <span style={{ color: '#B48811', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2px', fontSize: '0.75rem' }}>EXPLORE HERITAGE REGISTRY</span>
-              <h2 style={{ fontSize: '3.4rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', marginTop: '0.4rem', fontWeight: 300 }}>
-                Similar Masters & Ateliers
-              </h2>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
-              {similarMakers.map(sm => (
-                <Link href={`/makers/${sm.id}`} key={sm.id} style={{ textDecoration: 'none', color: 'inherit' }}>
-                  <div style={{ backgroundColor: '#F8F7F4', borderRadius: '24px', overflow: 'hidden', border: '1px solid rgba(212,175,55,0.3)', transition: 'transform 0.4s ease' }} className="brand-card-hover">
-                    <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
-                      <img src={sm.heroImage} alt={sm.businessName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      <div style={{ position: 'absolute', bottom: '-20px', left: '1.5rem', width: '54px', height: '54px', borderRadius: '50%', border: '2px solid #D4AF37', overflow: 'hidden', backgroundColor: '#FFF' }}>
-                        <img src={sm.logo} alt={sm.founderName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 13 — RELATED STORIES (ALL DARK)         */}
+        {/* ═══════════════════════════════════════════════ */}
+        {storiesList.length > 0 && (
+          <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+            <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "5vh" }}>
+                <span className="mp-label">Artisan Chronicles</span>
+                <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
+                  Related <em className="mp-gold">Stories</em>
+                </h2>
+              </motion.div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(300px,1fr))", gap: "1.5rem" }}>
+                {storiesList.map((story, i) => (
+                  <Link href={`/stories/${story.id}`} key={story.id} style={{ textDecoration: "none" }}>
+                    <motion.div
+                      initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
+                      variants={i % 2 === 0 ? fadeLeft : fadeRight}
+                      whileHover={{ y: -5 }}
+                      style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}
+                    >
+                      <div style={{ height: "220px", overflow: "hidden" }}>
+                        <img src={story.heroImage} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s" }} />
                       </div>
-                    </div>
-                    <div style={{ padding: '2rem 1.5rem 1.5rem' }}>
-                      <span style={{ color: '#B48811', fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase' }}>📍 {sm.country}</span>
-                      <h3 style={{ fontSize: '1.6rem', color: '#0F2420', fontFamily: 'var(--font-playfair), serif', margin: '0.4rem 0 0.4rem' }}>{sm.businessName}</h3>
-                      <span style={{ color: '#718096', fontSize: '0.85rem' }}>{sm.productCount} Masterworks Cataloged</span>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                      <div style={{ padding: "1.8rem" }}>
+                        <span className="mp-label">{story.craft} · {story.country}</span>
+                        <h3 className="mp-serif mp-cream" style={{ fontSize: "1.5rem", fontWeight: 400, marginBottom: "0.7rem" }}>{story.title}</h3>
+                        <p className="mp-sans mp-muted" style={{ fontSize: "0.85rem", lineHeight: 1.75 }}>{story.excerpt}</p>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        </section>
-      )}
+        )}
 
-      {/* Video Modal Overlay */}
-      {videoOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          padding: '2rem'
-        }}>
-          <div style={{
-            maxWidth: '900px',
-            width: '100%',
-            backgroundColor: '#000',
-            borderRadius: '16px',
-            overflow: 'hidden',
-            position: 'relative',
-            boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-          }}>
-            <button 
-              onClick={() => setVideoOpen(false)}
+        {/* ═══════════════════════════════════════════════ */}
+        {/* SCENE 14 — SIMILAR ATELIERS (ALL DARK)        */}
+        {/* ═══════════════════════════════════════════════ */}
+        {similarMakers.length > 0 && (
+          <div style={{ background: "#0E0E0E", padding: "8vh 5vw" }}>
+            <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
+              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "5vh" }}>
+                <span className="mp-label">Heritage Registry</span>
+                <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
+                  Similar <em className="mp-gold">Ateliers</em>
+                </h2>
+              </motion.div>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "1.5rem" }}>
+                {similarMakers.map((sm, i) => (
+                  <Link href={`/makers/${sm.id}`} key={sm.id} style={{ textDecoration: "none" }}>
+                    <motion.div
+                      initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
+                      variants={[fadeLeft, fadeUp, fadeRight, fadeScale][i % 4]}
+                      whileHover={{ y: -5 }}
+                      style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}
+                    >
+                      <div style={{ height: "165px", overflow: "hidden" }}>
+                        <img src={sm.heroImage} alt={sm.businessName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                      <div style={{ padding: "1.3rem 1.5rem" }}>
+                        <span className="mp-label" style={{ marginBottom: "0.3rem" }}>📍 {sm.country}</span>
+                        <h3 className="mp-serif mp-cream" style={{ fontSize: "1.25rem", fontWeight: 400, marginBottom: "0.2rem" }}>{sm.businessName}</h3>
+                        <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem" }}>{sm.productCount} Masterworks</div>
+                      </div>
+                    </motion.div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ═══════════════════════════════════════════════ */}
+        {/* FOOTER BRIDGE — dark → footer color gradient   */}
+        {/* Prevents hard cut from dark page to white footer */}
+        {/* ═══════════════════════════════════════════════ */}
+        <div style={{ background: "linear-gradient(180deg,#0E0E0E 0%,#FAF9F5 100%)", height: "120px" }} />
+
+        {/* ══ CINEMATIC LIGHTBOX ══ */}
+        <AnimatePresence>
+          {lightbox && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setLightbox(null)}
               style={{
-                position: 'absolute',
-                top: '1.5rem',
-                right: '1.5rem',
-                backgroundColor: 'rgba(255,255,255,0.2)',
-                color: '#fff',
-                border: 'none',
-                width: '40px',
-                height: '40px',
-                borderRadius: '50%',
-                cursor: 'pointer',
-                fontSize: '1.2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                zIndex: 10
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.97)",
+                backdropFilter: "blur(20px)", display: "flex",
+                alignItems: "center", justifyContent: "center",
+                zIndex: 100000, padding: "2rem", cursor: "pointer",
               }}
             >
-              ✕
-            </button>
-
-            <div style={{ display: 'flex', gap: '0.25rem', overflowX: 'auto', borderBottom: '1px solid #333', padding: '1rem 2rem', backgroundColor: '#111' }}>
-              {[
-                { key: 'tour', name: 'Atelier Walkthrough' },
-                { key: 'interview', name: 'Custodian Interview' },
-                { key: 'demo', name: 'Technique Demonstration' }
-              ].map(tab => (
-                <button
-                  key={tab.key}
-                  onClick={() => setActiveVideoTab(tab.key)}
-                  style={{
-                    padding: '0.4rem 1rem',
-                    borderRadius: '20px',
-                    border: 'none',
-                    background: activeVideoTab === tab.key ? '#D4AF37' : 'transparent',
-                    color: activeVideoTab === tab.key ? '#0F2420' : '#fff',
-                    fontWeight: 'bold',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem'
-                  }}
-                >
-                  {tab.name}
-                </button>
-              ))}
-            </div>
-
-            <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0 }}>
-              <iframe 
-                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                title="Artisan Craft Documentary"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '100%',
-                  border: 'none'
-                }}
+              <motion.img
+                src={lightbox} alt=""
+                initial={{ scale: 0.88, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.88, opacity: 0 }}
+                onClick={e => e.stopPropagation()}
+                style={{ maxWidth: "90vw", maxHeight: "88vh", objectFit: "contain", borderRadius: "2px", cursor: "default", boxShadow: "0 40px 80px rgba(0,0,0,0.9)" }}
               />
-            </div>
-          </div>
-        </div>
-      )}
+              <button onClick={() => setLightbox(null)} style={{
+                position: "absolute", top: "2rem", right: "2rem",
+                background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.12)",
+                color: "#F5F0E8", width: 46, height: 46, borderRadius: "50%",
+                cursor: "pointer", fontSize: "1rem",
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}>✕</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-      {/* LUXURY GOLD-ACCENTED PASSPORT CERTIFICATE MODAL */}
-      {certModalOpen && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(10px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          padding: '2rem'
-        }}>
-          <div style={{ 
-            maxWidth: '900px', 
-            width: '100%', 
-            maxHeight: '90vh', 
-            overflowY: 'auto', 
-            backgroundColor: '#FAF9F6', 
-            borderRadius: '12px', 
-            position: 'relative',
-            padding: '1rem'
-          }}>
-            <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', padding: '1rem 2rem', borderBottom: '1px solid #ddd', marginBottom: '2rem', backgroundColor: '#fff', borderRadius: '8px' }}>
-              <button 
-                onClick={() => window.print()}
-                style={{ padding: '0.6rem 1.5rem', backgroundColor: '#0F2420', color: '#D4AF37', border: 'none', fontWeight: 'bold', cursor: 'pointer', borderRadius: '30px' }}
+        {/* ══ PROVENANCE PASSPORT MODAL ══ */}
+        <AnimatePresence>
+          {certOpen && (
+            <motion.div
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              style={{
+                position: "fixed", inset: 0, background: "rgba(0,0,0,0.93)",
+                backdropFilter: "blur(15px)", display: "flex",
+                alignItems: "center", justifyContent: "center",
+                zIndex: 99999, padding: "2rem",
+              }}
+            >
+              <motion.div
+                initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.9, opacity: 0 }}
+                style={{ maxWidth: "780px", width: "100%", maxHeight: "90vh", overflowY: "auto", background: "#141414", borderRadius: "2px", border: "1px solid rgba(201,168,76,0.2)" }}
               >
-                🖨️ Download PDF / Print Certificate
-              </button>
-              <button 
-                onClick={() => setCertModalOpen(false)}
-                style={{ background: 'none', border: 'none', color: '#0F2420', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold' }}
-              >
-                Close Window
-              </button>
-            </div>
-
-            <div id="print-certificate-container" style={{ 
-              backgroundColor: '#FAF9F6',
-              color: '#0F2420',
-              padding: '4rem 3rem',
-              border: '12px double #D4AF37',
-              borderRadius: '4px',
-              fontFamily: 'Georgia, serif',
-              textAlign: 'center',
-              position: 'relative'
-            }}>
-              <div style={{ marginBottom: '2.5rem' }}>
-                <strong style={{ letterSpacing: '4px', fontSize: '1.4rem', color: '#D4AF37', textTransform: 'uppercase', display: 'block' }}>Britsync</strong>
-                <span style={{ fontSize: '0.8rem', letterSpacing: '2px', opacity: 0.6, textTransform: 'uppercase' }}>Global Heritage Registry</span>
-              </div>
-
-              <h1 style={{ fontSize: '2.8rem', color: '#0F2420', fontWeight: 300, fontStyle: 'italic', marginBottom: '1rem' }}>
-                Registry of Heritage Provenance
-              </h1>
-              
-              <div style={{ width: '80px', height: '2px', backgroundColor: '#D4AF37', margin: '0 auto 2rem' }} />
-
-              <p style={{ fontSize: '1.1rem', opacity: 0.85, lineHeight: 1.8, maxWidth: '600px', margin: '0 auto 3.5rem' }}>
-                This document registers that the atelier of <strong>{maker.businessName}</strong>, founded by <strong>{maker.founderName}</strong> in <strong>{maker.country}</strong>, has successfully passed physical geofence auditing, labor ethics compliance, and raw materials authenticity verification.
-              </p>
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2.5rem', textAlign: 'left', maxWidth: '650px', margin: '0 auto 4rem', fontSize: '0.95rem', borderBottom: '1px dashed rgba(212, 175, 55, 0.3)', paddingBottom: '2.5rem' }}>
-                <div>
-                  <span style={{ opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', display: 'block' }}>Maker ID</span>
-                  <strong>BS-MAKER-{maker.id.toUpperCase().substring(0,6)}</strong>
+                <div style={{ display: "flex", justifyContent: "space-between", padding: "1.4rem 2rem", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <button onClick={() => window.print()} className="mp-btn-gold" style={{ fontSize: "0.62rem" }}>🖨️ Print / PDF</button>
+                  <button onClick={() => setCertOpen(false)} className="mp-sans mp-muted" style={{ background: "none", border: "none", cursor: "pointer", textDecoration: "underline", fontSize: "0.85rem" }}>Close</button>
                 </div>
-                <div>
-                  <span style={{ opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', display: 'block' }}>Regional Origin</span>
-                  <strong>{maker.country} (Heritage Registered)</strong>
-                </div>
-                <div>
-                  <span style={{ opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', display: 'block' }}>Verification Grade</span>
-                  <strong>98/100 (Excellent AQL)</strong>
-                </div>
-                <div>
-                  <span style={{ opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', display: 'block' }}>Active Status Registry</span>
-                  <strong>Elite Verified</strong>
-                </div>
-              </div>
 
-              <div style={{ display: 'flex', gap: '2rem', justifyContent: 'center', marginBottom: '4rem', fontSize: '0.85rem', fontWeight: 'bold', color: '#D4AF37' }}>
-                <span>🛡️ Human Verified Atelier</span>
-                <span>📍 Atelier Audited</span>
-                <span>⭐ Britsync Certified</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+                <div style={{ padding: "4rem 3.5rem", textAlign: "center", margin: "1.5rem", border: "6px double rgba(201,168,76,0.4)" }}>
+                  <span className="mp-label" style={{ display: "block", textAlign: "center", letterSpacing: "8px" }}>Britsync</span>
+                  <div className="mp-sans mp-muted" style={{ fontSize: "0.5rem", letterSpacing: "3px", textTransform: "uppercase", marginBottom: "3rem" }}>Global Heritage Registry</div>
+                  <h1 className="mp-serif mp-cream" style={{ fontSize: "2.4rem", fontWeight: 300, fontStyle: "italic", marginBottom: "1.5rem" }}>
+                    Registry of Heritage Provenance
+                  </h1>
+                  <div style={{ width: "50px", height: "1.5px", background: "#C9A84C", margin: "0 auto 2.5rem" }} />
+                  <p className="mp-sans mp-muted" style={{ fontSize: "0.9rem", lineHeight: 1.9, maxWidth: "480px", margin: "0 auto 3rem" }}>
+                    This document certifies that <span className="mp-cream" style={{ fontWeight: 600 }}>{maker.businessName}</span>, founded by <span className="mp-cream" style={{ fontWeight: 600 }}>{maker.founderName || "Master Artisan"}</span> in <span className="mp-cream" style={{ fontWeight: 600 }}>{maker.country}</span>, has passed geofence auditing, labor ethics, and materials authenticity verification.
+                  </p>
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "2rem", textAlign: "left", maxWidth: "520px", margin: "0 auto 3rem" }}>
+                    {[
+                      { l: "Maker ID", v: `BS-${maker.id.substring(0,6).toUpperCase()}` },
+                      { l: "Origin", v: `${maker.country} (Reg.)` },
+                      { l: "Audit Grade", v: "98/100 AQL" },
+                      { l: "Status", v: "Elite Active" },
+                    ].map((f, i) => (
+                      <div key={i}>
+                        <span className="mp-label" style={{ marginBottom: "0.3rem" }}>{f.l}</span>
+                        <div className="mp-serif mp-cream" style={{ fontSize: "1.1rem" }}>{f.v}</div>
+                      </div>
+                    ))}
+                  </div>
+                  <div style={{ display: "flex", gap: "2rem", justifyContent: "center" }}>
+                    {["🛡️ Human Verified", "📍 GPS Audited", "⭐ Britsync Elite"].map((t, i) => (
+                      <span key={i} className="mp-sans mp-gold" style={{ fontSize: "0.6rem", fontWeight: 700, letterSpacing: "1.5px", textTransform: "uppercase" }}>{t}</span>
+                    ))}
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-    </div>
+      </div>
+    </>
   );
 }

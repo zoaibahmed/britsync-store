@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Outfit, Playfair_Display } from "next/font/google";
+import { Inter, Outfit, Playfair_Display, Cormorant_Garamond } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -11,6 +11,13 @@ import TransitionProvider from "@/components/TransitionProvider";
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
 const playfair = Playfair_Display({ subsets: ["latin"], variable: "--font-playfair", display: "swap" });
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  display: "swap",
+  weight: ["300", "400", "600"],
+  style: ["normal", "italic"],
+});
 
 export const metadata: Metadata = {
   title: "Britsync Market",
@@ -36,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${outfit.variable} ${playfair.variable}`}>
+    <html lang="en" className={`${inter.variable} ${outfit.variable} ${playfair.variable} ${cormorant.variable}`}>
       <head>
         <script
           type="application/ld+json"
