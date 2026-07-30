@@ -9,6 +9,8 @@ import { Icons } from './Icons';
 import LuxuryHero from './LuxuryHero';
 import MagneticCategoryCarousel from './MagneticCategoryCarousel';
 import ArtisanGlobeJourney from './ArtisanGlobeJourney';
+import SafeguardsOriginExperience from './SafeguardsOriginExperience';
+
 
 interface Product {
   id: string;
@@ -455,124 +457,9 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </motion.section>
 
-      {/* 7. HOW BRITSYNC WORKS (INTERACTIVE ANIMATED CURATION CYCLE) */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)', position: 'relative' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <motion.span 
-              initial={{ opacity: 0, y: 10 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}
-            >
-              Interactive Safeguard Pipeline
-            </motion.span>
-            <motion.h2 
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}
-            >
-              How Britsync Safeguards Origin
-            </motion.h2>
-            <p style={{ opacity: 0.7, maxWidth: '600px', margin: '1rem auto 0', fontSize: '0.95rem' }}>
-              Click any step in the 5-point curation protocol to inspect the live audit workflow.
-            </p>
-          </div>
+      {/* 7. HOW BRITSYNC SAFEGUARDS ORIGIN (INTERACTIVE 3D PROVENANCE CORE STORYTELLING) */}
+      <SafeguardsOriginExperience />
 
-          {/* Step Selector Horizontal Bar */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem', marginBottom: '3rem' }}>
-            {[
-              { step: '01', title: 'Artisan Application', desc: 'Family lineage records & workshop validation proof.' },
-              { step: '02', title: 'Advisory Curation', desc: 'Craft Board inspects organic dyes, clay & traditional loom.' },
-              { step: '03', title: 'GPS Location Audit', desc: 'Field inspectors physically verify geofenced studio bounds.' },
-              { step: '04', title: 'Passport Issuance', desc: 'Immutable origin ledger hash registered on Britsync.' },
-              { step: '05', title: 'Protected Escrow', desc: '95% payout dispatched to artisan upon delivery.' }
-            ].map((s, idx) => {
-              const isActive = activeStepIndex === idx;
-              return (
-                <motion.div 
-                  key={s.step}
-                  onClick={() => setActiveStepIndex(idx)}
-                  whileHover={{ y: -6, scale: 1.02 }}
-                  whileTap={{ scale: 0.98 }}
-                  style={{ 
-                    backgroundColor: isActive ? 'rgba(212, 175, 55, 0.08)' : 'var(--surface)', 
-                    border: isActive ? '1.5px solid var(--accent)' : '1px solid var(--glass-border)', 
-                    borderRadius: '16px',
-                    padding: '2.2rem 1.6rem', 
-                    cursor: 'pointer',
-                    transition: 'all 0.4s ease',
-                    boxShadow: isActive ? '0 15px 35px rgba(212,175,55,0.15)' : 'var(--shadow-sm)',
-                    position: 'relative',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {isActive && <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '3px', backgroundColor: 'var(--accent)' }} />}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                    <span style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), serif', fontWeight: 300, color: isActive ? 'var(--accent)' : 'var(--text-muted)' }}>{s.step}</span>
-                    {isActive && <span className="glow-dot" />}
-                  </div>
-                  <h4 style={{ fontSize: '0.95rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '0.6rem', color: isActive ? 'var(--accent)' : 'var(--text)', fontWeight: 600 }}>{s.title}</h4>
-                  <p style={{ fontSize: '0.8rem', opacity: 0.7, lineHeight: 1.5, margin: 0 }}>{s.desc}</p>
-                </motion.div>
-              );
-            })}
-          </div>
-
-          {/* Active Step Deep Breakdown Showcase */}
-          <AnimatePresence mode="wait">
-            {(() => {
-              const steps = [
-                { title: 'Step 01: Artisan Application & Lineage Check', detail: 'Artisans submit lineage documents, generational history, and workshop photo archives to the Curation Board.', tag: 'STAGE 1: VERIFICATION', icon: '📜' },
-                { title: 'Step 02: Advisory Curation Board Audit', detail: 'Our advisory council verifies that raw materials contain zero synthetic pigments or automated machinery.', tag: 'STAGE 2: MATERIAL AUDIT', icon: '🔍' },
-                { title: 'Step 03: GPS Geofenced Field Inspection', detail: 'On-site regional inspectors establish digital geofencing coordinates mapping the exact workshop location.', tag: 'STAGE 3: GPS GEOFENCING', icon: '📍' },
-                { title: 'Step 04: Cryptographic Passport Issuance', detail: 'Every item is engraved with a cryptographic serial hash indexed to the decentralized origin ledger.', tag: 'STAGE 4: LEDGER STAMP', icon: '⚡' },
-                { title: 'Step 05: Patron Escrow & Direct Payout', detail: 'Funds remain held in protected escrow until patron delivery confirmation, releasing 95% straight to artisan.', tag: 'STAGE 5: DIRECT ESCROW', icon: '💎' }
-              ];
-              const active = steps[activeStepIndex];
-              return (
-                <motion.div
-                  key={activeStepIndex}
-                  initial={{ opacity: 0, y: 15 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -15 }}
-                  transition={{ duration: 0.4 }}
-                  style={{
-                    backgroundColor: '#0D0D10',
-                    border: '1px solid rgba(212, 175, 55, 0.4)',
-                    borderRadius: '16px',
-                    padding: '3rem',
-                    color: '#FAF9F6',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    flexWrap: 'wrap',
-                    gap: '2rem',
-                    boxShadow: '0 20px 50px rgba(0,0,0,0.4)'
-                  }}
-                >
-                  <div style={{ maxWidth: '750px' }}>
-                    <span style={{ fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.8rem' }}>
-                      {active.tag}
-                    </span>
-                    <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), serif', fontWeight: 300, color: '#FAF9F6', marginBottom: '1rem' }}>
-                      {active.icon} {active.title}
-                    </h3>
-                    <p style={{ fontSize: '0.95rem', lineHeight: 1.7, opacity: 0.85, margin: 0 }}>
-                      {active.detail}
-                    </p>
-                  </div>
-
-                  <Link href="/docs/DASHBOARD_TESTING_GUIDE.md" className="btn-accent" style={{ textDecoration: 'none', padding: '1rem 2rem', borderRadius: '8px', fontSize: '0.8rem', letterSpacing: '1.5px', textTransform: 'uppercase', fontWeight: 600 }}>
-                    Inspect Full Protocol &rarr;
-                  </Link>
-                </motion.div>
-              );
-            })()}
-          </AnimatePresence>
-        </div>
-      </section>
 
       {/* 8. GLOBAL ARTISAN REGISTRY — Scroll-scrubbed 3D globe journey */}
       <ArtisanGlobeJourney />
