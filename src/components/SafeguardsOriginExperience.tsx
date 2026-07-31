@@ -92,7 +92,6 @@ const STAGES = [
   },
 ];
 
-// Particle interface for ambient living backdrop
 interface DustParticle {
   x: number;
   y: number;
@@ -110,6 +109,7 @@ export default function SafeguardsOriginExperience() {
   const mainCanvasRef = useRef<HTMLCanvasElement>(null);
 
   const [activeStageIdx, setActiveStageIdx] = useState(0);
+  const activeStageIdxRef = useRef(0);
   const [isLoaded, setIsLoaded] = useState(false);
   const [hoveredStageIdx, setHoveredStageIdx] = useState<number | null>(null);
 
@@ -147,46 +147,42 @@ export default function SafeguardsOriginExperience() {
     });
   }, []);
 
-  // Preload priority frames + progressive background preloader
+  // Fast essential preloader
   useEffect(() => {
     let isCancelled = false;
 
-    async function preloadFrames() {
+    async function preloadEssential() {
       try {
         const essential: number[] = [];
-        // First 40 frames + stage checkpoints for instant render
-        for (let i = 0; i < 40; i++) essential.push(i);
+        // First 30 frames + stage keyframes
+        for (let i = 0; i < 30; i++) essential.push(i);
         STAGES.forEach((s) => {
-          for (let k = -5; k <= 5; k++) {
-            const idx = s.targetFrame + k;
-            if (idx >= 0 && idx < TOTAL_FRAMES) essential.push(idx);
-          }
+          essential.push(s.targetFrame);
         });
 
-        await Promise.all(essential.map((idx) => loadFrame(idx)));
+        await Promise.all(essential.map((idx) => loadFrame(idx).catch(() => {})));
         if (!isCancelled) {
           setIsLoaded(true);
         }
 
-        // Load remaining frames progressively
+        // On-demand background loader in idle chunks
         const remaining: number[] = [];
         for (let i = 0; i < TOTAL_FRAMES; i++) {
           if (!essential.includes(i)) remaining.push(i);
         }
 
-        const CHUNK_SIZE = 20;
-        for (let i = 0; i < remaining.length; i += CHUNK_SIZE) {
+        for (let i = 0; i < remaining.length; i += 15) {
           if (isCancelled) break;
-          const chunk = remaining.slice(i, i + CHUNK_SIZE);
+          const chunk = remaining.slice(i, i + 15);
           await Promise.all(chunk.map((idx) => loadFrame(idx).catch(() => {})));
-          await new Promise((r) => setTimeout(r, 16));
+          await new Promise((r) => setTimeout(r, 40));
         }
       } catch (err) {
-        console.error("Provenance Core preloader notice:", err);
+        // silent fallback
       }
     }
 
-    preloadFrames();
+    preloadEssential();
     return () => {
       isCancelled = true;
     };
@@ -195,14 +191,14 @@ export default function SafeguardsOriginExperience() {
   // Ambient dust particle initialization
   useEffect(() => {
     const particles: DustParticle[] = [];
-    for (let i = 0; i < 45; i++) {
+    for (let i = 0; i < 25; i++) {
       particles.push({
         x: Math.random() * 1000,
         y: Math.random() * 800,
-        radius: Math.random() * 1.8 + 0.6,
-        speedY: -(Math.random() * 0.3 + 0.1),
-        speedX: (Math.random() - 0.5) * 0.2,
-        alpha: Math.random() * 0.4 + 0.1,
+        radius: Math.random() * 1.5 + 0.5,
+        speedY: -(Math.random() * 0.2 + 0.05),
+        speedX: (Math.random() - 0.5) * 0.15,
+        alpha: Math.random() * 0.35 + 0.1,
         pulseSpeed: Math.random() * 0.02 + 0.008,
       });
     }
@@ -214,7 +210,7 @@ export default function SafeguardsOriginExperience() {
     let img = imageCacheRef.current.get(frameIdx);
     if (img && img.complete) return img;
 
-    for (let delta = 1; delta <= 30; delta++) {
+    for (let delta = 1; delta <= 20; delta++) {
       const prev = imageCacheRef.current.get(frameIdx - delta);
       if (prev && prev.complete) return prev;
       const next = imageCacheRef.current.get(frameIdx + delta);
@@ -223,7 +219,7 @@ export default function SafeguardsOriginExperience() {
     return null;
   }, []);
 
-  // Render main 3D Core canvas (Borderless floating 3D object)
+  // Render main 3D Core canvas
   const renderMainCanvas = useCallback(
     (frameIdx: number, floatOffset: number) => {
       const canvas = mainCanvasRef.current;
@@ -234,10 +230,9 @@ export default function SafeguardsOriginExperience() {
       const img = getLoadedImage(frameIdx);
       if (!img) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 2);
       const rect = canvas.getBoundingClientRect();
-      const displayWidth = Math.floor(rect.width * dpr);
-      const displayHeight = Math.floor(rect.height * dpr);
+      const displayWidth = Math.floor(rect.width);
+      const displayHeight = Math.floor(rect.height);
 
       if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
         canvas.width = displayWidth;
@@ -265,14 +260,14 @@ export default function SafeguardsOriginExperience() {
       }
 
       ctx.save();
-      ctx.translate(0, floatOffset * dpr * 0.8);
+      ctx.translate(0, floatOffset * 0.8);
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
       ctx.restore();
     },
     [getLoadedImage]
   );
 
-  // Render full-bleed living background canvas
+  // Render living background canvas (CSS hardware-accelerated blur for 0% CPU cost!)
   const renderBgCanvas = useCallback(
     (frameIdx: number, time: number) => {
       const canvas = bgCanvasRef.current;
@@ -280,10 +275,9 @@ export default function SafeguardsOriginExperience() {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       const rect = canvas.getBoundingClientRect();
-      const w = Math.floor(rect.width * dpr);
-      const h = Math.floor(rect.height * dpr);
+      const w = Math.floor(rect.width);
+      const h = Math.floor(rect.height);
 
       if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
@@ -292,12 +286,11 @@ export default function SafeguardsOriginExperience() {
 
       ctx.clearRect(0, 0, w, h);
 
-      // 1. Soft blurred full-width background frame
+      // 1. Background image (blurred via CSS filter on <canvas>)
       const img = getLoadedImage(frameIdx);
       if (img) {
         ctx.save();
-        ctx.globalAlpha = 0.12;
-        ctx.filter = "blur(22px)";
+        ctx.globalAlpha = 0.14;
         const imgRatio = (img.naturalWidth || 1280) / (img.naturalHeight || 720);
         let drawW = w;
         let drawH = w / imgRatio;
@@ -309,19 +302,12 @@ export default function SafeguardsOriginExperience() {
         ctx.restore();
       }
 
-      // 2. Sweeping golden radial glow
+      // 2. Golden radial ambient glow
       const progress = currentFrameRef.current / (TOTAL_FRAMES - 1);
       const lightX = w * (0.65 + Math.sin(time / 2200) * 0.08);
       const lightY = h * (0.45 + Math.cos(time / 2600) * 0.08);
 
-      const radGlow = ctx.createRadialGradient(
-        lightX,
-        lightY,
-        20 * dpr,
-        lightX,
-        lightY,
-        Math.max(w, h) * 0.65
-      );
+      const radGlow = ctx.createRadialGradient(lightX, lightY, 20, lightX, lightY, Math.max(w, h) * 0.65);
       radGlow.addColorStop(0, "rgba(212, 175, 55, " + (0.14 + progress * 0.08) + ")");
       radGlow.addColorStop(0.5, "rgba(212, 175, 55, 0.03)");
       radGlow.addColorStop(1, "rgba(250, 249, 246, 0)");
@@ -338,18 +324,18 @@ export default function SafeguardsOriginExperience() {
         p.x += p.speedX;
         p.alpha += Math.sin(time * p.pulseSpeed) * 0.005;
 
-        if (p.y < -20) p.y = h / dpr + 20;
-        if (p.x < -20) p.x = w / dpr + 20;
-        if (p.x > w / dpr + 20) p.x = -20;
+        if (p.y < -20) p.y = h + 20;
+        if (p.x < -20) p.x = w + 20;
+        if (p.x > w + 20) p.x = -20;
 
         const pX = (p.x / 1000) * w;
         const pY = (p.y / 800) * h;
-        const alpha = Math.max(0.05, Math.min(0.45, p.alpha));
+        const alpha = Math.max(0.05, Math.min(0.4, p.alpha));
 
         ctx.save();
         ctx.globalAlpha = alpha;
         ctx.beginPath();
-        ctx.arc(pX, pY, p.radius * dpr, 0, Math.PI * 2);
+        ctx.arc(pX, pY, p.radius, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       });
@@ -361,32 +347,27 @@ export default function SafeguardsOriginExperience() {
   useEffect(() => {
     return scrollYProgress.on("change", (latest) => {
       if (isScrollDrivenRef.current) {
-        // Map 0..1 scroll progress to 0..359 frames
         const rawTarget = latest * (TOTAL_FRAMES - 1);
         targetFrameRef.current = Math.max(0, Math.min(TOTAL_FRAMES - 1, rawTarget));
       }
     });
   }, [scrollYProgress]);
 
-  // Main RAF Lerp Loop for continuous 60 FPS interpolation
+  // Main stable RAF Lerp Loop for continuous 60 FPS performance
   useEffect(() => {
     let animId: number;
 
     const tick = (time: number) => {
-      const floatOffset = Math.sin(time / 1100) * 10;
-      microPulseRef.current = Math.sin(time / 1400) * 1.5;
+      const floatOffset = Math.sin(time / 1100) * 8;
+      microPulseRef.current = Math.sin(time / 1400) * 1.2;
 
       const baseTarget = targetFrameRef.current;
-      const effectiveTarget = Math.max(
-        0,
-        Math.min(TOTAL_FRAMES - 1, baseTarget + microPulseRef.current)
-      );
+      const effectiveTarget = Math.max(0, Math.min(TOTAL_FRAMES - 1, baseTarget + microPulseRef.current));
 
       const diff = effectiveTarget - currentFrameRef.current;
 
-      // Lerp interpolation (0.10 factor for ultra-smooth 60fps continuous feel)
       if (Math.abs(diff) > 0.02) {
-        currentFrameRef.current += diff * 0.10;
+        currentFrameRef.current += diff * 0.15;
       } else {
         currentFrameRef.current = effectiveTarget;
       }
@@ -396,15 +377,14 @@ export default function SafeguardsOriginExperience() {
       // Determine active stage based on frame ranges
       let matchedIdx = 0;
       for (let i = 0; i < STAGES.length; i++) {
-        if (
-          currentFrameVal >= STAGES[i].minFrame &&
-          currentFrameVal <= STAGES[i].maxFrame
-        ) {
+        if (currentFrameVal >= STAGES[i].minFrame && currentFrameVal <= STAGES[i].maxFrame) {
           matchedIdx = i;
           break;
         }
       }
-      if (matchedIdx !== activeStageIdx) {
+
+      if (matchedIdx !== activeStageIdxRef.current) {
+        activeStageIdxRef.current = matchedIdx;
         setActiveStageIdx(matchedIdx);
       }
 
@@ -416,15 +396,15 @@ export default function SafeguardsOriginExperience() {
 
     animId = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(animId);
-  }, [activeStageIdx, renderMainCanvas, renderBgCanvas]);
+  }, [renderMainCanvas, renderBgCanvas]);
 
   // Stage click navigation override
   const handleStageClick = (idx: number) => {
     isScrollDrivenRef.current = false;
+    activeStageIdxRef.current = idx;
     setActiveStageIdx(idx);
     targetFrameRef.current = STAGES[idx].targetFrame;
 
-    // Re-enable scroll-driven tracking after smooth transition
     setTimeout(() => {
       isScrollDrivenRef.current = true;
     }, 800);
@@ -437,7 +417,7 @@ export default function SafeguardsOriginExperience() {
       ref={runwayRef}
       style={{
         position: "relative",
-        height: "350vh", // Tall scroll runway to pin section for Apple-style scrub
+        height: "350vh",
         backgroundColor: "#FAF9F6",
       }}
     >
@@ -470,6 +450,8 @@ export default function SafeguardsOriginExperience() {
               width: "100%",
               height: "100%",
               display: "block",
+              filter: "blur(20px)", // Hardware-accelerated GPU CSS blur filter
+              transform: "scale(1.05)", // Prevents edge bleed
             }}
           />
         </div>
@@ -561,7 +543,7 @@ export default function SafeguardsOriginExperience() {
                   initial={{ opacity: 0, y: 24, filter: "blur(8px)" }}
                   animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
                   exit={{ opacity: 0, y: -20, filter: "blur(6px)" }}
-                  transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
                   style={{
                     backgroundColor: "rgba(255, 255, 255, 0.88)",
                     border: "1.5px solid #D4AF37",
@@ -742,7 +724,7 @@ export default function SafeguardsOriginExperience() {
                 minHeight: "520px",
               }}
             >
-              {/* Natural 3D Floating Canvas (NO border, NO rectangle box!) */}
+              {/* Natural 3D Floating Canvas */}
               <div
                 style={{
                   position: "relative",
@@ -867,7 +849,7 @@ export default function SafeguardsOriginExperience() {
                         color: "#1C1C1E",
                       }}
                     >
-                      FRAME {Math.round(currentFrameRef.current)}/360
+                      STAGE {activeStage.id}/05
                     </span>
                   </motion.div>
                 </AnimatePresence>
