@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -116,6 +116,7 @@ export default function SafeguardsOriginExperience() {
   const targetFrameRef = useRef(0);
   const rawScrollRef = useRef(0); // raw 0-1 scroll within section
   const activeStageRef = useRef(0);
+  const inEntryZoneRef = useRef(true); // true = entry screen, no frames drawn
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeStageIdx, setActiveStageIdx] = useState(0);
@@ -204,10 +205,12 @@ export default function SafeguardsOriginExperience() {
 
       if (raw <= ENTRY_ZONE) {
         targetFrameRef.current = 0;
+        inEntryZoneRef.current = true;
         if (!showEntryRef.current) setShowEntryScreen(true);
       } else {
         const mapped = (raw - ENTRY_ZONE) / (1 - ENTRY_ZONE);
         targetFrameRef.current = mapped * (TOTAL_FRAMES - 1);
+        inEntryZoneRef.current = false;
         if (showEntryRef.current) setShowEntryScreen(false);
       }
     }
@@ -272,7 +275,16 @@ export default function SafeguardsOriginExperience() {
         setActiveStageIdx(newStage);
       }
 
-      if (isLoaded) drawFrame(frameIdx);
+      if (isLoaded && !inEntryZoneRef.current) {
+        drawFrame(frameIdx);
+      } else if (inEntryZoneRef.current) {
+        // Keep canvas pure black during entry screen
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d", { alpha: false });
+          if (ctx) ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+      }
       animId = requestAnimationFrame(tick);
     };
     animId = requestAnimationFrame(tick);
