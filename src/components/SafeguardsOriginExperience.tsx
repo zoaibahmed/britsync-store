@@ -2,15 +2,26 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { provenanceCache, startGlobalFramePreload } from "@/lib/globalFramePreloader";
 
+/* ─────────────────────────────────────────────
+   CONSTANTS
+───────────────────────────────────────────── */
 const TOTAL_FRAMES = 360;
-const SCROLL_HEIGHT_VH = 350;
+const SCROLL_HEIGHT_VH = 380; // runway height
+
+// First 8% of the runway is the "entry zone" — frame stays at 0,
+// a cinematic intro screen is shown. Frames only start after this.
+const ENTRY_ZONE = 0.08;
 
 function getFrameUrl(index: number): string {
   const n = Math.max(1, Math.min(TOTAL_FRAMES, Math.floor(index) + 1));
   return "/provenance-core/core_" + String(n).padStart(4, "0") + ".webp";
 }
 
+/* ─────────────────────────────────────────────
+   STAGE DEFINITIONS
+───────────────────────────────────────────── */
 const STAGES = [
   {
     id: "01",
@@ -71,70 +82,80 @@ const STAGES = [
 
 type Stage = (typeof STAGES)[number];
 
-const globalCache = new Map<number, HTMLImageElement>();
-
-function loadImage(index: number): Promise<HTMLImageElement> {
-  const cached = globalCache.get(index);
+/* ─────────────────────────────────────────────
+   FALLBACK PER-COMPONENT CACHE (uses global)
+───────────────────────────────────────────── */
+function loadFrame(index: number): Promise<HTMLImageElement> {
+  const cached = provenanceCache.get(index);
   if (cached?.complete && cached.naturalWidth > 0) return Promise.resolve(cached);
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.src = getFrameUrl(index);
-    img.onload = () => {
-      globalCache.set(index, img);
-      resolve(img);
-    };
+    img.onload = () => { provenanceCache.set(index, img); resolve(img); };
     img.onerror = reject;
   });
 }
 
-function getNearestCached(frameIdx: number): HTMLImageElement | null {
-  for (let d = 0; d <= 25; d++) {
-    const a = globalCache.get(frameIdx - d);
+function getNearestFrame(frameIdx: number): HTMLImageElement | null {
+  for (let d = 0; d <= 30; d++) {
+    const a = provenanceCache.get(frameIdx - d);
     if (a?.complete && a.naturalWidth > 0) return a;
-    const b = globalCache.get(frameIdx + d);
+    const b = provenanceCache.get(frameIdx + d);
     if (b?.complete && b.naturalWidth > 0) return b;
   }
   return null;
 }
 
+/* ─────────────────────────────────────────────
+   MAIN COMPONENT
+───────────────────────────────────────────── */
 export default function SafeguardsOriginExperience() {
   const runwayRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
+  const rawScrollRef = useRef(0); // raw 0-1 scroll within section
   const activeStageRef = useRef(0);
 
   const [isLoaded, setIsLoaded] = useState(false);
   const [activeStageIdx, setActiveStageIdx] = useState(0);
-  const [ready, setReady] = useState(false);
+  // showEntryScreen: true while user has not scrolled into the section yet
+  const [showEntryScreen, setShowEntryScreen] = useState(true);
 
+  /* ── Trigger global preload + local fallback ── */
   useEffect(() => {
+    // Ensure global preload is running (no-op if already started)
+    startGlobalFramePreload();
+
+    // Also kick off a local fallback in case global cache is cold
     let cancelled = false;
-    async function preload() {
-      const essential: number[] = [];
-      for (let i = 0; i < 25; i++) essential.push(i);
-      STAGES.forEach((s) =>
-        essential.push(Math.floor((s.minFrame + s.maxFrame) / 2))
-      );
-      await Promise.allSettled(essential.map(loadImage));
-      if (!cancelled) {
-        setIsLoaded(true);
-        setReady(true);
+    async function localFallback() {
+      // Wait briefly for global preload to get the first 30 frames
+      await new Promise((r) => setTimeout(r, 200));
+      if (!cancelled && provenanceCache.size < 20) {
+        // Global preload hasn't run yet — do it ourselves
+        const essential: number[] = [];
+        for (let i = 0; i < 30; i++) essential.push(i);
+        STAGES.forEach((s) => essential.push(Math.floor((s.minFrame + s.maxFrame) / 2)));
+        await Promise.allSettled(essential.map(loadFrame));
       }
-      const allIdx = Array.from({ length: TOTAL_FRAMES }, (_, i) => i);
-      const rest = allIdx.filter((i) => !essential.includes(i));
-      for (let i = 0; i < rest.length; i += 12) {
-        if (cancelled) break;
-        await Promise.allSettled(rest.slice(i, i + 12).map(loadImage));
-        await new Promise((r) => setTimeout(r, 35));
-      }
+      if (!cancelled) setIsLoaded(true);
     }
-    preload();
-    return () => {
-      cancelled = true;
-    };
+
+    // If global already has frames, mark loaded immediately
+    if (provenanceCache.size >= 20) {
+      setIsLoaded(true);
+    } else {
+      localFallback();
+    }
+
+    return () => { cancelled = true; };
   }, []);
 
+  /* ── Native scroll listener ─────────────────
+     No framer-motion useScroll to avoid the
+     inertia feedback loop that caused hang.
+  ─────────────────────────────────────────── */
   useEffect(() => {
     function onScroll() {
       const runway = runwayRef.current;
@@ -142,29 +163,72 @@ export default function SafeguardsOriginExperience() {
       const rect = runway.getBoundingClientRect();
       const totalScrollable = runway.offsetHeight - window.innerHeight;
       if (totalScrollable <= 0) return;
-      const scrolled = Math.max(0, Math.min(1, -rect.top / totalScrollable));
-      targetFrameRef.current = scrolled * (TOTAL_FRAMES - 1);
+      const raw = Math.max(0, Math.min(1, -rect.top / totalScrollable));
+      rawScrollRef.current = raw;
+
+      // Entry zone: first 8% of scroll = intro screen, frames at 0
+      if (raw <= ENTRY_ZONE) {
+        targetFrameRef.current = 0;
+        if (!showEntryScreen) setShowEntryScreen(true);
+      } else {
+        // Map the 8%-100% range to frames 0-359
+        const mapped = (raw - ENTRY_ZONE) / (1 - ENTRY_ZONE);
+        targetFrameRef.current = mapped * (TOTAL_FRAMES - 1);
+        if (showEntryScreen) setShowEntryScreen(false);
+      }
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /* ── Handle entry screen dismiss separately ──
+     Use a ref to avoid stale closure inside scroll handler
+  ─────────────────────────────────────────── */
+  const showEntryRef = useRef(true);
+  useEffect(() => {
+    showEntryRef.current = showEntryScreen;
+  }, [showEntryScreen]);
+
+  // Rewrite scroll handler using ref to avoid stale state closure
+  useEffect(() => {
+    function onScroll() {
+      const runway = runwayRef.current;
+      if (!runway) return;
+      const rect = runway.getBoundingClientRect();
+      const totalScrollable = runway.offsetHeight - window.innerHeight;
+      if (totalScrollable <= 0) return;
+      const raw = Math.max(0, Math.min(1, -rect.top / totalScrollable));
+      rawScrollRef.current = raw;
+
+      if (raw <= ENTRY_ZONE) {
+        targetFrameRef.current = 0;
+        if (!showEntryRef.current) setShowEntryScreen(true);
+      } else {
+        const mapped = (raw - ENTRY_ZONE) / (1 - ENTRY_ZONE);
+        targetFrameRef.current = mapped * (TOTAL_FRAMES - 1);
+        if (showEntryRef.current) setShowEntryScreen(false);
+      }
     }
     window.addEventListener("scroll", onScroll, { passive: true });
     onScroll();
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  /* ── Draw canvas frame ─────────────────── */
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
-    const img = getNearestCached(frameIdx);
+    const img = getNearestFrame(frameIdx);
     if (!img) return;
     const W = canvas.width;
     const H = canvas.height;
     const imgRatio = img.naturalWidth / img.naturalHeight;
     const canvasRatio = W / H;
-    let drawW = W;
-    let drawH = H;
-    let ox = 0;
-    let oy = 0;
+    let drawW = W, drawH = H, ox = 0, oy = 0;
     if (canvasRatio > imgRatio) {
       drawH = W / imgRatio;
       oy = (H - drawH) / 2;
@@ -175,26 +239,30 @@ export default function SafeguardsOriginExperience() {
     ctx.drawImage(img, ox, oy, drawW, drawH);
   }, []);
 
+  /* ── RAF lerp loop ────────────────────────
+     lerp = 0.08  →  slow, deliberate, cinematic
+     step cap = 4  →  no jarring frame skips
+  ─────────────────────────────────────────── */
   useEffect(() => {
     let animId: number;
     const tick = () => {
       const target = targetFrameRef.current;
       const curr = currentFrameRef.current;
       const diff = target - curr;
-      const step = diff * 0.2;
-      const clampedStep = Math.max(-10, Math.min(10, step));
+      // Slow cinematic lerp
+      const step = diff * 0.08;
+      const clampedStep = Math.max(-4, Math.min(4, step));
       if (Math.abs(diff) > 0.05) {
         currentFrameRef.current = curr + clampedStep;
       } else {
         currentFrameRef.current = target;
       }
       const frameIdx = Math.round(currentFrameRef.current);
+
+      // Update active stage
       let newStage = 0;
       for (let i = 0; i < STAGES.length; i++) {
-        if (
-          frameIdx >= STAGES[i].minFrame &&
-          frameIdx <= STAGES[i].maxFrame
-        ) {
+        if (frameIdx >= STAGES[i].minFrame && frameIdx <= STAGES[i].maxFrame) {
           newStage = i;
           break;
         }
@@ -203,6 +271,7 @@ export default function SafeguardsOriginExperience() {
         activeStageRef.current = newStage;
         setActiveStageIdx(newStage);
       }
+
       if (isLoaded) drawFrame(frameIdx);
       animId = requestAnimationFrame(tick);
     };
@@ -210,6 +279,7 @@ export default function SafeguardsOriginExperience() {
     return () => cancelAnimationFrame(animId);
   }, [isLoaded, drawFrame]);
 
+  /* ── Resize canvas to full viewport ─────── */
   useEffect(() => {
     function resize() {
       const canvas = canvasRef.current;
@@ -233,6 +303,9 @@ export default function SafeguardsOriginExperience() {
         backgroundColor: "#000",
       }}
     >
+      {/* ═══════════════════════════════════════
+          STICKY CINEMATIC VIEWPORT
+      ═══════════════════════════════════════ */}
       <div
         style={{
           position: "sticky",
@@ -256,7 +329,7 @@ export default function SafeguardsOriginExperience() {
           }}
         />
 
-        {/* Cinematic vignette */}
+        {/* Cinematic vignette overlay */}
         <div
           style={{
             position: "absolute",
@@ -268,13 +341,18 @@ export default function SafeguardsOriginExperience() {
           }}
         />
 
-        {/* Loading overlay */}
+        {/* ═════════════════════════════════════
+            ENTRY SCREEN
+            Shown while user is in the entry zone.
+            Cinematic reveal invite.
+        ═════════════════════════════════════ */}
         <AnimatePresence>
-          {!ready && (
+          {showEntryScreen && (
             <motion.div
-              initial={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.8 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, filter: "blur(8px)" }}
+              transition={{ duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
               style={{
                 position: "absolute",
                 inset: 0,
@@ -282,37 +360,272 @@ export default function SafeguardsOriginExperience() {
                 flexDirection: "column",
                 alignItems: "center",
                 justifyContent: "center",
-                backgroundColor: "#000",
-                zIndex: 10,
-                gap: "1.2rem",
+                zIndex: 5,
+                textAlign: "center",
+                padding: "0 2rem",
               }}
             >
-              <div
+              {/* Section eyebrow */}
+              <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.1 }}
                 style={{
-                  width: "44px",
-                  height: "44px",
-                  borderRadius: "50%",
-                  border: "1.5px solid rgba(212,175,55,0.2)",
-                  borderTopColor: "#D4AF37",
-                  animation: "spin 1s linear infinite",
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.65rem",
-                  letterSpacing: "4px",
-                  textTransform: "uppercase",
-                  color: "rgba(212,175,55,0.7)",
-                  fontWeight: 600,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.9rem",
+                  marginBottom: "2rem",
                 }}
               >
-                Assembling Provenance Core
-              </span>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "1px",
+                    backgroundColor: "#D4AF37",
+                    opacity: 0.6,
+                  }}
+                />
+                <span
+                  style={{
+                    fontSize: "0.6rem",
+                    letterSpacing: "5px",
+                    textTransform: "uppercase",
+                    color: "rgba(212,175,55,0.75)",
+                    fontWeight: 700,
+                  }}
+                >
+                  Provenance Verification
+                </span>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "1px",
+                    backgroundColor: "#D4AF37",
+                    opacity: 0.6,
+                  }}
+                />
+              </motion.div>
+
+              {/* Main heading */}
+              <motion.h2
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.85, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  fontSize: "clamp(2.4rem, 5vw, 4.5rem)",
+                  fontFamily: "var(--font-playfair), Georgia, serif",
+                  fontWeight: 300,
+                  color: "#FFFFFF",
+                  lineHeight: 1.1,
+                  letterSpacing: "-0.02em",
+                  marginBottom: "1.5rem",
+                  maxWidth: "700px",
+                }}
+              >
+                How BritSync
+                <br />
+                <span
+                  style={{
+                    background: "linear-gradient(135deg, #D4AF37 0%, #F5E6A3 50%, #D4AF37 100%)",
+                    WebkitBackgroundClip: "text",
+                    WebkitTextFillColor: "transparent",
+                    backgroundClip: "text",
+                  }}
+                >
+                  Safeguards Origin
+                </span>
+              </motion.h2>
+
+              {/* Subtext */}
+              <motion.p
+                initial={{ opacity: 0, y: 14 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.7, delay: 0.38 }}
+                style={{
+                  fontSize: "0.95rem",
+                  lineHeight: 1.75,
+                  color: "rgba(255,255,255,0.45)",
+                  maxWidth: "460px",
+                  fontWeight: 300,
+                  marginBottom: "3.5rem",
+                }}
+              >
+                Five cryptographic verification stages.
+                <br />
+                Each one protecting the artisan and the patron.
+              </motion.p>
+
+              {/* Scroll invite */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  gap: "0.6rem",
+                }}
+              >
+                <span
+                  style={{
+                    fontSize: "0.58rem",
+                    letterSpacing: "4px",
+                    textTransform: "uppercase",
+                    color: "rgba(255,255,255,0.28)",
+                    fontWeight: 600,
+                  }}
+                >
+                  Scroll to witness
+                </span>
+                {/* Animated scroll line */}
+                <div
+                  style={{
+                    width: "1px",
+                    height: "48px",
+                    background: "linear-gradient(to bottom, rgba(212,175,55,0.6), transparent)",
+                    animation: "scrollLine 1.8s ease-in-out infinite",
+                  }}
+                />
+              </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
 
-        {/* Section label — top */}
+        {/* ═════════════════════════════════════
+            EDITORIAL STAGE TEXT
+            Shown after entry zone, one stage at a time
+        ═════════════════════════════════════ */}
+        <AnimatePresence>
+          {!showEntryScreen && (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeStage.id}
+                initial={{ opacity: 0, y: 32, filter: "blur(14px)" }}
+                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                exit={{ opacity: 0, y: -24, filter: "blur(10px)" }}
+                transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  position: "absolute",
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: "clamp(320px, 44%, 580px)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "center",
+                  padding: "0 3.5rem 0 5rem",
+                  zIndex: 3,
+                }}
+              >
+                {/* Ghost stage number */}
+                <div
+                  style={{
+                    fontSize: "clamp(6rem, 12vw, 11rem)",
+                    fontFamily: "var(--font-playfair), Georgia, serif",
+                    fontWeight: 100,
+                    color: "rgba(212,175,55,0.15)",
+                    lineHeight: 1,
+                    marginBottom: "-1.5rem",
+                    letterSpacing: "-0.05em",
+                    userSelect: "none",
+                  }}
+                >
+                  {activeStage.number}
+                </div>
+
+                {/* Stage label with rule */}
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.7rem",
+                    marginBottom: "1.1rem",
+                  }}
+                >
+                  <div
+                    style={{
+                      width: "22px",
+                      height: "1px",
+                      backgroundColor: "#D4AF37",
+                      opacity: 0.7,
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "0.58rem",
+                      letterSpacing: "4px",
+                      textTransform: "uppercase",
+                      color: "#D4AF37",
+                      fontWeight: 700,
+                    }}
+                  >
+                    {activeStage.label}
+                  </span>
+                </div>
+
+                {/* Title */}
+                <h2
+                  style={{
+                    fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                    fontFamily: "var(--font-playfair), Georgia, serif",
+                    fontWeight: 300,
+                    color: "#FFFFFF",
+                    lineHeight: 1.15,
+                    marginBottom: "1.5rem",
+                    letterSpacing: "-0.015em",
+                  }}
+                >
+                  {activeStage.title}
+                  <br />
+                  <span style={{ opacity: 0.72 }}>{activeStage.subtitle}</span>
+                </h2>
+
+                {/* Body */}
+                <p
+                  style={{
+                    fontSize: "0.88rem",
+                    lineHeight: 1.85,
+                    color: "rgba(255,255,255,0.56)",
+                    marginBottom: "2.5rem",
+                    maxWidth: "360px",
+                    fontWeight: 300,
+                  }}
+                >
+                  {activeStage.body}
+                </p>
+
+                {/* Status dot */}
+                <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
+                  <span
+                    style={{
+                      width: "6px",
+                      height: "6px",
+                      borderRadius: "50%",
+                      backgroundColor: "#D4AF37",
+                      boxShadow: "0 0 12px rgba(212,175,55,0.8)",
+                      flexShrink: 0,
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "0.7rem",
+                      letterSpacing: "2px",
+                      textTransform: "uppercase",
+                      color: "rgba(212,175,55,0.85)",
+                      fontWeight: 600,
+                    }}
+                  >
+                    {activeStage.status}
+                  </span>
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          )}
+        </AnimatePresence>
+
+        {/* Section label — top (always visible) */}
         <div
           style={{
             position: "absolute",
@@ -320,7 +633,7 @@ export default function SafeguardsOriginExperience() {
             left: "50%",
             transform: "translateX(-50%)",
             textAlign: "center",
-            zIndex: 4,
+            zIndex: 6,
             pointerEvents: "none",
             whiteSpace: "nowrap",
           }}
@@ -330,213 +643,59 @@ export default function SafeguardsOriginExperience() {
               fontSize: "0.6rem",
               letterSpacing: "4px",
               textTransform: "uppercase",
-              color: "rgba(212,175,55,0.6)",
+              color: "rgba(212,175,55,0.5)",
               fontWeight: 700,
             }}
           >
-            How BritSync Safeguards Origin
+            BritSync — Provenance Core
           </span>
         </div>
 
-        {/* Editorial cinematic text — NO white cards, directly in scene */}
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={activeStage.id}
-            initial={{ opacity: 0, y: 32, filter: "blur(14px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            exit={{ opacity: 0, y: -24, filter: "blur(10px)" }}
-            transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              bottom: 0,
-              width: "clamp(320px, 44%, 580px)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              padding: "0 3.5rem 0 5rem",
-              zIndex: 3,
-            }}
-          >
-            {/* Ghost stage number */}
-            <div
-              style={{
-                fontSize: "clamp(6rem, 12vw, 11rem)",
-                fontFamily: "var(--font-playfair), Georgia, serif",
-                fontWeight: 100,
-                color: "rgba(212,175,55,0.15)",
-                lineHeight: 1,
-                marginBottom: "-1.5rem",
-                letterSpacing: "-0.05em",
-                userSelect: "none",
-              }}
-            >
-              {activeStage.number}
-            </div>
-
-            {/* Stage label with rule */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "0.7rem",
-                marginBottom: "1.1rem",
-              }}
-            >
-              <div
-                style={{
-                  width: "22px",
-                  height: "1px",
-                  backgroundColor: "#D4AF37",
-                  opacity: 0.7,
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.58rem",
-                  letterSpacing: "4px",
-                  textTransform: "uppercase",
-                  color: "#D4AF37",
-                  fontWeight: 700,
-                }}
-              >
-                {activeStage.label}
-              </span>
-            </div>
-
-            {/* Title */}
-            <h2
-              style={{
-                fontSize: "clamp(2rem, 3.5vw, 3rem)",
-                fontFamily: "var(--font-playfair), Georgia, serif",
-                fontWeight: 300,
-                color: "#FFFFFF",
-                lineHeight: 1.15,
-                marginBottom: "1.5rem",
-                letterSpacing: "-0.015em",
-              }}
-            >
-              {activeStage.title}
-              <br />
-              <span style={{ opacity: 0.72 }}>{activeStage.subtitle}</span>
-            </h2>
-
-            {/* Body text */}
-            <p
-              style={{
-                fontSize: "0.88rem",
-                lineHeight: 1.85,
-                color: "rgba(255,255,255,0.56)",
-                marginBottom: "2.5rem",
-                maxWidth: "360px",
-                fontWeight: 300,
-              }}
-            >
-              {activeStage.body}
-            </p>
-
-            {/* Status dot */}
-            <div style={{ display: "flex", alignItems: "center", gap: "0.65rem" }}>
-              <span
-                style={{
-                  width: "6px",
-                  height: "6px",
-                  borderRadius: "50%",
-                  backgroundColor: "#D4AF37",
-                  boxShadow: "0 0 12px rgba(212,175,55,0.8)",
-                  flexShrink: 0,
-                }}
-              />
-              <span
-                style={{
-                  fontSize: "0.7rem",
-                  letterSpacing: "2px",
-                  textTransform: "uppercase",
-                  color: "rgba(212,175,55,0.85)",
-                  fontWeight: 600,
-                }}
-              >
-                {activeStage.status}
-              </span>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Progress pills bottom */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "2.8rem",
-            left: "50%",
-            transform: "translateX(-50%)",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: "0.9rem",
-            zIndex: 4,
-          }}
-        >
-          <div style={{ display: "flex", gap: "0.45rem", alignItems: "center" }}>
-            {STAGES.map((s, i) => {
-              const isActive = i === activeStageIdx;
-              const isPast = i < activeStageIdx;
-              return (
-                <div
-                  key={s.id}
-                  style={{
-                    width: isActive ? "28px" : "7px",
-                    height: "2.5px",
-                    borderRadius: "2px",
-                    backgroundColor: isActive
-                      ? "#D4AF37"
-                      : isPast
-                      ? "rgba(212,175,55,0.5)"
-                      : "rgba(255,255,255,0.15)",
-                    transition: "all 0.55s cubic-bezier(0.16,1,0.3,1)",
-                  }}
-                />
-              );
-            })}
-          </div>
-
-          {activeStageIdx === 0 && (
+        {/* Progress pills — bottom center (only during stage view) */}
+        <AnimatePresence>
+          {!showEntryScreen && (
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
               style={{
+                position: "absolute",
+                bottom: "2.8rem",
+                left: "50%",
+                transform: "translateX(-50%)",
                 display: "flex",
-                flexDirection: "column",
+                gap: "0.45rem",
                 alignItems: "center",
-                gap: "0.35rem",
+                zIndex: 4,
               }}
             >
-              <span
-                style={{
-                  fontSize: "0.56rem",
-                  letterSpacing: "3px",
-                  textTransform: "uppercase",
-                  color: "rgba(255,255,255,0.28)",
-                  fontWeight: 600,
-                }}
-              >
-                Scroll to verify
-              </span>
-              <motion.span
-                animate={{ y: [0, 5, 0] }}
-                transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
-                style={{ color: "rgba(212,175,55,0.45)", fontSize: "0.65rem" }}
-              >
-                ↓
-              </motion.span>
+              {STAGES.map((s, i) => {
+                const isActive = i === activeStageIdx;
+                const isPast = i < activeStageIdx;
+                return (
+                  <div
+                    key={s.id}
+                    style={{
+                      width: isActive ? "28px" : "7px",
+                      height: "2.5px",
+                      borderRadius: "2px",
+                      backgroundColor: isActive
+                        ? "#D4AF37"
+                        : isPast
+                        ? "rgba(212,175,55,0.5)"
+                        : "rgba(255,255,255,0.15)",
+                      transition: "all 0.55s cubic-bezier(0.16,1,0.3,1)",
+                    }}
+                  />
+                );
+              })}
             </motion.div>
           )}
-        </div>
+        </AnimatePresence>
 
         {/* Final stage golden glow */}
         <AnimatePresence>
-          {activeStageIdx === 4 && (
+          {!showEntryScreen && activeStageIdx === 4 && (
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -556,6 +715,11 @@ export default function SafeguardsOriginExperience() {
       </div>
 
       <style>{`
+        @keyframes scrollLine {
+          0%   { opacity: 0; transform: scaleY(0); transform-origin: top; }
+          50%  { opacity: 1; transform: scaleY(1); transform-origin: top; }
+          100% { opacity: 0; transform: scaleY(1); transform-origin: bottom; }
+        }
         @keyframes spin {
           to { transform: rotate(360deg); }
         }

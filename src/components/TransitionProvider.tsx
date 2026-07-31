@@ -4,13 +4,18 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePathname } from 'next/navigation';
 import LoadingScreen from './LoadingScreen';
+import { startGlobalFramePreload } from '@/lib/globalFramePreloader';
 
 export default function TransitionProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Trigger preloader on initial application load
+    // Fire global frame preload immediately — runs parallel to loading screen
+    // so all animation frames are cached before the user can scroll to them
+    startGlobalFramePreload();
+
+    // Dismiss loading screen after 1.2s
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1200);
