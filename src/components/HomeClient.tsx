@@ -10,6 +10,7 @@ import LuxuryHero from './LuxuryHero';
 import MagneticCategoryCarousel from './MagneticCategoryCarousel';
 import ArtisanGlobeJourney from './ArtisanGlobeJourney';
 import SafeguardsOriginExperience from './SafeguardsOriginExperience';
+import GuardiansOfLegacy from './GuardiansOfLegacy';
 
 
 interface Product {
@@ -186,51 +187,8 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </motion.section>
 
-      {/* 4. FEATURED MAKERS */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)', borderBottom: '1px solid var(--glass-border)' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Artisan Curation</span>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Guardians of the Legacy</h2>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '3rem' }}>
-            {[
-              { name: 'Fatima', location: 'Ait Bouguemez, Morocco', craft: 'Heritage Loom Weaving', image: 'https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=600', story: 'Fatima guards a 200-year-old weaving pattern inherited through her lineage.' },
-              { name: 'Aisha', location: 'Sindh Valley, Pakistan', craft: 'Ajrak Blockprinting', image: 'https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=600', story: 'Preserving the 21-step natural vegetable dyeing sequence on organic handspun cotton.' },
-              { name: 'Zeynep', location: 'Iznik, Turkey', craft: 'Quartz-Glazed Ceramics', image: 'https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=600', story: 'Zeynep fires masterwork plates containing high-grade silica layers using traditional wood kilns.' }
-            ].map((maker, idx) => (
-              <motion.div 
-                key={maker.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.8, delay: idx * 0.15 }}
-                style={{ border: '1px solid var(--glass-border)', backgroundColor: 'var(--surface)', padding: 0 }}
-              >
-                <div style={{ overflow: 'hidden', height: '350px', position: 'relative' }}>
-                  <motion.img 
-                    whileHover={{ scale: 1.05 }}
-                    transition={{ duration: 0.6 }}
-                    src={maker.image} 
-                    alt={maker.name} 
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                  />
-                </div>
-                <div style={{ padding: '2.5rem' }}>
-                  <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', display: 'block', marginBottom: '0.5rem' }}>{maker.craft}</span>
-                  <h3 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginBottom: '1rem' }}>{maker.name}</h3>
-                  <p style={{ fontSize: '0.85rem', opacity: 0.7, lineHeight: 1.7, marginBottom: '1.5rem' }}>{maker.story}</p>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '1px solid var(--glass-border)', paddingTop: '1.5rem' }}>
-                    <span style={{ fontSize: '0.75rem', opacity: 0.5, letterSpacing: '1px', textTransform: 'uppercase' }}><Icons.MapPin size={12} style={{ display: 'inline', marginRight: '5px', verticalAlign: 'middle' }} /> {maker.location}</span>
-                    <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '0.75rem', letterSpacing: '1px', textTransform: 'uppercase', fontWeight: 500 }}>Read Biography &rarr;</Link>
-                  </div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+      {/* 4. GUARDIANS OF THE LEGACY */}
+      <GuardiansOfLegacy />
 
 
 
