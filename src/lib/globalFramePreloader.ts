@@ -1,4 +1,4 @@
-﻿/**
+/**
  * globalFramePreloader.ts
  *
  * Singleton preloader that aggressively loads ALL animation frames
@@ -101,7 +101,7 @@ export async function startGlobalFramePreload(): Promise<void> {
     const chunk = africaIndices.slice(i, i + 15);
     await Promise.allSettled(
       chunk.map((idx) => {
-        const url = '/storyboard-frames/earth_africa_' + String(idx + 1).padStart(4, '0') + '.webp';
+        const url = '/storyboard-frames/africa_' + String(idx + 1).padStart(4, '0') + '.webp';
         // Globe Africa uses offset index (after Asia)
         return loadIntoCache(globeCache, url, GLOBE_ASIA_TOTAL + idx);
       })
