@@ -1,4 +1,7 @@
-"use client";
+const fs = require('fs');
+const path = require('path');
+
+const code = `"use client";
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
@@ -10,7 +13,7 @@ const TOTAL_FRAMES = 240;
 function getCoreFrameUrl(index: number): string {
   const safeIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.floor(index)));
   const num = String(safeIdx + 1).padStart(4, "0");
-  return `/provenance-core/core_${num}.webp`;
+  return \`/provenance-core/core_\${num}.webp\`;
 }
 
 // 5 Verification Stages with precise frame targets & luxury descriptions
@@ -128,7 +131,7 @@ export default function SafeguardsOriginExperience() {
         resolve(img);
       };
       img.onerror = () => {
-        reject(new Error(`Failed to load core frame ${index}`));
+        reject(new Error(\`Failed to load core frame \${index}\`));
       };
     });
   }, []);
@@ -312,7 +315,7 @@ export default function SafeguardsOriginExperience() {
         lightY,
         Math.max(w, h) * 0.6
       );
-      radGlow.addColorStop(0, `rgba(212, 175, 55, ${0.14 + stageProgress * 0.06})`);
+      radGlow.addColorStop(0, \`rgba(212, 175, 55, \${0.14 + stageProgress * 0.06})\`);
       radGlow.addColorStop(0.5, "rgba(212, 175, 55, 0.03)");
       radGlow.addColorStop(1, "rgba(250, 249, 246, 0)");
 
@@ -565,7 +568,7 @@ export default function SafeguardsOriginExperience() {
             >
               <motion.div
                 animate={{
-                  height: `${(activeStageIdx / (STAGES.length - 1)) * 100}%`,
+                  height: \`\${(activeStageIdx / (STAGES.length - 1)) * 100}%\`,
                 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                 style={{
@@ -956,3 +959,7 @@ export default function SafeguardsOriginExperience() {
     </section>
   );
 }
+`;
+
+fs.writeFileSync('d:/store/src/components/SafeguardsOriginExperience.tsx', code, 'utf8');
+console.log('Done writing SafeguardsOriginExperience.tsx');
