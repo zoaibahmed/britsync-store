@@ -272,9 +272,11 @@ export default function ArtisanGlobeJourney() {
       );
       targetFrameRef.current = targetIndex;
 
-      // Update active step overlay
+      // Update active step overlay without overlapping boundary flicker
       const currentStepIdx = STEPS.findIndex(
-        (s) => rawProgress >= s.range[0] && rawProgress <= s.range[1]
+        (s, idx) =>
+          rawProgress >= s.range[0] &&
+          (idx === STEPS.length - 1 ? rawProgress <= s.range[1] : rawProgress < s.range[1])
       );
       if (currentStepIdx !== -1 && currentStepIdx !== activeStepIdx) {
         setActiveStepIdx(currentStepIdx);
