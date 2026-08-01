@@ -42,7 +42,8 @@ next-env.d.ts
 
 # large media & temp files
 *.mp4
-*.mov
-*.zip
-scripts/extract-frames.js
+# IDE & tooling
+.vscode
+.mimocode
+
 

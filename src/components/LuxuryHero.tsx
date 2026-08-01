@@ -123,12 +123,18 @@ export default function LuxuryHero() {
   }, []);
 
   /* ── advance / rewind frames ─────────────────────────────────────────── */
+  const lastStateFrameRef = useRef(0);
   const moveFrames = useCallback((delta: number) => {
     const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, frameRef.current + delta));
     if (next === frameRef.current) return;
     frameRef.current = next;
     drawFrame(next);
-    setFrameIdx(next);
+    
+    // Throttle React state re-renders to every 2 frames or threshold boundaries
+    if (Math.abs(next - lastStateFrameRef.current) >= 2 || next >= CONTENT_THRESHOLD || next === 0 || next === TOTAL_FRAMES - 1) {
+      lastStateFrameRef.current = next;
+      setFrameIdx(next);
+    }
 
     if (next >= TOTAL_FRAMES - 1) {
       // Done — release scroll control + animate navbar in
@@ -153,7 +159,11 @@ export default function LuxuryHero() {
       img.onload = () => {
         loadedRef.current[i] = true;
         done++;
-        setLoadPct(Math.round((done / TOTAL_FRAMES) * 100));
+        // Throttle progress updates to avoid 130 React re-renders
+        const pct = Math.round((done / TOTAL_FRAMES) * 100);
+        if (pct % 10 === 0 || pct === 100) {
+          setLoadPct(pct);
+        }
         if (i === 0) { setFirstReady(true); drawFrame(0); }
       };
       imagesRef.current[i] = img;

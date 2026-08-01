@@ -28,6 +28,7 @@ function loadIntoCache(
   if (cache.has(index)) return Promise.resolve();
   return new Promise((resolve) => {
     const img = new Image();
+    img.decoding = "async";
     img.src = url;
     img.onload = () => { cache.set(index, img); resolve(); };
     img.onerror = () => resolve(); // silently skip failed frames

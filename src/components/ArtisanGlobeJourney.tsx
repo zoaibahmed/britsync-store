@@ -233,8 +233,10 @@ export default function ArtisanGlobeJourney() {
 
     const tick = () => {
       const diff = targetFrameRef.current - currentFrameRef.current;
-      if (Math.abs(diff) > 0.05) {
-        currentFrameRef.current += diff * 0.10; // Slightly slower, smooth tracking
+      const absDiff = Math.abs(diff);
+      if (absDiff > 0.05) {
+        const lerpFactor = absDiff > 15 ? 0.30 : 0.20;
+        currentFrameRef.current += diff * lerpFactor;
         renderFrameOnCanvas(Math.round(currentFrameRef.current));
       } else if (Math.round(currentFrameRef.current) !== Math.round(targetFrameRef.current)) {
         currentFrameRef.current = targetFrameRef.current;
@@ -280,7 +282,7 @@ export default function ArtisanGlobeJourney() {
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
-    handleScroll(); // Initial position check
+    handleScroll();
 
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -294,7 +296,7 @@ export default function ArtisanGlobeJourney() {
       ref={containerRef}
       style={{
         position: "relative",
-        height: "2500vh", // Slightly slower 2500vh scroll runway
+        height: "650vh",
         backgroundColor: "#020408",
         color: "#FAF9F6",
       }}

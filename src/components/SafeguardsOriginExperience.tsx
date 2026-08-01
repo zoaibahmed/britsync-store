@@ -8,7 +8,7 @@ import { provenanceCache, startGlobalFramePreload } from "@/lib/globalFramePrelo
    CONSTANTS
 ───────────────────────────────────────────── */
 const TOTAL_FRAMES = 360;
-const SCROLL_HEIGHT_VH = 650; // Extra long scroll runway for ultra-slow cinematic scrubbing
+const SCROLL_HEIGHT_VH = 380; // Responsive scroll runway for smooth cinematic scrubbing
 
 // First 8% of the runway is the "entry zone" — frame stays at 0,
 // a cinematic intro screen is shown. Frames only start after this.
@@ -252,11 +252,12 @@ export default function SafeguardsOriginExperience() {
       const target = targetFrameRef.current;
       const curr = currentFrameRef.current;
       const diff = target - curr;
-      // Ultra-slow cinematic lerp — max 1.2 frames per RAF tick
-      const step = diff * 0.04;
-      const clampedStep = Math.max(-1.2, Math.min(1.2, step));
-      if (Math.abs(diff) > 0.02) {
-        currentFrameRef.current = curr + clampedStep;
+      // Responsive adaptive lerp — smooth tracking when slow, instant tracking when fast
+      const absDiff = Math.abs(diff);
+      const lerpFactor = absDiff > 20 ? 0.35 : 0.18;
+      const step = diff * lerpFactor;
+      if (absDiff > 0.05) {
+        currentFrameRef.current = curr + step;
       } else {
         currentFrameRef.current = target;
       }
