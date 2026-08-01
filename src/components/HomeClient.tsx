@@ -53,6 +53,71 @@ function PremiumCounter({ value, suffix = "" }: { value: number; suffix?: string
   return <span ref={ref} style={{ fontFamily: 'var(--font-playfair), Georgia, serif' }}>0{suffix}</span>;
 }
 
+// 2. Interactive 3D Perspective Tilt Wrapper
+function Tilt3D({ children, style, className }: { children: React.ReactNode; style?: React.CSSProperties; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [rotX, setRotX] = useState(0);
+  const [rotY, setRotY] = useState(0);
+  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!ref.current) return;
+    const rect = ref.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const centerX = rect.width / 2;
+    const centerY = rect.height / 2;
+    const rotateX = -((y - centerY) / centerY) * 7;
+    const rotateY = ((x - centerX) / centerX) * 7;
+    setRotX(rotateX);
+    setRotY(rotateY);
+    setGlare({ x: (x / rect.width) * 100, y: (y / rect.height) * 100, opacity: 0.12 });
+  };
+
+  const handleMouseLeave = () => {
+    setRotX(0);
+    setRotY(0);
+    setGlare({ x: 50, y: 50, opacity: 0 });
+  };
+
+  return (
+    <div
+      ref={ref}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        perspective: 1000,
+        transformStyle: 'preserve-3d',
+        ...style,
+      }}
+      className={className}
+    >
+      <motion.div
+        animate={{ rotateX: rotX, rotateY: rotY }}
+        transition={{ type: 'spring', stiffness: 260, damping: 22 }}
+        style={{
+          width: '100%',
+          height: '100%',
+          transformStyle: 'preserve-3d',
+          position: 'relative',
+        }}
+      >
+        {children}
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            pointerEvents: 'none',
+            borderRadius: 'inherit',
+            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(212,175,55,${glare.opacity}) 0%, transparent 65%)`,
+            transition: 'opacity 0.3s ease',
+          }}
+        />
+      </motion.div>
+    </div>
+  );
+}
+
 export default function HomeClient({ eliteProducts, generalProducts }: HomeClientProps) {
 
   // Interactive Passport State
@@ -119,26 +184,48 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </section>
 
-      {/* 2. TRUSTED BY */}
+      {/* 2. TRUSTED BY — 3D Glass Ribbon */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={revealVariants}
-        style={{ padding: '4rem 2rem', borderBottom: '1px solid var(--glass-border)', backgroundColor: 'var(--surface)' }}
+        style={{ padding: '4.5rem 2rem', borderBottom: '1px solid var(--glass-border)', backgroundColor: 'var(--surface)' }}
       >
         <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '0.65rem', letterSpacing: '3px', textTransform: 'uppercase', opacity: 0.5, marginBottom: '2rem' }}>Safeguarded in Collaboration With</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '4rem', alignItems: 'center', opacity: 0.6 }}>
-            <span style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.1rem', letterSpacing: '2px', fontWeight: 300 }}>ROYAL HERITAGE COMMISSION</span>
-            <span style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.1rem', letterSpacing: '2px', fontWeight: 300 }}>GLOBAL CRAFT ADVOCACY</span>
-            <span style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.1rem', letterSpacing: '2px', fontWeight: 300 }}>WORLD APPELATIONS LEAGUE</span>
-            <span style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.1rem', letterSpacing: '2px', fontWeight: 300 }}>ATELIER AUDITING ALLIANCE</span>
+          <p style={{ fontSize: '0.65rem', letterSpacing: '3px', textTransform: 'uppercase', opacity: 0.5, marginBottom: '2.2rem' }}>Safeguarded in Collaboration With</p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2.5rem', alignItems: 'center' }}>
+            {[
+              "ROYAL HERITAGE COMMISSION",
+              "GLOBAL CRAFT ADVOCACY",
+              "WORLD APPELLATIONS LEAGUE",
+              "ATELIER AUDITING ALLIANCE"
+            ].map((partner) => (
+              <motion.div
+                key={partner}
+                whileHover={{ scale: 1.06, y: -4 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                  padding: '0.9rem 1.8rem',
+                  borderRadius: '30px',
+                  backgroundColor: 'rgba(212,175,55,0.03)',
+                  border: '1px solid var(--glass-border)',
+                  fontFamily: 'var(--font-playfair), serif',
+                  fontSize: '0.95rem',
+                  letterSpacing: '2px',
+                  fontWeight: 300,
+                  color: 'var(--text)',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
+                }}
+              >
+                {partner}
+              </motion.div>
+            ))}
           </div>
         </div>
       </motion.section>
 
-      {/* 3. MARKETPLACE STATISTICS */}
+      {/* 3. MARKETPLACE STATISTICS — 3D Floating Glass Cards */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
@@ -159,31 +246,35 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
       >
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }} />
         <div className="glow-orb" style={{ bottom: '-10%', left: '10%', width: '400px', height: '400px', opacity: 0.4 }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '4rem', position: 'relative', zIndex: 10 }}>
-          <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '2rem', backgroundColor: 'rgba(10,10,12,0.5)', padding: '2rem', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
-            <h3 style={{ fontSize: '3.5rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              <PremiumCounter value={100} suffix="%" />
-            </h3>
-            <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85 }}>Hand-Audited Studios</span>
-          </div>
-          <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '2rem', backgroundColor: 'rgba(10,10,12,0.5)', padding: '2rem', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
-            <h3 style={{ fontSize: '3.5rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              <PremiumCounter value={45} suffix="+" />
-            </h3>
-            <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85 }}>Protected Regions</span>
-          </div>
-          <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '2rem', backgroundColor: 'rgba(10,10,12,0.5)', padding: '2rem', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
-            <h3 style={{ fontSize: '3.5rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              <PremiumCounter value={1250000} suffix="+" />
-            </h3>
-            <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85 }}>Direct Patron Payouts (£)</span>
-          </div>
-          <div style={{ borderLeft: '2px solid var(--accent)', paddingLeft: '2rem', backgroundColor: 'rgba(10,10,12,0.5)', padding: '2rem', borderRadius: '12px', backdropFilter: 'blur(10px)' }}>
-            <h3 style={{ fontSize: '3.5rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.5rem' }}>
-              <PremiumCounter value={15} suffix="k" />
-            </h3>
-            <span style={{ fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85 }}>Registered Masterpieces</span>
-          </div>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2.5rem', position: 'relative', zIndex: 10 }}>
+          {[
+            { val: 100, suffix: "%", label: "Hand-Audited Studios" },
+            { val: 45, suffix: "+", label: "Protected Regions" },
+            { val: 1250000, suffix: "+", label: "Direct Patron Payouts (£)" },
+            { val: 15, suffix: "k", label: "Registered Masterpieces" }
+          ].map((stat) => (
+            <Tilt3D key={stat.label}>
+              <div 
+                style={{ 
+                  borderLeft: '3px solid var(--accent)', 
+                  backgroundColor: 'rgba(10,10,12,0.65)', 
+                  padding: '2.2rem 2rem', 
+                  borderRadius: '16px', 
+                  backdropFilter: 'blur(16px)',
+                  border: '1px solid rgba(212,175,55,0.2)',
+                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                  height: '100%',
+                }}
+              >
+                <h3 style={{ fontSize: '3.2rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.4rem', margin: 0 }}>
+                  <PremiumCounter value={stat.val} suffix={stat.suffix} />
+                </h3>
+                <span style={{ fontSize: '0.72rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85, fontWeight: 500 }}>
+                  {stat.label}
+                </span>
+              </div>
+            </Tilt3D>
+          ))}
         </div>
       </motion.section>
 
@@ -294,19 +385,20 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
               </div>
             </div>
 
-            {/* Passport Screen Card */}
-            <div 
-              style={{ 
-                border: '1px solid rgba(212, 175, 55, 0.35)', 
-                backgroundColor: '#0D0D10', 
-                padding: '3.5rem', 
-                borderRadius: '16px',
-                position: 'relative', 
-                minHeight: '440px', 
-                boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
-                color: '#FAF9F6'
-              }}
-            >
+            {/* Passport Screen Card with 3D Tilt */}
+            <Tilt3D>
+              <div 
+                style={{ 
+                  border: '1px solid rgba(212, 175, 55, 0.35)', 
+                  backgroundColor: '#0D0D10', 
+                  padding: '3.5rem', 
+                  borderRadius: '16px',
+                  position: 'relative', 
+                  minHeight: '440px', 
+                  boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
+                  color: '#FAF9F6'
+                }}
+              >
               <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(to right, var(--accent), #e2c044)', borderRadius: '16px 16px 0 0' }} />
               
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
@@ -411,6 +503,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
                 )}
               </AnimatePresence>
             </div>
+            </Tilt3D>
           </div>
         </div>
       </motion.section>
@@ -432,20 +525,24 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
             <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Artisan Chronicles & Biographies</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '4rem' }}>
-            <motion.div whileHover={{ y: -6 }} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume I &mdash; Morocco</span>
-              <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Fatima: Rescuing High Atlas Kilims</h3>
-              <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Fatima expanded her mountaintop weaving loom cooperative to safeguard heritage geometric Berber lineage patterns, directly employing local young women weavers.</p>
-              <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
-            </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+            <Tilt3D>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume I &mdash; Morocco</span>
+                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Fatima: Rescuing High Atlas Kilims</h3>
+                <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Fatima expanded her mountaintop weaving loom cooperative to safeguard heritage geometric Berber lineage patterns, directly employing local young women weavers.</p>
+                <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
+              </div>
+            </Tilt3D>
 
-            <motion.div whileHover={{ y: -6 }} style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume II &mdash; Sindh</span>
-              <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Aisha: The 21 Steps of Organic Dyeing</h3>
-              <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Detailing the rigorous chemistry of clay, mustard oil, water, and pure wood ash required to bind vegetable indigo dyes permanently into organic cotton textiles.</p>
-              <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
-            </motion.div>
+            <Tilt3D>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
+                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume II &mdash; Sindh</span>
+                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Aisha: The 21 Steps of Organic Dyeing</h3>
+                <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Detailing the rigorous chemistry of clay, mustard oil, water, and pure wood ash required to bind vegetable indigo dyes permanently into organic cotton textiles.</p>
+                <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
+              </div>
+            </Tilt3D>
           </div>
         </div>
       </section>
@@ -458,20 +555,22 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
             <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Letters of Patronage</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
             {[
               { text: "The Ajrak Shawl is an absolute masterpiece. Having the exact GPS coordinates of Aisha's studio and viewing the inspector's signatures on the cryptographic passport makes me feel like a true custodian of Sindh history.", author: "Jane B. from London", rating: "★★★★★" },
               { text: "The Iznik Ceramic Bowl is breathtaking. The colors and glaze are outstanding. The digital passport gives me complete trust that I am holding a genuine, legally protected piece of Iznik history.", author: "Hans M. from Munich", rating: "★★★★★" },
               { text: "Acquiring the hand-spun alpaca throw has redefined my space. Knowing the exact weaver cooperative in Peru and reading Fatima's story created a deep, lasting connection to the work.", author: "Camille L. from Paris", rating: "★★★★★" }
             ].map((t, idx) => (
-              <motion.div key={idx} whileHover={{ y: -8 }} className="card" style={{ padding: '3.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: '16px', borderTop: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)' }}>
-                <p style={{ fontStyle: 'italic', opacity: 0.88, lineHeight: 1.8, fontSize: '0.94rem', marginBottom: '2rem' }}>&ldquo;{t.text}&rdquo;</p>
-                <div>
-                  <div style={{ color: 'var(--accent)', marginBottom: '0.5rem', fontSize: '0.85rem', letterSpacing: '2px' }}>{t.rating}</div>
-                  <strong style={{ fontSize: '0.82rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text)' }}>{t.author}</strong>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--accent)', marginTop: '0.3rem', fontWeight: 500 }}>✓ Verified Patron & Passport Holder</span>
+              <Tilt3D key={idx}>
+                <div style={{ padding: '3.5rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: '16px', borderTop: '4px solid var(--accent)', border: '1px solid var(--glass-border)', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
+                  <p style={{ fontStyle: 'italic', opacity: 0.88, lineHeight: 1.8, fontSize: '0.94rem', marginBottom: '2rem' }}>&ldquo;{t.text}&rdquo;</p>
+                  <div>
+                    <div style={{ color: 'var(--accent)', marginBottom: '0.5rem', fontSize: '0.85rem', letterSpacing: '2px' }}>{t.rating}</div>
+                    <strong style={{ fontSize: '0.82rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text)' }}>{t.author}</strong>
+                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--accent)', marginTop: '0.3rem', fontWeight: 500 }}>✓ Verified Patron & Passport Holder</span>
+                  </div>
                 </div>
-              </motion.div>
+              </Tilt3D>
             ))}
           </div>
         </div>
@@ -515,52 +614,54 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
             </div>
           </div>
 
-          {/* Live Interactive Slider Payout Visualizer */}
-          <div style={{ border: '1px solid rgba(212,175,55,0.4)', borderRadius: '20px', padding: '3rem', backgroundColor: '#0D0D10', color: '#FAF9F6', display: 'flex', flexDirection: 'column', gap: '1.8rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', margin: 0, color: 'var(--accent)', fontWeight: 700 }}>LIVE PAYOUT CALCULATOR</h4>
-              <span className="glow-dot" />
-            </div>
-
-            <div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.8rem', opacity: 0.8 }}>
-                <span>Slide Acquisition Price:</span>
-                <strong style={{ color: 'var(--accent)', fontSize: '1.2rem', fontFamily: 'monospace' }}>£{escrowAmount}</strong>
+          {/* Live Interactive Slider Payout Visualizer with 3D Tilt */}
+          <Tilt3D>
+            <div style={{ border: '1px solid rgba(212,175,55,0.4)', borderRadius: '20px', padding: '3rem', backgroundColor: '#0D0D10', color: '#FAF9F6', display: 'flex', flexDirection: 'column', gap: '1.8rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', margin: 0, color: 'var(--accent)', fontWeight: 700 }}>LIVE PAYOUT CALCULATOR</h4>
+                <span className="glow-dot" />
               </div>
-              <input
-                type="range"
-                min="100"
-                max="5000"
-                step="50"
-                value={escrowAmount}
-                onChange={(e) => setEscrowAmount(Number(e.target.value))}
-                style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent)' }}
-              />
-            </div>
 
-            {/* Visual Bar */}
-            <div style={{ height: '12px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', display: 'flex' }}>
-              <div style={{ width: '95%', backgroundColor: 'var(--accent)' }} />
-              <div style={{ width: '5%', backgroundColor: '#666' }} />
-            </div>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.8rem', opacity: 0.8 }}>
+                  <span>Slide Acquisition Price:</span>
+                  <strong style={{ color: 'var(--accent)', fontSize: '1.2rem', fontFamily: 'monospace' }}>£{escrowAmount}</strong>
+                </div>
+                <input
+                  type="range"
+                  min="100"
+                  max="5000"
+                  step="50"
+                  value={escrowAmount}
+                  onChange={(e) => setEscrowAmount(Number(e.target.value))}
+                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent)' }}
+                />
+              </div>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-              <span style={{ opacity: 0.8 }}>Patron Purchase Total:</span>
-              <strong style={{ color: '#FAF9F6' }}>£{escrowAmount.toFixed(2)}</strong>
+              {/* Visual Bar */}
+              <div style={{ height: '12px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', display: 'flex' }}>
+                <div style={{ width: '95%', backgroundColor: 'var(--accent)' }} />
+                <div style={{ width: '5%', backgroundColor: '#666' }} />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
+                <span style={{ opacity: 0.8 }}>Patron Purchase Total:</span>
+                <strong style={{ color: '#FAF9F6' }}>£{escrowAmount.toFixed(2)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--accent)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
+                <span>Artisan Direct Payment (95%):</span>
+                <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.95).toFixed(2)}</strong>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', opacity: 0.7 }}>
+                <span>Registry Fee (5%):</span>
+                <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.05).toFixed(2)}</strong>
+              </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--accent)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-              <span>Artisan Direct Payment (95%):</span>
-              <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.95).toFixed(2)}</strong>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', opacity: 0.7 }}>
-              <span>Registry Fee (5%):</span>
-              <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.05).toFixed(2)}</strong>
-            </div>
-          </div>
+          </Tilt3D>
         </div>
       </motion.section>
 
-      {/* 14. VERIFICATION PROCESS */}
+      {/* 14. VERIFICATION PROCESS — 3D Soft Cards */}
       <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
@@ -568,22 +669,23 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
             <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>On-Site Inspection Guidelines</h2>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '3rem' }}>
-            <motion.div whileHover={{ y: -8 }} style={{ padding: '3rem', border: '1px solid var(--glass-border)', borderRadius: '18px', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ color: 'var(--accent)', marginBottom: '1.2rem' }}><Icons.Shield size={32} /></div>
-              <h4 style={{ fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--text)' }}>Lineage Audit</h4>
-              <p style={{ fontSize: '0.88rem', opacity: 0.75, lineHeight: 1.7, margin: 0 }}>Artisans present family records, traditional tools, and apprentice records to document the heritage of the workshop.</p>
-            </motion.div>
-            <motion.div whileHover={{ y: -8 }} style={{ padding: '3rem', border: '1px solid var(--glass-border)', borderRadius: '18px', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ color: 'var(--accent)', marginBottom: '1.2rem' }}><Icons.Compass size={32} /></div>
-              <h4 style={{ fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--text)' }}>Material Audit</h4>
-              <p style={{ fontSize: '0.88rem', opacity: 0.75, lineHeight: 1.7, margin: 0 }}>Board inspects organic pigments, raw clays, or heritage cottons to guarantee zero synthetic chemical substitutions.</p>
-            </motion.div>
-            <motion.div whileHover={{ y: -8 }} style={{ padding: '3rem', border: '1px solid var(--glass-border)', borderRadius: '18px', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-sm)' }}>
-              <div style={{ color: 'var(--accent)', marginBottom: '1.2rem' }}><Icons.Lock size={32} /></div>
-              <h4 style={{ fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--text)' }}>Ledger Stamp</h4>
-              <p style={{ fontSize: '0.88rem', opacity: 0.75, lineHeight: 1.7, margin: 0 }}>Every approved item receives its individual serial hash, securing absolute digital representation for buyers.</p>
-            </motion.div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
+            {[
+              { icon: Icons.Shield, title: "Lineage Audit", body: "Artisans present family records, traditional tools, and apprentice records to document the heritage of the workshop." },
+              { icon: Icons.Compass, title: "Material Audit", body: "Board inspects organic pigments, raw clays, or heritage cottons to guarantee zero synthetic chemical substitutions." },
+              { icon: Icons.Lock, title: "Ledger Stamp", body: "Every approved item receives its individual serial hash, securing absolute digital representation for buyers." },
+            ].map((step) => {
+              const StepIcon = step.icon;
+              return (
+                <Tilt3D key={step.title}>
+                  <div style={{ padding: '3rem', border: '1px solid var(--glass-border)', borderRadius: '18px', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-sm)', height: '100%' }}>
+                    <div style={{ color: 'var(--accent)', marginBottom: '1.2rem' }}><StepIcon size={32} /></div>
+                    <h4 style={{ fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--text)' }}>{step.title}</h4>
+                    <p style={{ fontSize: '0.88rem', opacity: 0.75, lineHeight: 1.7, margin: 0 }}>{step.body}</p>
+                  </div>
+                </Tilt3D>
+              );
+            })}
           </div>
         </div>
       </section>
