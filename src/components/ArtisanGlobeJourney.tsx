@@ -25,10 +25,10 @@ const STEPS = [
   {
     range: [0, 0.22],
     stepNum: "01",
-    tag: "GLOBAL ARTISAN REGISTRY",
-    title: "Orbit to Origin Flight",
-    subtitle: "Tracking geographically attested masterwork ateliers across the eastern hemisphere",
-    badge: "🇵🇰 🇮🇳 Indus & South Asia Guild",
+    tag: "SOUTH ASIA REGIONAL GUILD",
+    title: "Indus Valley & Saharanpur Ateliers",
+    subtitle: "Tracking geographically attested masterwork ateliers across the Indus basin & North Indian hardwood forests.",
+    badge: "🇵🇰 🇮🇳 South Asia Region",
     artisan: "Aisha Studio & Rajesh Atelier",
     region: "Sindh Valley & Saharanpur",
     ctaText: "Explore Asian Masterworks",
@@ -37,9 +37,9 @@ const STEPS = [
   {
     range: [0.22, 0.44],
     stepNum: "02",
-    tag: "ASIAN CRAFT HERITAGE",
-    title: "Jaali Teak & Natural Ajrak",
-    subtitle: "5,000-year resist-dyeing pressed into handspun cotton & hand-carved teak Jaali screens",
+    tag: "HERITAGE CRAFT AUDIT",
+    title: "Jaali Teak & Natural Indigo Ajrak",
+    subtitle: "5,000-year resist-dyeing pressed into handspun cotton & hand-carved teak Jaali screens.",
     badge: "🌿 100% Organic & Hand-Carved",
     artisan: "Master Craftsmen Guild",
     region: "Uttar Pradesh & Sindh",
@@ -49,22 +49,22 @@ const STEPS = [
   {
     range: [0.44, 0.54],
     stepNum: "TRANSIT",
-    tag: "CONTINENTAL TRANSIT",
-    title: "Cloud Pass Journey",
-    subtitle: "Crossing maritime airspace from South Asia into North Africa's Atlas mountain ranges...",
-    badge: "☁️ Trans-Continental Flight",
+    tag: "TRANSCONTINENTAL CORRIDOR",
+    title: "Intercontinental Flight Corridor",
+    subtitle: "Crossing maritime airspace from South Asia into North Africa's High Atlas mountain ranges...",
+    badge: "☁️ Trans-Continental Transit",
     artisan: "Aerial Corridor",
-    region: "Intercontinental",
+    region: "Intercontinental Flight",
     ctaText: "View Atelier Passport",
     ctaHref: "/search",
   },
   {
     range: [0.54, 0.76],
     stepNum: "03",
-    tag: "AFRICAN REGISTRY",
+    tag: "NORTH AFRICA REGIONAL GUILD",
     title: "High Atlas Mountain Looms",
-    subtitle: "Generational hand-woven Berber & Kilim rugs dyed with saffron, pomegranate & Atlas cedar",
-    badge: "🇲🇦 Morocco High Atlas Guild",
+    subtitle: "Generational hand-woven Berber & Kilim rugs dyed with saffron, pomegranate & Atlas cedar.",
+    badge: "🇲🇦 Morocco Atlas Region",
     artisan: "Fatima Loom Co-op",
     region: "Aït Bouguemez Valley",
     ctaText: "Explore Moroccan Weaves",
@@ -73,12 +73,12 @@ const STEPS = [
   {
     range: [0.76, 1.0],
     stepNum: "04",
-    tag: "CERTIFIED MASTERWORKS",
-    title: "5 Geographically Attested Guilds",
-    subtitle: "Zero synthetic fibers permitted. Cryptographic GPS geofencing & provenance passport verified.",
-    badge: "🟢 5 Active GPS Ateliers",
+    tag: "PROTECTED APPELLATIONS",
+    title: "Geographically Attested Regional Guilds",
+    subtitle: "Zero synthetic fibers permitted. Cryptographic GPS geofencing & provenance passport verified across active regional guilds.",
+    badge: "🟢 2 Active Regional Guilds",
     artisan: "Global Artisan Collective",
-    region: "Worldwide Registry",
+    region: "Indus & High Atlas Guilds",
     ctaText: "Explore All Appellations",
     ctaHref: "/collections",
   },
@@ -378,7 +378,7 @@ export default function ArtisanGlobeJourney() {
           </div>
         )}
 
-        {/* Top Header Label */}
+        {/* Top Header Glass Tag */}
         <div
           style={{
             position: "absolute",
@@ -392,26 +392,38 @@ export default function ArtisanGlobeJourney() {
             pointerEvents: "none",
           }}
         >
-          <span
+          <div
             style={{
-              display: "inline-block",
-              padding: "0.35rem 1.2rem",
-              borderRadius: "20px",
-              backgroundColor: "rgba(10, 12, 18, 0.65)",
-              border: "1px solid rgba(212, 175, 55, 0.3)",
-              backdropFilter: "blur(12px)",
-              fontSize: "0.65rem",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.6rem",
+              padding: "0.45rem 1.4rem",
+              borderRadius: "30px",
+              backgroundColor: "rgba(10, 12, 18, 0.75)",
+              border: "1px solid rgba(212, 175, 55, 0.35)",
+              backdropFilter: "blur(16px)",
+              fontSize: "0.68rem",
               letterSpacing: "3px",
               textTransform: "uppercase",
               color: "#D4AF37",
               fontWeight: 700,
+              boxShadow: "0 10px 30px rgba(0,0,0,0.5)",
             }}
           >
-            GLOBAL ARTISAN REGISTRY CINEMATIC SCROLL
-          </span>
+            <span
+              style={{
+                width: "6px",
+                height: "6px",
+                borderRadius: "50%",
+                backgroundColor: "#D4AF37",
+                boxShadow: "0 0 8px #D4AF37",
+              }}
+            />
+            GLOBAL ARTISAN REGISTRY &bull; 2 REGIONAL GUILDS
+          </div>
         </div>
 
-        {/* Bottom Floating Glass Card & Overlays */}
+        {/* Bottom Museum Glass Plaque Card */}
         <div
           style={{
             position: "absolute",
@@ -420,7 +432,7 @@ export default function ArtisanGlobeJourney() {
             transform: "translateX(-50%)",
             zIndex: 5,
             width: "92%",
-            maxWidth: "880px",
+            maxWidth: "920px",
           }}
         >
           <AnimatePresence mode="wait">
@@ -431,20 +443,31 @@ export default function ArtisanGlobeJourney() {
               exit={{ opacity: 0, y: -15 }}
               transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               style={{
-                padding: "2rem 2.5rem",
+                padding: "2.2rem 2.8rem",
                 borderRadius: "24px",
-                backgroundColor: "rgba(6, 9, 16, 0.78)",
-                border: "1px solid rgba(212, 175, 55, 0.28)",
-                backdropFilter: "blur(20px)",
+                backgroundColor: "rgba(6, 9, 16, 0.85)",
+                border: "1px solid rgba(212, 175, 55, 0.35)",
+                backdropFilter: "blur(24px)",
                 boxShadow:
-                  "0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 30px rgba(212, 175, 55, 0.08)",
+                  "0 30px 60px -12px rgba(0, 0, 0, 0.9), 0 0 35px rgba(212, 175, 55, 0.12)",
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
                 flexWrap: "wrap",
-                gap: "1.5rem",
+                gap: "1.8rem",
+                position: "relative",
               }}
             >
+              <div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: "3rem",
+                  width: "60px",
+                  height: "3px",
+                  background: "linear-gradient(to right, #D4AF37, transparent)",
+                }}
+              />
               <div style={{ flex: "1 1 320px" }}>
                 {/* Step Overline */}
                 <div

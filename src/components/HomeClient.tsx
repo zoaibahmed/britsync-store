@@ -290,219 +290,201 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         viewport={{ once: true }}
         variants={revealVariants}
         style={{ 
-          padding: '9rem 3rem', 
-          backgroundImage: 'linear-gradient(to bottom, rgba(10,10,12,0.92), rgba(18,18,24,0.88)), url("https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1600")',
+          padding: '10rem 3rem', 
+          backgroundImage: 'linear-gradient(to bottom, rgba(10,10,12,0.95), rgba(14,15,22,0.92)), url("https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1600")',
           backgroundSize: 'cover',
           backgroundPosition: 'center',
           color: '#FAF9F6',
-          borderTop: '1px solid var(--glass-border)', 
-          borderBottom: '1px solid var(--glass-border)', 
+          borderTop: '1px solid rgba(212,175,55,0.3)', 
+          borderBottom: '1px solid rgba(212,175,55,0.3)', 
           position: 'relative', 
           overflow: 'hidden' 
         }}
       >
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }} />
-        <div className="glow-orb" style={{ top: '20%', right: '10%', width: '500px', height: '500px', opacity: 0.5 }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Cryptographic Heritage</span>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Provenance Passport Viewer</h2>
-            <p style={{ opacity: 0.7, maxWidth: '600px', margin: '1.5rem auto 0', fontSize: '0.95rem', lineHeight: 1.7 }}>
+        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} />
+        <div className="glow-orb" style={{ top: '15%', right: '8%', width: '550px', height: '550px', opacity: 0.45 }} />
+        
+        <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+          <div style={{ textAlign: 'center', marginBottom: '5.5rem' }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', padding: '0.4rem 1.2rem', borderRadius: '20px', backgroundColor: 'rgba(212,175,55,0.1)', border: '1px solid rgba(212,175,55,0.3)', color: 'var(--accent)', fontSize: '0.72rem', fontWeight: 600, letterSpacing: '2.5px', textTransform: 'uppercase', marginBottom: '1.2rem' }}>
+              <span className="glow-dot" /> CRYPTOGRAPHIC HERITAGE PASSPORT
+            </div>
+            <h2 style={{ fontSize: '3rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.5rem', fontWeight: 300, color: '#FAF9F6' }}>Provenance Passport Viewer</h2>
+            <p style={{ opacity: 0.8, maxWidth: '640px', margin: '1.2rem auto 0', fontSize: '0.98rem', lineHeight: 1.8 }}>
               Every masterpiece on Britsync is issued an unalterable digital passport detailing its GPS geofenced studio, material purity test, and cryptographic ledger block.
             </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.2fr', gap: '4rem', alignItems: 'center' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.25fr', gap: '4.5rem', alignItems: 'center' }}>
             {/* Tabs Controller */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div 
-                onClick={() => setPassportTab('origin')}
-                style={{ 
-                  padding: '2rem', 
-                  borderRadius: '16px',
-                  border: passportTab === 'origin' ? '1px solid var(--accent)' : '1px solid rgba(212, 175, 55, 0.2)', 
-                  backgroundColor: passportTab === 'origin' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(13, 13, 16, 0.85)', 
-                  color: '#FAF9F6',
-                  backdropFilter: 'blur(16px)',
-                  cursor: 'pointer', 
-                  transition: 'all 0.3s ease',
-                  boxShadow: passportTab === 'origin' ? '0 10px 30px rgba(212,175,55,0.15)' : 'none'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h3 style={{ fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase', color: passportTab === 'origin' ? 'var(--accent)' : '#FAF9F6', margin: 0 }}>
-                    <Icons.MapPin size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} /> Atelier Geographic Origin
-                  </h3>
-                  {passportTab === 'origin' && <span className="glow-dot" />}
-                </div>
-                <p style={{ fontSize: '0.85rem', opacity: 0.8, lineHeight: 1.6, margin: 0 }}>Inspect GPS geofenced coordinates confirming the exact building where weaving, firing, or carving took place.</p>
-              </div>
-
-              <div 
-                onClick={() => setPassportTab('audit')}
-                style={{ 
-                  padding: '2rem', 
-                  borderRadius: '16px',
-                  border: passportTab === 'audit' ? '1px solid var(--accent)' : '1px solid rgba(212, 175, 55, 0.2)', 
-                  backgroundColor: passportTab === 'audit' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(13, 13, 16, 0.85)', 
-                  color: '#FAF9F6',
-                  backdropFilter: 'blur(16px)',
-                  cursor: 'pointer', 
-                  transition: 'all 0.3s ease',
-                  boxShadow: passportTab === 'audit' ? '0 10px 30px rgba(212,175,55,0.15)' : 'none'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h3 style={{ fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase', color: passportTab === 'audit' ? 'var(--accent)' : '#FAF9F6', margin: 0 }}>
-                    <Icons.Verified size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} /> Audit Logs & Signatures
-                  </h3>
-                  {passportTab === 'audit' && <span className="glow-dot" />}
-                </div>
-                <p style={{ fontSize: '0.85rem', opacity: 0.8, lineHeight: 1.6, margin: 0 }}>Review the manual inspection check-ins, local materials audit, and regional craft association verification stamps.</p>
-              </div>
-
-              <div 
-                onClick={() => setPassportTab('ledger')}
-                style={{ 
-                  padding: '2rem', 
-                  borderRadius: '16px',
-                  border: passportTab === 'ledger' ? '1px solid var(--accent)' : '1px solid rgba(212, 175, 55, 0.2)', 
-                  backgroundColor: passportTab === 'ledger' ? 'rgba(212, 175, 55, 0.15)' : 'rgba(13, 13, 16, 0.85)', 
-                  color: '#FAF9F6',
-                  backdropFilter: 'blur(16px)',
-                  cursor: 'pointer', 
-                  transition: 'all 0.3s ease',
-                  boxShadow: passportTab === 'ledger' ? '0 10px 30px rgba(212,175,55,0.15)' : 'none'
-                }}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                  <h3 style={{ fontSize: '1rem', letterSpacing: '1px', textTransform: 'uppercase', color: passportTab === 'ledger' ? 'var(--accent)' : '#FAF9F6', margin: 0 }}>
-                    <Icons.Lock size={16} style={{ display: 'inline', marginRight: '8px', verticalAlign: 'middle' }} /> Cryptographic Ledger
-                  </h3>
-                  {passportTab === 'ledger' && <span className="glow-dot" />}
-                </div>
-                <p style={{ fontSize: '0.85rem', opacity: 0.8, lineHeight: 1.6, margin: 0 }}>Verify hashes indicating an unalterable timestamp validation on the decentralised provenance registry.</p>
-              </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
+              {[
+                { id: 'origin', icon: Icons.MapPin, title: 'Atelier Geographic Origin', desc: 'Inspect GPS geofenced coordinates confirming the exact building where weaving, firing, or carving took place.' },
+                { id: 'audit', icon: Icons.Verified, title: 'Audit Logs & Signatures', desc: 'Review the manual inspection check-ins, local materials audit, and regional craft association verification stamps.' },
+                { id: 'ledger', icon: Icons.Lock, title: 'Cryptographic Ledger', desc: 'Verify hashes indicating an unalterable timestamp validation on the decentralised provenance registry.' },
+              ].map((tab) => {
+                const IconComp = tab.icon;
+                const isSelected = passportTab === tab.id;
+                return (
+                  <motion.div 
+                    key={tab.id}
+                    onClick={() => setPassportTab(tab.id as any)}
+                    whileHover={{ x: 6, scale: 1.01 }}
+                    style={{ 
+                      padding: '2.2rem 2.4rem', 
+                      borderRadius: '20px',
+                      border: isSelected ? '1px solid var(--accent)' : '1px solid rgba(212, 175, 55, 0.18)', 
+                      backgroundColor: isSelected ? 'rgba(212, 175, 55, 0.12)' : 'rgba(10, 11, 15, 0.75)', 
+                      color: '#FAF9F6',
+                      backdropFilter: 'blur(20px)',
+                      cursor: 'pointer', 
+                      transition: 'all 0.35 ease',
+                      boxShadow: isSelected ? '0 15px 35px rgba(212,175,55,0.18), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 8px 25px rgba(0,0,0,0.3)',
+                      position: 'relative',
+                      overflow: 'hidden'
+                    }}
+                  >
+                    {isSelected && (
+                      <div style={{ position: 'absolute', top: 0, left: 0, bottom: 0, width: '4px', backgroundColor: 'var(--accent)' }} />
+                    )}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
+                      <h3 style={{ fontSize: '1.05rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: isSelected ? 'var(--accent)' : '#FAF9F6', margin: 0, fontWeight: 500 }}>
+                        <IconComp size={18} style={{ display: 'inline', marginRight: '10px', verticalAlign: 'middle', color: isSelected ? 'var(--accent)' : 'rgba(255,255,255,0.6)' }} /> {tab.title}
+                      </h3>
+                      {isSelected && (
+                        <span style={{ fontSize: '0.65rem', backgroundColor: 'var(--accent)', color: '#0A0A0C', padding: '0.2rem 0.6rem', borderRadius: '10px', fontWeight: 700, letterSpacing: '1px' }}>ACTIVE</span>
+                      )}
+                    </div>
+                    <p style={{ fontSize: '0.88rem', opacity: 0.78, lineHeight: 1.65, margin: 0, paddingLeft: '28px' }}>{tab.desc}</p>
+                  </motion.div>
+                );
+              })}
             </div>
 
             {/* Passport Screen Card with 3D Tilt */}
             <Tilt3D>
               <div 
                 style={{ 
-                  border: '1px solid rgba(212, 175, 55, 0.35)', 
-                  backgroundColor: '#0D0D10', 
-                  padding: '3.5rem', 
-                  borderRadius: '16px',
+                  border: '1px solid rgba(212, 175, 55, 0.4)', 
+                  backgroundColor: '#0A0B0F', 
+                  padding: '3.8rem 3.2rem', 
+                  borderRadius: '24px',
                   position: 'relative', 
-                  minHeight: '440px', 
-                  boxShadow: '0 25px 60px rgba(0,0,0,0.5)',
+                  minHeight: '460px', 
+                  boxShadow: '0 30px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
                   color: '#FAF9F6'
                 }}
               >
-              <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '4px', background: 'linear-gradient(to right, var(--accent), #e2c044)', borderRadius: '16px 16px 0 0' }} />
-              
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem' }}>
-                <div>
-                  <span style={{ fontSize: '0.65rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>AUTHENTICITY GUARANTEED</span>
-                  <div style={{ fontSize: '0.8rem', opacity: 0.8, fontFamily: 'monospace', marginTop: '0.2rem' }}>ID: BR-2026-94829</div>
+                {/* Gold metallic header band */}
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5px', background: 'linear-gradient(to right, #D4AF37, #F3E5AB, #D4AF37)', borderRadius: '24px 24px 0 0' }} />
+                
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1.4rem' }}>
+                  <div>
+                    <span style={{ fontSize: '0.68rem', color: 'var(--accent)', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <span style={{ width: '6px', height: '6px', borderRadius: '50%', backgroundColor: '#10B981' }} /> AUTHENTICITY GUARANTEED
+                    </span>
+                    <div style={{ fontSize: '0.85rem', opacity: 0.85, fontFamily: 'monospace', marginTop: '0.3rem', color: 'rgba(250,249,246,0.7)' }}>ATELIER PASSPORT #BR-2026-94829</div>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', backgroundColor: 'rgba(212,175,55,0.12)', padding: '0.5rem 1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                    <span style={{ fontSize: '0.9rem', color: 'var(--accent)' }}>★</span>
+                    <span style={{ fontSize: '0.78rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px' }}>PROVENANCE SCORE: 98/100</span>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', backgroundColor: 'rgba(212,175,55,0.15)', padding: '0.4rem 1rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.4)' }}>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--accent)' }}>★</span>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600, letterSpacing: '1px' }}>PROVENANCE SCORE: 98/100</span>
-                </div>
+
+                <AnimatePresence mode="wait">
+                  {passportTab === 'origin' && (
+                    <motion.div
+                      key="origin"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+                        <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.9rem', fontWeight: 300, color: '#FAF9F6', margin: 0 }}>High Atlas Loom Workshop</h4>
+                        <span style={{ fontSize: '0.72rem', fontFamily: 'monospace', color: 'var(--accent)', backgroundColor: 'rgba(212,175,55,0.08)', padding: '0.3rem 0.8rem', borderRadius: '6px', border: '1px solid rgba(212,175,55,0.2)' }}>MAR-ATL-802</span>
+                      </div>
+                      
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', fontSize: '0.88rem' }}>
+                        <div style={{ backgroundColor: 'rgba(255,255,255,0.025)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>COUNTRY & NATION</span>
+                          <strong style={{ color: '#FAF9F6', fontSize: '1.05rem', fontWeight: 400 }}>Morocco 🇲🇦</strong>
+                        </div>
+                        <div style={{ backgroundColor: 'rgba(255,255,255,0.025)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>VALLEY REGION</span>
+                          <strong style={{ color: '#FAF9F6', fontSize: '1.05rem', fontWeight: 400 }}>Aït Bouguemez Valley</strong>
+                        </div>
+                        <div style={{ backgroundColor: 'rgba(255,255,255,0.025)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>GPS STAMP</span>
+                          <strong style={{ fontFamily: 'monospace', color: 'var(--accent)', fontSize: '0.95rem' }}>31.7917° N, 7.0926° W</strong>
+                        </div>
+                        <div style={{ backgroundColor: 'rgba(255,255,255,0.025)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                          <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.4rem', fontSize: '0.7rem', letterSpacing: '1.5px', textTransform: 'uppercase' }}>ALTITUDE GAUGE</span>
+                          <strong style={{ color: '#FAF9F6', fontSize: '1.05rem', fontWeight: 400 }}>1,850m Above Sea Level</strong>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {passportTab === 'audit' && (
+                    <motion.div
+                      key="audit"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.9rem', fontWeight: 300, marginBottom: '2rem', color: '#FAF9F6' }}>Inspection & Sourcing Chain</h4>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem', fontSize: '0.88rem' }}>
+                        <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.06)', padding: '1rem 1.4rem', borderRadius: '12px', borderLeft: '4px solid var(--accent)' }}>
+                          <span style={{ color: 'var(--accent)' }}><Icons.Verified size={20} /></span>
+                          <span>Material Sourcing: 100% locally sheared organic sheep wool. Zero synthetic blend.</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.06)', padding: '1rem 1.4rem', borderRadius: '12px', borderLeft: '4px solid var(--accent)' }}>
+                          <span style={{ color: 'var(--accent)' }}><Icons.Verified size={20} /></span>
+                          <span>Craft Heritage: Certified hand-loom technique by Moroccan Crafts Guild.</span>
+                        </div>
+                        <div style={{ display: 'flex', gap: '1.2rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.06)', padding: '1rem 1.4rem', borderRadius: '12px', borderLeft: '4px solid var(--accent)' }}>
+                          <span style={{ color: 'var(--accent)' }}><Icons.Verified size={20} /></span>
+                          <span>Physical Audit Stamp: Inspector H. Alaoui &bull; Signed July 2026.</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {passportTab === 'ledger' && (
+                    <motion.div
+                      key="ledger"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -20 }}
+                      transition={{ duration: 0.35 }}
+                    >
+                      <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.9rem', fontWeight: 300, marginBottom: '2rem', color: '#FAF9F6' }}>Immutable Origin Hashes</h4>
+                      
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.9rem', fontFamily: 'monospace', fontSize: '0.85rem', opacity: 0.95 }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px' }}>
+                          <span style={{ opacity: 0.6 }}>GENESIS BLOCK #48928</span>
+                          <span style={{ color: 'var(--accent)' }}>0x7D3A...99E1</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px' }}>
+                          <span style={{ opacity: 0.6 }}>GPS GEOFENCE STAMP</span>
+                          <span style={{ color: 'var(--accent)' }}>0x5B8C...10C4</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px' }}>
+                          <span style={{ opacity: 0.6 }}>MATERIAL AUDIT STAMP</span>
+                          <span style={{ color: 'var(--accent)' }}>0xF2A1...C8E7</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px' }}>
+                          <span style={{ opacity: 0.6 }}>REGISTRY VERIFIED SEAL</span>
+                          <span style={{ color: 'var(--accent)' }}>0x9E7A...3D9F</span>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </div>
-
-              <AnimatePresence mode="wait">
-                {passportTab === 'origin' && (
-                  <motion.div
-                    key="origin"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.8rem', fontWeight: 300, marginBottom: '2rem', color: '#FAF9F6' }}>High Atlas Loom Workshop</h4>
-                    
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', fontSize: '0.85rem' }}>
-                      <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem' }}>COUNTRY & NATION</span>
-                        <strong style={{ color: '#FAF9F6', fontSize: '1rem' }}>Morocco 🇲🇦</strong>
-                      </div>
-                      <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem' }}>REGION / VALLEY</span>
-                        <strong style={{ color: '#FAF9F6', fontSize: '1rem' }}>Ait Bouguemez Valley</strong>
-                      </div>
-                      <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem' }}>GPS COORDINATES</span>
-                        <strong style={{ fontFamily: 'monospace', color: 'var(--accent)' }}>31.7917° N, 7.0926° W</strong>
-                      </div>
-                      <div style={{ backgroundColor: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                        <span style={{ opacity: 0.5, display: 'block', marginBottom: '0.3rem', fontSize: '0.7rem' }}>ALTITUDE</span>
-                        <strong style={{ color: '#FAF9F6' }}>1,850m Above Sea Level</strong>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {passportTab === 'audit' && (
-                  <motion.div
-                    key="audit"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.8rem', fontWeight: 300, marginBottom: '2rem', color: '#FAF9F6' }}>Inspection & Sourcing Chain</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', fontSize: '0.85rem' }}>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.05)', padding: '0.8rem 1.2rem', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                        <span style={{ color: 'var(--accent)' }}><Icons.Verified size={18} /></span>
-                        <span>Material Sourcing: 100% locally sheared organic sheep wool. Zero synthetic blend.</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.05)', padding: '0.8rem 1.2rem', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                        <span style={{ color: 'var(--accent)' }}><Icons.Verified size={18} /></span>
-                        <span>Craft Heritage: Certified hand-loom technique by Moroccan Crafts Guild.</span>
-                      </div>
-                      <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', backgroundColor: 'rgba(212,175,55,0.05)', padding: '0.8rem 1.2rem', borderRadius: '8px', borderLeft: '3px solid var(--accent)' }}>
-                        <span style={{ color: 'var(--accent)' }}><Icons.Verified size={18} /></span>
-                        <span>Physical Audit Stamp: Inspector H. Alaoui &bull; Signed July 2026.</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-
-                {passportTab === 'ledger' && (
-                  <motion.div
-                    key="ledger"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    exit={{ opacity: 0, x: -20 }}
-                    transition={{ duration: 0.4 }}
-                  >
-                    <h4 style={{ fontFamily: 'var(--font-playfair), serif', fontSize: '1.8rem', fontWeight: 300, marginBottom: '2rem', color: '#FAF9F6' }}>Immutable Origin Hashes</h4>
-                    
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', fontFamily: 'monospace', fontSize: '0.8rem', opacity: 0.9 }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '6px' }}>
-                        <span style={{ opacity: 0.6 }}>GENESIS BLOCK #48928</span>
-                        <span style={{ color: 'var(--accent)' }}>0x7D3A...99E1</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '6px' }}>
-                        <span style={{ opacity: 0.6 }}>GPS GEOFENCE STAMP</span>
-                        <span style={{ color: 'var(--accent)' }}>0x5B8C...10C4</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '6px' }}>
-                        <span style={{ opacity: 0.6 }}>MATERIAL AUDIT STAMP</span>
-                        <span style={{ color: 'var(--accent)' }}>0xF2A1...C8E7</span>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', backgroundColor: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '6px' }}>
-                        <span style={{ opacity: 0.6 }}>REGISTRY VERIFIED SEAL</span>
-                        <span style={{ color: 'var(--accent)' }}>0x9E7A...3D9F</span>
-                      </div>
-                    </div>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-            </div>
             </Tilt3D>
           </div>
         </div>
