@@ -8,7 +8,6 @@ import ProductCard from './ProductCard';
 import { Icons } from './Icons';
 import LuxuryHero from './LuxuryHero';
 import CategoryGalleryJourney from './CategoryGalleryJourney';
-import ArtisanGlobeJourney from './ArtisanGlobeJourney';
 import SafeguardsOriginExperience from './SafeguardsOriginExperience';
 import GuardiansOfLegacy from './GuardiansOfLegacy';
 
@@ -457,10 +456,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
       {/* 5. HOW BRITSYNC SAFEGUARDS ORIGIN (INTERACTIVE PROVENANCE STORYTELLING) */}
       <SafeguardsOriginExperience />
 
-      {/* 6. GLOBAL ARTISAN REGISTRY — Scroll-scrubbed 3D globe journey */}
-      <ArtisanGlobeJourney />
-
-      {/* 7. MAKER STORIES (JOURNAL — Artisan Chronicles & Biographies) */}
+      {/* 6. MAKER STORIES (JOURNAL — Artisan Chronicles & Biographies) */}
       <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)', borderTop: '1px solid var(--glass-border)' }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
