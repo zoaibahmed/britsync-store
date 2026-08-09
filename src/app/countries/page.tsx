@@ -29,7 +29,7 @@ export default function CountriesPage() {
             <Link href={`/search?country=${region.name}`} key={region.name} style={{ textDecoration: 'none', color: 'inherit' }}>
               <div className="card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', height: '100%' }}>
                 <div style={{ height: '350px', background: `url(${region.image}) center/cover`, position: 'relative' }}>
-                  <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', padding: '2rem', background: 'linear-gradient(transparent, rgba(0,0,0,0.8))', color: '#fff' }}>
+                  <div style={{ position: 'absolute', bottom: '0', left: '0', right: '0', padding: '2rem', backgroundColor: 'rgba(0,0,0,0.75)', color: '#fff' }}>
                     <h3 style={{ fontSize: '2rem', marginBottom: '0.5rem', fontFamily: 'var(--font-outfit)' }}>{region.name}</h3>
                     <p style={{ opacity: 0.9 }}>{region.description}</p>
                   </div>

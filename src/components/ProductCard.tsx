@@ -111,12 +111,12 @@ export default function ProductCard({ product }: ProductCardProps) {
             />
           )}
 
-          {/* Subtle Gradient Overlay */}
+          {/* Subtle Solid Dark Overlay */}
           <div 
             style={{
               position: 'absolute',
               inset: 0,
-              background: 'linear-gradient(to top, rgba(10, 10, 12, 0.4) 0%, transparent 40%)',
+              backgroundColor: 'rgba(10, 10, 12, 0.25)',
               pointerEvents: 'none'
             }} 
           />

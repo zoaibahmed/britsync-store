@@ -157,7 +157,7 @@ function DarkProductCard({ product, maker }: {
             opacity: hovered ? 1 : 0,
             transform: hovered ? "scale(1.02)" : "scale(1.08)",
           }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, rgba(14,14,14,0.7) 0%, transparent 55%)" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(14,14,14,0.35)" }} />
 
           {/* Badge */}
           <div style={{
@@ -403,7 +403,7 @@ export default function MakerDetailsClient({
           left: 50%;
           top: 0; bottom: 0;
           width: 1px;
-          background: linear-gradient(180deg, transparent 0%, rgba(201,168,76,0.35) 8%, rgba(201,168,76,0.35) 92%, transparent 100%);
+          background-color: rgba(201,168,76,0.35);
           transform: translateX(-50%);
         }
 
@@ -478,7 +478,7 @@ export default function MakerDetailsClient({
         {/* SCROLL PROGRESS LINE */}
         <motion.div style={{
           position: "fixed", top: 0, left: 0, right: 0, height: "2px",
-          background: "linear-gradient(90deg,#C9A84C,#F0D080,#C9A84C)",
+          backgroundColor: "#C9A84C",
           scaleX: lineScale, transformOrigin: "0%", zIndex: 9999,
         }} />
 
@@ -509,8 +509,7 @@ export default function MakerDetailsClient({
             backgroundSize: "cover", backgroundPosition: "center",
             y: heroImgY,
           }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(14,14,14,1) 0%,rgba(14,14,14,0.55) 45%,rgba(14,14,14,0.1) 100%)" }} />
-          <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(14,14,14,0.55) 0%,transparent 65%)" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(14,14,14,0.55)" }} />
 
           <motion.div style={{ position: "absolute", bottom: "7vh", left: 0, padding: "0 5vw", y: heroTextY, opacity: heroOpacity, maxWidth: "940px" }}>
             <motion.div
@@ -631,8 +630,7 @@ export default function MakerDetailsClient({
             {/* LEFT — STICKY portrait */}
             <div style={{ position: "sticky", top: 0, width: "50%", flexShrink: 0, height: "100vh", overflow: "hidden" }}>
               <img src={founderImg} alt={maker.founderName || ""} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center top" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to right,rgba(17,17,17,0) 60%,#111 100%)" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(17,17,17,0.85) 0%,transparent 40%)" }} />
+              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(17,17,17,0.45)" }} />
 
               <motion.div
                 initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }}
@@ -740,9 +738,7 @@ export default function MakerDetailsClient({
                     />
                     <div style={{
                       position: "absolute", inset: 0,
-                      background: flip
-                        ? `linear-gradient(to left, transparent 50%, ${idx === 1 ? "#0D1A14" : "#0E0E0E"} 100%)`
-                        : `linear-gradient(to right, transparent 50%, ${idx === 1 ? "#0D1A14" : "#0E0E0E"} 100%)`,
+                      backgroundColor: "rgba(14,14,14,0.35)",
                     }} />
                     {/* Product number */}
                     <div style={{
@@ -1007,7 +1003,7 @@ export default function MakerDetailsClient({
                       }}
                     >
                       <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.6s" }} />
-                      <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.6) 0%,transparent 50%)" }} />
+                      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.35)" }} />
                       <div style={{ position: "absolute", bottom: "0.8rem", left: "1rem" }}>
                         <span className="mp-sans mp-gold" style={{ fontSize: "0.55rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
                           🔍 #{i + 1}
@@ -1139,7 +1135,7 @@ export default function MakerDetailsClient({
               style={{ borderRadius: "2px", overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.5)", position: "relative", aspectRatio: "4/3" }}
             >
               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" alt="Map" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top,rgba(0,0,0,0.75) 0%,rgba(0,0,0,0.2) 60%)" }} />
+              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }} />
               <div style={{ position: "absolute", bottom: "2rem", left: "2rem" }}>
                 <span className="mp-label">📍 Verified Atelier</span>
                 <div className="mp-serif mp-cream" style={{ fontSize: "1.8rem", fontWeight: 300 }}>{maker.businessName}</div>
@@ -1223,10 +1219,9 @@ export default function MakerDetailsClient({
         )}
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* FOOTER BRIDGE — dark → footer color gradient   */}
-        {/* Prevents hard cut from dark page to white footer */}
+        {/* FOOTER BRIDGE                                   */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "linear-gradient(180deg,#0E0E0E 0%,#FAF9F5 100%)", height: "120px" }} />
+        <div style={{ backgroundColor: "#0E0E0E", height: "60px" }} />
 
         {/* ══ CINEMATIC LIGHTBOX ══ */}
         <AnimatePresence>

@@ -2,7 +2,12 @@
 
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { provenanceCache, startGlobalFramePreload } from "@/lib/globalFramePreloader";
+import {
+  provenanceCache,
+  startGlobalFramePreload,
+  preloader,
+  getProvenanceFrameUrl,
+} from "@/lib/globalFramePreloader";
 
 /* ─────────────────────────────────────────────
    CONSTANTS
@@ -13,11 +18,6 @@ const SCROLL_HEIGHT_VH = 380; // Responsive scroll runway for smooth cinematic s
 // First 8% of the runway is the "entry zone" — frame stays at 0,
 // a cinematic intro screen is shown. Frames only start after this.
 const ENTRY_ZONE = 0.08;
-
-function getFrameUrl(index: number): string {
-  const n = Math.max(1, Math.min(TOTAL_FRAMES, Math.floor(index) + 1));
-  return "/provenance-core/core_" + String(n).padStart(4, "0") + ".webp";
-}
 
 /* ─────────────────────────────────────────────
    STAGE DEFINITIONS
@@ -82,26 +82,22 @@ const STAGES = [
 
 type Stage = (typeof STAGES)[number];
 
-/* ─────────────────────────────────────────────
-   FALLBACK PER-COMPONENT CACHE (uses global)
-───────────────────────────────────────────── */
-function loadFrame(index: number): Promise<HTMLImageElement> {
-  const cached = provenanceCache.get(index);
-  if (cached?.complete && cached.naturalWidth > 0) return Promise.resolve(cached);
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.src = getFrameUrl(index);
-    img.onload = () => { provenanceCache.set(index, img); resolve(img); };
-    img.onerror = reject;
-  });
-}
-
 function getNearestFrame(frameIdx: number): HTMLImageElement | null {
-  for (let d = 0; d <= 30; d++) {
-    const a = provenanceCache.get(frameIdx - d);
-    if (a?.complete && a.naturalWidth > 0) return a;
-    const b = provenanceCache.get(frameIdx + d);
-    if (b?.complete && b.naturalWidth > 0) return b;
+  const rounded = Math.round(frameIdx);
+  const img = provenanceCache.get(rounded);
+  if (img && img.complete && img.naturalWidth > 0) return img;
+
+  for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
+    const prevIdx = rounded - delta;
+    if (prevIdx >= 0) {
+      const prevImg = provenanceCache.get(prevIdx);
+      if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
+    }
+    const nextIdx = rounded + delta;
+    if (nextIdx < TOTAL_FRAMES) {
+      const nextImg = provenanceCache.get(nextIdx);
+      if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
+    }
   }
   return null;
 }
@@ -138,7 +134,11 @@ export default function SafeguardsOriginExperience() {
         const essential: number[] = [];
         for (let i = 0; i < 30; i++) essential.push(i);
         STAGES.forEach((s) => essential.push(Math.floor((s.minFrame + s.maxFrame) / 2)));
-        await Promise.allSettled(essential.map(loadFrame));
+        await Promise.allSettled(
+          essential.map((idx) =>
+            preloader.addToQueue(getProvenanceFrameUrl(idx), provenanceCache, idx, true)
+          )
+        );
       }
       if (!cancelled) setIsLoaded(true);
     }
@@ -244,7 +244,7 @@ export default function SafeguardsOriginExperience() {
 
   /* ── RAF lerp loop ────────────────────────
      lerp = 0.08  →  slow, deliberate, cinematic
-     step cap = 4  →  no jarring frame skips
+     step cap = 2  →  no jarring frame skips
   ─────────────────────────────────────────── */
   useEffect(() => {
     let animId: number;
@@ -252,12 +252,13 @@ export default function SafeguardsOriginExperience() {
       const target = targetFrameRef.current;
       const curr = currentFrameRef.current;
       const diff = target - curr;
-      // Responsive adaptive lerp — smooth tracking when slow, instant tracking when fast
       const absDiff = Math.abs(diff);
-      const lerpFactor = absDiff > 20 ? 0.35 : 0.18;
-      const step = diff * lerpFactor;
+
       if (absDiff > 0.05) {
-        currentFrameRef.current = curr + step;
+        // Majestic lerp at 0.08 speed and cap max frame step per tick to 2 frames
+        const step = diff * 0.08;
+        const clampedStep = Math.sign(step) * Math.min(2, Math.abs(step));
+        currentFrameRef.current = curr + clampedStep;
       } else {
         currentFrameRef.current = target;
       }
@@ -313,7 +314,9 @@ export default function SafeguardsOriginExperience() {
       style={{
         position: "relative",
         height: SCROLL_HEIGHT_VH + "vh",
-        backgroundColor: "#000",
+        backgroundColor: "var(--background)",
+        color: "var(--text)",
+        transition: "background-color 0.4s ease, color 0.4s ease",
       }}
     >
       {/* ═══════════════════════════════════════
@@ -326,7 +329,7 @@ export default function SafeguardsOriginExperience() {
           height: "100vh",
           width: "100%",
           overflow: "hidden",
-          backgroundColor: "#000",
+          backgroundColor: "var(--background)",
         }}
       >
         {/* Full-bleed animation canvas */}
@@ -342,13 +345,12 @@ export default function SafeguardsOriginExperience() {
           }}
         />
 
-        {/* Cinematic vignette overlay */}
+        {/* Cinematic ambient vignette overlay */}
         <div
           style={{
             position: "absolute",
             inset: 0,
-            background:
-              "radial-gradient(ellipse 68% 100% at 2% 50%, rgba(0,0,0,0.88) 0%, rgba(0,0,0,0.52) 38%, transparent 70%), linear-gradient(to right, rgba(0,0,0,0.62) 0%, transparent 50%), linear-gradient(to bottom, rgba(0,0,0,0.48) 0%, transparent 16%, transparent 80%, rgba(0,0,0,0.7) 100%)",
+            backgroundColor: "rgba(10, 10, 12, 0.35)",
             pointerEvents: "none",
             zIndex: 1,
           }}
@@ -378,95 +380,105 @@ export default function SafeguardsOriginExperience() {
                 padding: "0 2rem",
               }}
             >
-              {/* Section eyebrow */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.1 }}
+              {/* Glassmorphic Entry Screen Card */}
+              <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.9rem",
-                  marginBottom: "2rem",
+                  maxWidth: "720px",
+                  padding: "4rem 3.5rem",
+                  borderRadius: "24px",
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--glass-border)",
+                  borderTop: "4px solid var(--accent)",
+                  boxShadow: "0 30px 70px rgba(0,0,0,0.35)",
+                  backdropFilter: "blur(20px)",
+                  WebkitBackdropFilter: "blur(20px)",
+                  color: "var(--text)",
                 }}
               >
-                <div
+                {/* Section eyebrow */}
+                <motion.div
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.1 }}
                   style={{
-                    width: "36px",
-                    height: "1px",
-                    backgroundColor: "#D4AF37",
-                    opacity: 0.6,
-                  }}
-                />
-                <span
-                  style={{
-                    fontSize: "0.6rem",
-                    letterSpacing: "5px",
-                    textTransform: "uppercase",
-                    color: "rgba(212,175,55,0.75)",
-                    fontWeight: 700,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: "0.9rem",
+                    marginBottom: "1.5rem",
                   }}
                 >
-                  Provenance Verification
-                </span>
-                <div
-                  style={{
-                    width: "36px",
-                    height: "1px",
-                    backgroundColor: "#D4AF37",
-                    opacity: 0.6,
-                  }}
-                />
-              </motion.div>
+                  <div
+                    style={{
+                      width: "28px",
+                      height: "1px",
+                      backgroundColor: "var(--accent)",
+                    }}
+                  />
+                  <span
+                    style={{
+                      fontSize: "0.68rem",
+                      letterSpacing: "4px",
+                      textTransform: "uppercase",
+                      color: "var(--accent)",
+                      fontWeight: 700,
+                    }}
+                  >
+                    PROVENANCE VERIFICATION PROTOCOL
+                  </span>
+                  <div
+                    style={{
+                      width: "28px",
+                      height: "1px",
+                      backgroundColor: "var(--accent)",
+                    }}
+                  />
+                </motion.div>
 
-              {/* Main heading */}
-              <motion.h2
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.85, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
-                style={{
-                  fontSize: "clamp(2.4rem, 5vw, 4.5rem)",
-                  fontFamily: "var(--font-playfair), Georgia, serif",
-                  fontWeight: 300,
-                  color: "#FFFFFF",
-                  lineHeight: 1.1,
-                  letterSpacing: "-0.02em",
-                  marginBottom: "1.5rem",
-                  maxWidth: "700px",
-                }}
-              >
-                How BritSync
-                <br />
-                <span
+                {/* Main heading */}
+                <motion.h2
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.85, delay: 0.22, ease: [0.16, 1, 0.3, 1] }}
                   style={{
-                    background: "linear-gradient(135deg, #D4AF37 0%, #F5E6A3 50%, #D4AF37 100%)",
-                    WebkitBackgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                    backgroundClip: "text",
+                    fontSize: "clamp(2.4rem, 5vw, 4.2rem)",
+                    fontFamily: "var(--font-playfair), Georgia, serif",
+                    fontWeight: 300,
+                    color: "var(--text)",
+                    lineHeight: 1.15,
+                    marginBottom: "1.2rem",
                   }}
                 >
-                  Safeguards Origin
-                </span>
-              </motion.h2>
+                  How Britsync
+                  <br />
+                  <span
+                    style={{
+                      color: "var(--accent)",
+                    }}
+                  >
+                    Safeguards Origin
+                  </span>
+                </motion.h2>
 
-              {/* Subtext */}
-              <motion.p
-                initial={{ opacity: 0, y: 14 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.38 }}
-                style={{
-                  fontSize: "0.95rem",
-                  lineHeight: 1.75,
-                  color: "rgba(255,255,255,0.45)",
-                  maxWidth: "460px",
-                  fontWeight: 300,
-                  marginBottom: "3.5rem",
-                }}
-              >
-                Five cryptographic verification stages.
-                <br />
-                Each one protecting the artisan and the patron.
-              </motion.p>
+                {/* Subtext */}
+                <motion.p
+                  initial={{ opacity: 0, y: 14 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.7, delay: 0.38 }}
+                  style={{
+                    fontSize: "0.98rem",
+                    lineHeight: 1.75,
+                    color: "var(--text-muted)",
+                    maxWidth: "500px",
+                    margin: "0 auto 2.5rem",
+                    fontWeight: 300,
+                  }}
+                >
+                  Five cryptographic verification stages.
+                  <br />
+                  Each one protecting the artisan and the patron.
+                </motion.p>
+              </div>
 
               {/* Scroll invite */}
               <motion.div
@@ -496,7 +508,7 @@ export default function SafeguardsOriginExperience() {
                   style={{
                     width: "1px",
                     height: "48px",
-                    background: "linear-gradient(to bottom, rgba(212,175,55,0.6), transparent)",
+                    backgroundColor: "#D4AF37",
                     animation: "scrollLine 1.8s ease-in-out infinite",
                   }}
                 />
@@ -717,8 +729,7 @@ export default function SafeguardsOriginExperience() {
               style={{
                 position: "absolute",
                 inset: 0,
-                background:
-                  "radial-gradient(ellipse 60% 65% at 68% 42%, rgba(212,175,55,0.14) 0%, transparent 70%)",
+                backgroundColor: "rgba(212,175,55,0.05)",
                 pointerEvents: "none",
                 zIndex: 2,
               }}

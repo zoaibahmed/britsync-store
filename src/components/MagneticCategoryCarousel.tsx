@@ -215,16 +215,24 @@ export default function MagneticCategoryCarousel({
                   : '0 12px 35px rgba(0,0,0,0.4)',
               }}
             >
-              {/* Background Image & Gradient */}
+              {/* Background Image & Overlay */}
               <div
                 style={{
                   position: 'absolute',
                   inset: 0,
-                  backgroundImage: `linear-gradient(to top, rgba(10,9,6,0.92) 0%, rgba(10,9,6,0.3) 50%, transparent 100%), url(${cat.image})`,
+                  backgroundImage: `url(${cat.image})`,
                   backgroundSize: 'cover',
                   backgroundPosition: 'center',
                   transition: 'transform 0.6s ease',
                   transform: isSelected ? 'scale(1.04)' : 'scale(1)',
+                }}
+              />
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  backgroundColor: 'rgba(10,9,6,0.45)',
+                  pointerEvents: 'none',
                 }}
               />
 
@@ -287,8 +295,7 @@ export default function MagneticCategoryCarousel({
                     flexDirection: 'column',
                     justifyContent: 'space-between',
                     color: '#F5F0E8',
-                    background:
-                      'linear-gradient(to top, rgba(8,7,4,0.96) 0%, rgba(8,7,4,0.75) 50%, rgba(8,7,4,0.4) 100%)',
+                    background: 'rgba(8,7,4,0.95)',
                     animation: 'fadeIn 0.3s ease',
                   }}
                 >
@@ -390,7 +397,7 @@ export default function MagneticCategoryCarousel({
                         gap: '0.6rem',
                         padding: '0.9rem 2.2rem',
                         borderRadius: '50px',
-                        background: 'linear-gradient(135deg, #C9A84C, #E8C97A)',
+                        background: '#C9A84C',
                         color: '#1A1408',
                         fontSize: '0.75rem',
                         fontWeight: 700,

@@ -37,7 +37,6 @@ export default function LoadingScreen() {
         width: '100vw',
         height: '100vh',
         backgroundColor: '#0A0A0C',
-        background: 'radial-gradient(circle at 50% 50%, #111115 0%, #0A0A0C 100%)',
         zIndex: 99999,
         display: 'flex',
         flexDirection: 'column',
@@ -55,7 +54,8 @@ export default function LoadingScreen() {
         height: '300px', 
         opacity: 0.15,
         borderRadius: '50%',
-        background: 'radial-gradient(circle, var(--accent) 0%, transparent 70%)',
+        backgroundColor: 'var(--accent)',
+        filter: 'blur(60px)',
         pointerEvents: 'none'
       }} />
 

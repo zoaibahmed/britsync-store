@@ -382,8 +382,7 @@ export default function CategoryClient({
                         style={{
                           position: 'absolute',
                           inset: 0,
-                          background:
-                            'linear-gradient(to top, rgba(15,36,32,0.85) 0%, transparent 65%)',
+                          backgroundColor: 'rgba(10, 10, 12, 0.35)',
                         }}
                       />
 

@@ -3,22 +3,12 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import {
+  globeCache,
+  startGlobalFramePreload,
+} from "@/lib/globalFramePreloader";
 
-const ASIA_COUNT = 480;
-const AFRICA_COUNT = 480;
-const TOTAL_FRAMES = ASIA_COUNT + AFRICA_COUNT;
-
-// Helper to resolve frame URL by 0-indexed overall frame
-function getFrameUrl(index: number): string {
-  const safeIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.floor(index)));
-  if (safeIdx < ASIA_COUNT) {
-    const num = String(safeIdx + 1).padStart(4, "0");
-    return `/storyboard-frames/earth_asia_${num}.webp`;
-  } else {
-    const num = String(safeIdx - ASIA_COUNT + 1).padStart(4, "0");
-    return `/storyboard-frames/africa_${num}.webp`;
-  }
-}
+const TOTAL_FRAMES = 130;
 
 // Timeline steps for overlays
 const STEPS = [
@@ -87,116 +77,81 @@ const STEPS = [
 export default function ArtisanGlobeJourney() {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const canvasDimensions = useRef({ w: 0, h: 0 });
 
   const [scrollProgress, setScrollProgress] = useState(0);
   const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
 
-  // In-memory image cache map
-  const imageCacheRef = useRef<Map<number, HTMLImageElement>>(new Map());
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
   const rafIdRef = useRef<number | null>(null);
 
-  // Load a single frame asynchronously
-  const loadFrame = useCallback((index: number): Promise<HTMLImageElement> => {
-    return new Promise((resolve, reject) => {
-      const existing = imageCacheRef.current.get(index);
-      if (existing && existing.complete) {
-        resolve(existing);
-        return;
-      }
-      const img = new Image();
-      img.src = getFrameUrl(index);
-      img.onload = () => {
-        imageCacheRef.current.set(index, img);
-        resolve(img);
+  // Initialize cached dimensions
+  useEffect(() => {
+    const updateDimensions = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvasDimensions.current = {
+        w: canvas.offsetWidth,
+        h: canvas.offsetHeight,
       };
-      img.onerror = () => {
-        reject(new Error(`Failed to load frame ${index}`));
-      };
-    });
+    };
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  // Priority preloader for instant playback
+  // Global preloader mount
   useEffect(() => {
-    let isCancelled = false;
-
-    async function preloadEssentialFrames() {
-      try {
-        // Preload first 30 frames of Asia + first 10 of Africa
-        const priorityIndices: number[] = [];
-        for (let i = 0; i < 30; i++) priorityIndices.push(i);
-        for (let i = ASIA_COUNT; i < ASIA_COUNT + 10; i++) priorityIndices.push(i);
-
-        await Promise.all(priorityIndices.map((idx) => loadFrame(idx)));
-        if (!isCancelled) {
-          setIsLoaded(true);
-        }
-
-        // Progressive background loading for all remaining frames in chunks
-        const remaining: number[] = [];
-        for (let i = 0; i < TOTAL_FRAMES; i++) {
-          if (!priorityIndices.includes(i)) remaining.push(i);
-        }
-
-        const CHUNK_SIZE = 15;
-        for (let i = 0; i < remaining.length; i += CHUNK_SIZE) {
-          if (isCancelled) break;
-          const chunk = remaining.slice(i, i + CHUNK_SIZE);
-          await Promise.all(chunk.map((idx) => loadFrame(idx).catch(() => {})));
-          // Yield to main thread
-          await new Promise((r) => setTimeout(r, 20));
-        }
-      } catch (err) {
-        console.error("Frame preloader notice:", err);
-      }
-    }
-
-    preloadEssentialFrames();
-
-    return () => {
-      isCancelled = true;
-    };
-  }, [loadFrame]);
+    startGlobalFramePreload();
+    setIsLoaded(true);
+  }, []);
 
   // Render a frame onto canvas with aspect-fit / cover
-  const renderFrameOnCanvas = useCallback((frameIdx: number) => {
+  const renderFrameOnCanvas = useCallback((frameVal: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Find requested or nearest available frame image
-    let img = imageCacheRef.current.get(frameIdx);
+    const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
 
-    if (!img || !img.complete) {
-      // Fallback search to prevent blank state or flickering
-      let fallbackFound = false;
-      for (let delta = 1; delta <= 30; delta++) {
-        const prevImg = imageCacheRef.current.get(frameIdx - delta);
-        if (prevImg && prevImg.complete) {
-          img = prevImg;
-          fallbackFound = true;
-          break;
+    // Bidirectional fallback search to prevent blank state or flickering
+    const getCachedImage = (index: number): HTMLImageElement | null => {
+      const img = globeCache.get(index);
+      if (img && img.complete && img.naturalWidth > 0) return img;
+      
+      for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
+        const prevIdx = index - delta;
+        if (prevIdx >= 0) {
+          const prevImg = globeCache.get(prevIdx);
+          if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
         }
-        const nextImg = imageCacheRef.current.get(frameIdx + delta);
-        if (nextImg && nextImg.complete) {
-          img = nextImg;
-          fallbackFound = true;
-          break;
+        const nextIdx = index + delta;
+        if (nextIdx < TOTAL_FRAMES) {
+          const nextImg = globeCache.get(nextIdx);
+          if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
         }
       }
-      if (!fallbackFound || !img) return;
-    }
+      return null;
+    };
 
+    const img = getCachedImage(frameIdx);
     if (!img) return;
 
-    // High DPI sizing
+    // Use cached width/height
+    let cw = canvasDimensions.current.w;
+    let ch = canvasDimensions.current.h;
+    if (cw === 0 || ch === 0) {
+      cw = canvas.offsetWidth || window.innerWidth;
+      ch = canvas.offsetHeight || window.innerHeight;
+      canvasDimensions.current = { w: cw, h: ch };
+    }
+
     const dpr = Math.min(window.devicePixelRatio || 1, 2);
-    const rect = canvas.getBoundingClientRect();
-    const displayWidth = Math.floor(rect.width * dpr);
-    const displayHeight = Math.floor(rect.height * dpr);
+    const displayWidth = Math.floor(cw * dpr);
+    const displayHeight = Math.floor(ch * dpr);
 
     if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
       canvas.width = displayWidth;
@@ -235,12 +190,14 @@ export default function ArtisanGlobeJourney() {
       const diff = targetFrameRef.current - currentFrameRef.current;
       const absDiff = Math.abs(diff);
       if (absDiff > 0.05) {
-        const lerpFactor = absDiff > 15 ? 0.30 : 0.20;
-        currentFrameRef.current += diff * lerpFactor;
-        renderFrameOnCanvas(Math.round(currentFrameRef.current));
+        // Majestic lerp at 0.08 speed and cap max frame step per tick to 2 frames
+        const step = diff * 0.08;
+        const clampedStep = Math.sign(step) * Math.min(2, Math.abs(step));
+        currentFrameRef.current += clampedStep;
+        renderFrameOnCanvas(currentFrameRef.current);
       } else if (Math.round(currentFrameRef.current) !== Math.round(targetFrameRef.current)) {
         currentFrameRef.current = targetFrameRef.current;
-        renderFrameOnCanvas(Math.round(currentFrameRef.current));
+        renderFrameOnCanvas(currentFrameRef.current);
       }
       animId = requestAnimationFrame(tick);
     };
@@ -299,8 +256,9 @@ export default function ArtisanGlobeJourney() {
       style={{
         position: "relative",
         height: "650vh",
-        backgroundColor: "#020408",
-        color: "#FAF9F6",
+        backgroundColor: "var(--background)",
+        color: "var(--text)",
+        transition: "background-color 0.4s ease, color 0.4s ease",
       }}
     >
       {/* Sticky viewport frame */}
@@ -314,6 +272,7 @@ export default function ArtisanGlobeJourney() {
           display: "flex",
           alignItems: "center",
           justifyContent: "center",
+          backgroundColor: "var(--background)",
         }}
       >
         {/* Fullscreen Canvas Rendering Target */}
@@ -330,7 +289,7 @@ export default function ArtisanGlobeJourney() {
           }}
         />
 
-        {/* Ambient Overlay Vignette */}
+        {/* Ambient Overlay */}
         <div
           aria-hidden="true"
           style={{
@@ -338,8 +297,7 @@ export default function ArtisanGlobeJourney() {
             inset: 0,
             zIndex: 2,
             pointerEvents: "none",
-            background:
-              "radial-gradient(ellipse at center, transparent 40%, rgba(2, 4, 8, 0.75) 100%), linear-gradient(to bottom, rgba(2,4,8,0.6) 0%, transparent 20%, transparent 80%, rgba(2,4,8,0.85) 100%)",
+            backgroundColor: "rgba(10, 10, 12, 0.25)",
           }}
         />
 
@@ -350,12 +308,13 @@ export default function ArtisanGlobeJourney() {
               position: "absolute",
               inset: 0,
               zIndex: 10,
-              backgroundColor: "#020408",
+              backgroundColor: "var(--background)",
               display: "flex",
               flexDirection: "column",
               alignItems: "center",
               justifyContent: "center",
               gap: "1rem",
+              color: "var(--text)",
             }}
           >
             <div
@@ -469,7 +428,7 @@ export default function ArtisanGlobeJourney() {
                   left: "3rem",
                   width: "60px",
                   height: "3px",
-                  background: "linear-gradient(to right, #D4AF37, transparent)",
+                  backgroundColor: "#D4AF37",
                 }}
               />
               <div style={{ flex: "1 1 320px" }}>

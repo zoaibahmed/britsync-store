@@ -535,7 +535,8 @@ export default function ProductDetailsClient({ params }: { params: { id: string 
                 return (
                   <div>
                     <div style={{ position: 'relative', width: '100%', height: '300px', backgroundColor: '#000', borderRadius: '12px', overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '1.5rem' }}>
-                      <div style={{ position: 'absolute', inset: 0, background: `linear-gradient(to top, rgba(0,0,0,0.8), transparent), url(${product.images[2]}) center/cover`, opacity: 0.7 }} />
+                      <div style={{ position: 'absolute', inset: 0, backgroundImage: `url(${product.images[2]})`, backgroundSize: 'cover', backgroundPosition: 'center', opacity: 0.6 }} />
+                      <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.35)' }} />
                       <div style={{ zIndex: 1, textAlign: 'center', color: '#fff', padding: '1rem' }}>
                         <span
                           style={{ fontSize: '3rem', cursor: 'pointer', display: 'inline-flex', width: '70px', height: '70px', backgroundColor: 'var(--accent)', borderRadius: '50%', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 'bold', boxShadow: 'var(--shadow-lg)' }}
@@ -824,7 +825,7 @@ export default function ProductDetailsClient({ params }: { params: { id: string 
                   <span style={{ fontFamily: 'var(--font-outfit)', fontWeight: 'bold', fontStyle: 'italic', display: 'block', margin: '0.25rem 0' }}>{product.verification.inspector}</span>
                   <span style={{ fontSize: '0.7rem', opacity: 0.5, display: 'block' }}>Ref: {product.verification.inspectorSig}</span>
                 </div>
-                <div style={{ width: '90px', height: '90px', backgroundColor: '#D4AF37', backgroundImage: 'radial-gradient(circle, #f3e5ab 0%, #D4AF37 100%)', borderRadius: '50%', boxShadow: '0 4px 10px rgba(212,175,87,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--primary)', fontWeight: 'bold', fontSize: '0.75rem', lineHeight: 1.1, textAlign: 'center', border: '3px solid #FAF9F6' }}>
+                <div style={{ width: '90px', height: '90px', backgroundColor: '#D4AF37', borderRadius: '50%', boxShadow: '0 4px 10px rgba(212,175,87,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0A0A0C', fontWeight: 'bold', fontSize: '0.75rem', lineHeight: 1.1, textAlign: 'center', border: '3px solid #FAF9F6' }}>
                   OFFICIAL<br />SEAL
                 </div>
                 <div style={{ borderTop: '1px solid #ccc', paddingTop: '0.75rem', width: '220px', textAlign: 'right' }}>

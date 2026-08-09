@@ -640,7 +640,8 @@ export default function MakerDashboard() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '3rem', marginBottom: '4rem' }}>
                 {/* Internal Britsync Wallet */}
                 <div className="card" style={{ 
-                  background: 'linear-gradient(135deg, var(--primary) 0%, #173630 100%)', 
+                  backgroundColor: '#0D0E12', 
+                  border: '1px solid rgba(212, 175, 55, 0.3)',
                   color: 'var(--secondary)', 
                   display: 'flex', 
                   flexDirection: 'column', 
@@ -692,13 +693,7 @@ export default function MakerDashboard() {
                   {/* Line Chart Graphic */}
                   <div style={{ position: 'relative', height: '200px', width: '100%', borderBottom: '1px solid #eee', borderLeft: '1px solid #eee', paddingLeft: '1rem', paddingBottom: '1.5rem' }}>
                     <svg viewBox="0 0 500 150" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                      <defs>
-                        <linearGradient id="chartGrad" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="0%" stopColor="var(--accent)" stopOpacity="0.45" />
-                          <stop offset="100%" stopColor="var(--accent)" stopOpacity="0.0" />
-                        </linearGradient>
-                      </defs>
-                      <path d="M 0 150 L 0 120 L 100 100 L 200 85 L 300 75 L 400 45 L 500 25 L 500 150 Z" fill="url(#chartGrad)" />
+                      <path d="M 0 150 L 0 120 L 100 100 L 200 85 L 300 75 L 400 45 L 500 25 L 500 150 Z" fill="var(--accent)" fillOpacity="0.15" />
                       <path d="M 0 120 L 100 100 L 200 85 L 300 75 L 400 45 L 500 25" fill="none" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
                       <circle cx="0" cy="120" r="5" fill="var(--primary)" stroke="var(--accent)" strokeWidth="2" />
                       <circle cx="100" cy="100" r="5" fill="var(--primary)" stroke="var(--accent)" strokeWidth="2" />

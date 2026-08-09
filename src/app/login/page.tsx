@@ -238,14 +238,14 @@ export default function LoginPage() {
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        padding: '4rem 5rem',
-        backgroundImage: `linear-gradient(to bottom, rgba(17, 21, 20, 0.6) 0%, rgba(17, 21, 20, 0.9) 100%), url(${lifestyleImages[carouselIndex].url})`,
+        backgroundImage: `url(${lifestyleImages[carouselIndex].url})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
         color: '#FAF9F6',
         transition: 'background-image 1s ease-in-out',
         overflow: 'hidden'
       }}>
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(10, 10, 12, 0.72)', zIndex: 1, pointerEvents: 'none' }} />
         {/* Top Header branding */}
         <div style={{ zIndex: 2 }}>
           <Link href="/" style={{ textDecoration: 'none' }}>

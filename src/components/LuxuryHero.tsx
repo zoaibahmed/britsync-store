@@ -2,16 +2,21 @@
 
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
+import {
+  heroCache,
+  preloader,
+  startGlobalFramePreload,
+  getHeroFrameUrl,
+} from "@/lib/globalFramePreloader";
 
 /* ─────────────────────────────────────────────────────────────────────────
    CONFIG
 ───────────────────────────────────────────────────────────────────────── */
-const TOTAL_FRAMES       = 130;    // Ends at pristine upright bottle composition (frames 131-160 are extreme close-ups)
-const DELTA_PER_FRAME    = 75;     // px of scroll needed to advance one frame
-const CONTENT_THRESHOLD  = 90;     // frame index at which content starts appearing
-
-const frameSrc = (n: number) =>
-  `/hero-frames/frame-${String(n).padStart(4, "0")}.jpg`;
+const ASIA_COUNT = 480;
+const AFRICA_COUNT = 432;
+const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 912
+const DELTA_PER_FRAME    = 12;     // px of scroll needed to advance one frame
+const CONTENT_THRESHOLD  = 660;    // frame index at which content starts appearing
 
 /* Deterministic particles */
 const PARTICLES = [
@@ -44,8 +49,7 @@ const PARTICLES = [
 ───────────────────────────────────────────────────────────────────────── */
 export default function LuxuryHero() {
   const canvasRef    = useRef<HTMLCanvasElement>(null);
-  const imagesRef    = useRef<(HTMLImageElement | null)[]>(Array(TOTAL_FRAMES).fill(null));
-  const loadedRef    = useRef<boolean[]>(Array(TOTAL_FRAMES).fill(false));
+  const canvasDimensions = useRef({ w: 0, h: 0 });
   const frameRef     = useRef(0);         // current frame (no re-render)
   const heroActiveRef = useRef(true);     // true = we intercept scroll
   const touchStartY  = useRef(0);
@@ -84,15 +88,63 @@ export default function LuxuryHero() {
     window.location.href = `/categories/${encodeURIComponent(targetCategory)}?search=${encodeURIComponent(pendingMakerQuery)}`;
   };
 
-  /* ── draw one frame at high quality ─────────────────────────────────── */
-  const drawFrame = useCallback((idx: number) => {
-    const canvas = canvasRef.current;
-    const img    = imagesRef.current[idx];
-    if (!canvas || !img || !loadedRef.current[idx]) return;
+  const lastStateFrameRef = useRef(0);
+  const targetFrameRef = useRef(0);
 
-    const dpr = window.devicePixelRatio || 1;
-    const cw  = canvas.offsetWidth;
-    const ch  = canvas.offsetHeight;
+  // Initialize cached dimensions
+  useEffect(() => {
+    const updateDimensions = () => {
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      canvasDimensions.current = {
+        w: canvas.offsetWidth,
+        h: canvas.offsetHeight,
+      };
+    };
+    updateDimensions();
+    window.addEventListener("resize", updateDimensions);
+    return () => window.removeEventListener("resize", updateDimensions);
+  }, []);
+
+  /* ── draw one frame at high quality ─────────────────────────────────── */
+  const drawFrame = useCallback((frameVal: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
+
+    // Bidirectional fallback search to prevent blank state
+    const getCachedImage = (index: number): HTMLImageElement | null => {
+      const img = heroCache.get(index);
+      if (img && img.complete && img.naturalWidth > 0) return img;
+
+      for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
+        const prevIdx = index - delta;
+        if (prevIdx >= 0) {
+          const prevImg = heroCache.get(prevIdx);
+          if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
+        }
+        const nextIdx = index + delta;
+        if (nextIdx < TOTAL_FRAMES) {
+          const nextImg = heroCache.get(nextIdx);
+          if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
+        }
+      }
+      return null;
+    };
+
+    const img = getCachedImage(frameIdx);
+    if (!img) return;
+
+    let cw = canvasDimensions.current.w;
+    let ch = canvasDimensions.current.h;
+    if (cw === 0 || ch === 0) {
+      cw = canvas.offsetWidth || window.innerWidth;
+      ch = canvas.offsetHeight || window.innerHeight;
+      canvasDimensions.current = { w: cw, h: ch };
+    }
+
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
     const pw  = Math.round(cw * dpr);
     const ph  = Math.round(ch * dpr);
 
@@ -106,69 +158,92 @@ export default function LuxuryHero() {
     ctx.imageSmoothingEnabled = true;
     ctx.imageSmoothingQuality = "high";
 
+    ctx.fillStyle = "#0C0B07";
+    ctx.fillRect(0, 0, pw, ph);
+
     const iw = img.naturalWidth  || 1920;
     const ih = img.naturalHeight || 1080;
 
-    // Pure cover with top-clipping protection for the bottle cap
     const scale = Math.max(pw / iw, ph / ih);
     const dw = iw * scale;
     const dh = ih * scale;
     const dx = (pw - dw) / 2;
-    // Cap vertical offset so the top of the image (bottle cap) is never cut off
     const dy = Math.max((ph - dh) / 2, -0.035 * dh);
 
-    ctx.fillStyle = "#0C0B07";
-    ctx.fillRect(0, 0, pw, ph);
     ctx.drawImage(img, dx, dy, dw, dh);
   }, []);
 
   /* ── advance / rewind frames ─────────────────────────────────────────── */
-  const lastStateFrameRef = useRef(0);
   const moveFrames = useCallback((delta: number) => {
-    const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, frameRef.current + delta));
-    if (next === frameRef.current) return;
-    frameRef.current = next;
-    drawFrame(next);
-    
-    // Throttle React state re-renders to every 2 frames or threshold boundaries
-    if (Math.abs(next - lastStateFrameRef.current) >= 2 || next >= CONTENT_THRESHOLD || next === 0 || next === TOTAL_FRAMES - 1) {
-      lastStateFrameRef.current = next;
-      setFrameIdx(next);
-    }
+    // Clamp delta to prevent huge scroll ticks
+    const clampedDelta = Math.sign(delta) * Math.min(2, Math.abs(delta));
+    const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + clampedDelta));
+    if (next === targetFrameRef.current) return;
+    targetFrameRef.current = next;
+  }, []);
 
-    if (next >= TOTAL_FRAMES - 1) {
-      // Done — release scroll control + animate navbar in
-      heroActiveRef.current = false;
-      setHeroComplete(true);
-      document.body.style.overflow = "";
-      document.body.style.touchAction = "";
-      document.documentElement.classList.remove("hero-active");
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("heroStateChange"));
+  // RAF loop for smooth frame transition in LuxuryHero
+  useEffect(() => {
+    let animId: number;
+    const tick = () => {
+      const diff = targetFrameRef.current - frameRef.current;
+      const absDiff = Math.abs(diff);
+      
+      if (absDiff > 0.001) {
+        // Majestic lerp at 0.08 speed and cap max frame step per tick to 2 frames
+        const step = diff * 0.08;
+        const clampedStep = Math.sign(step) * Math.min(2, Math.abs(step));
+        frameRef.current += clampedStep;
+        drawFrame(frameRef.current);
+        
+        const nextInt = Math.round(frameRef.current);
+        if (Math.abs(nextInt - lastStateFrameRef.current) >= 2 || nextInt >= CONTENT_THRESHOLD || nextInt === 0 || nextInt === TOTAL_FRAMES - 1) {
+          lastStateFrameRef.current = nextInt;
+          setFrameIdx(nextInt);
+        }
+        
+        if (frameRef.current >= TOTAL_FRAMES - 1 - 0.05) {
+          heroActiveRef.current = false;
+          setHeroComplete(true);
+          document.body.style.overflow = "";
+          document.body.style.touchAction = "";
+          document.documentElement.classList.remove("hero-active");
+          if (typeof window !== "undefined") {
+            window.dispatchEvent(new Event("heroStateChange"));
+          }
+        }
       }
-    }
+      animId = requestAnimationFrame(tick);
+    };
+    animId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(animId);
   }, [drawFrame]);
 
-  /* ── preload all frames ──────────────────────────────────────────────── */
+  /* ── preload all frames via global ParallelPreloader ──────────────────── */
   useEffect(() => {
-    let done = 0;
-    for (let i = 0; i < TOTAL_FRAMES; i++) {
-      const img = new Image();
-      img.decoding = "async";
-      img.src = frameSrc(i + 1);
-      img.onload = () => {
-        loadedRef.current[i] = true;
-        done++;
-        // Throttle progress updates to avoid 130 React re-renders
-        const pct = Math.round((done / TOTAL_FRAMES) * 100);
-        if (pct % 10 === 0 || pct === 100) {
-          setLoadPct(pct);
-        }
-        if (i === 0) { setFirstReady(true); drawFrame(0); }
-      };
-      imagesRef.current[i] = img;
-    }
-  }, []); // eslint-disable-line
+    startGlobalFramePreload();
+
+    const handleProgress = (pct: number) => {
+      setLoadPct(pct);
+      if (pct >= 100) {
+        setFirstReady(true);
+        drawFrame(0);
+      }
+    };
+
+    preloader.registerProgressListener(handleProgress);
+
+    const backupTimeout = setTimeout(() => {
+      setFirstReady(true);
+      setLoadPct(100);
+      drawFrame(0);
+    }, 4000);
+
+    return () => {
+      preloader.unregisterProgressListener(handleProgress);
+      clearTimeout(backupTimeout);
+    };
+  }, [drawFrame]);
 
   /* ── LOCK PAGE SCROLL while hero is active ───────────────────────────── */
   useEffect(() => {
@@ -285,6 +360,30 @@ export default function LuxuryHero() {
 
   const showContent = frameIdx >= CONTENT_THRESHOLD;
 
+  // Show universe title card between index 0 and 131 (up to earth_asia_0132.webp)
+  const universeTextAlpha = (() => {
+    if (frameIdx < 0 || frameIdx > 131) return 0;
+    if (frameIdx >= 0 && frameIdx <= 20) {
+      return frameIdx / 20; // Fade in over first 20 frames
+    }
+    if (frameIdx >= 120 && frameIdx <= 131) {
+      return (131 - frameIdx) / 11; // Fade out over last 11 frames (before earth_asia_0132)
+    }
+    return 1; // Fully visible
+  })();
+
+  // Show artisan title card between index 202 and 251 (from earth_asia_0203.webp to earth_asia_0252.webp)
+  const artisanTextAlpha = (() => {
+    if (frameIdx < 202 || frameIdx > 251) return 0;
+    if (frameIdx >= 202 && frameIdx <= 212) {
+      return (frameIdx - 202) / 10; // Fade in over 10 frames
+    }
+    if (frameIdx >= 241 && frameIdx <= 251) {
+      return (251 - frameIdx) / 10; // Fade out over 10 frames
+    }
+    return 1; // Fully visible
+  })();
+
   return (
     <>
       {/* ══════════════════════════ STYLES ══════════════════════════════ */}
@@ -300,7 +399,7 @@ export default function LuxuryHero() {
 
         .lh-shimmer-bar {
           position:absolute; top:0; bottom:0; width:58px; pointer-events:none; z-index:4;
-          background:linear-gradient(90deg,transparent 0%,rgba(255,255,255,.28) 50%,transparent 100%);
+          background-color:rgba(255,255,255,.18);
           animation:lh-shimmer var(--dur,5.5s) var(--delay,0s) ease-in-out infinite;
         }
         .lh-particle {
@@ -329,7 +428,7 @@ export default function LuxuryHero() {
         .lh-btn-gold{
           display:inline-flex; align-items:center; gap:.45rem;
           padding:.9rem 2.2rem; border-radius:50px; border:none; cursor:pointer;
-          background:linear-gradient(135deg,#C9A84C,#E8C97A); color:#1A1408;
+          background-color:#C9A84C; color:#1A1408;
           font-size:.7rem; font-weight:700; letter-spacing:2.5px; text-transform:uppercase;
           text-decoration:none; font-family:var(--font-inter,system-ui,sans-serif);
           transition:transform .25s cubic-bezier(.16,1,.3,1),box-shadow .25s;
@@ -389,16 +488,12 @@ export default function LuxuryHero() {
         <div style={{
           position:"absolute", inset:0, pointerEvents:"none", zIndex:2,
           mixBlendMode:"screen", opacity:.55, transition:"background .18s ease",
-          background:`radial-gradient(ellipse 55% 52% at ${lightX}% ${lightY}%, rgba(255,228,160,.22) 0%, transparent 68%)`,
+          backgroundColor:"rgba(255,228,160,.06)",
         }} />
 
-        {/* ─── GRADIENT MASKS ───────────────────────────────────────────── */}
+        {/* ─── UNIFIED SMOOTH OVERLAY ────────────────────────────────── */}
         <div style={{ position:"absolute",inset:0,pointerEvents:"none",zIndex:3,
-          background:"linear-gradient(to right, rgba(12,11,7,.9) 0%, rgba(12,11,7,.15) 40%, transparent 60%, rgba(12,11,7,.25) 100%)" }} />
-        <div style={{ position:"absolute",bottom:0,left:0,right:0,height:"38%",pointerEvents:"none",zIndex:3,
-          background:"linear-gradient(to top, #0C0B07 0%, rgba(12,11,7,.5) 50%, transparent 100%)" }} />
-        <div style={{ position:"absolute",top:0,left:0,right:0,height:"20%",pointerEvents:"none",zIndex:3,
-          background:"linear-gradient(to bottom, rgba(12,11,7,.62) 0%, transparent 100%)" }} />
+          backgroundColor:"rgba(12,11,7,.45)" }} />
 
         {/* ─── GLASS SHIMMERS (appear when bottle is visible) ───────────── */}
         {showContent && (
@@ -442,8 +537,8 @@ export default function LuxuryHero() {
             <div style={{ fontFamily:"var(--font-cormorant,Georgia,serif)",fontSize:"1.5rem",letterSpacing:"7px",color:"#C9A84C",textTransform:"uppercase",fontWeight:300 }}>
               Britsync
             </div>
-            <div style={{ width:"140px",height:"1px",background:"rgba(201,168,76,.12)",borderRadius:"4px",overflow:"hidden" }}>
-              <div style={{ height:"100%",width:`${loadPct}%`,background:"linear-gradient(90deg,#C9A84C,#E8C97A)",transition:"width .3s ease" }} />
+            <div style={{ width:"140px",height:"1px",backgroundColor:"rgba(201,168,76,.12)",borderRadius:"4px",overflow:"hidden" }}>
+              <div style={{ height:"100%",width:`${loadPct}%`,backgroundColor:"#C9A84C",transition:"width .3s ease" }} />
             </div>
             <div style={{ fontSize:".52rem",letterSpacing:"4px",color:"rgba(201,168,76,.38)",textTransform:"uppercase",fontFamily:"var(--font-inter,system-ui)" }}>
               {loadPct}%
@@ -452,6 +547,128 @@ export default function LuxuryHero() {
         )}
 
         {/* progress bar removed per design */}
+
+        {/* Cinematic Universe Text Overlay (Only visible in starting frames: 0 to 131) */}
+        {universeTextAlpha > 0 && (
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "10%",
+            transform: "translateY(-50%)",
+            maxWidth: "460px",
+            zIndex: 10,
+            opacity: universeTextAlpha,
+            pointerEvents: "none",
+            transition: "opacity 0.15s ease-out",
+          }}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.2rem",
+            }}>
+              {/* Journal Tagline */}
+              <div style={{
+                fontFamily: "var(--font-inter, system-ui)",
+                fontSize: "0.58rem",
+                letterSpacing: "4px",
+                textTransform: "uppercase",
+                color: "#C9A84C",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+              }}>
+                <span style={{ width: "16px", height: "1px", backgroundColor: "rgba(201, 168, 76, 0.5)" }} />
+                The Archive of Provenance
+              </div>
+
+              {/* Main Editorial Headline */}
+              <h2 style={{
+                fontFamily: "var(--font-cormorant, Georgia, serif)",
+                fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                fontWeight: 300,
+                color: "#F5F0E8",
+                lineHeight: 1.15,
+                margin: 0,
+              }}>
+                A Chronicle of<br />
+                <span style={{ fontStyle: "italic", color: "#C9A84C" }}>Transcontinental</span> Artistry
+              </h2>
+
+              {/* Journalistic Body */}
+              <p style={{
+                fontFamily: "var(--font-inter, system-ui)",
+                fontSize: "0.85rem",
+                lineHeight: 1.7,
+                color: "rgba(245, 240, 232, 0.7)",
+                margin: 0,
+              }}>
+                Preserving the legacy of rare heritage guilds. An archival testament to generational craft, cryptographic truth, and timeless design.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Cinematic Artisan Text Overlay (Only visible in frames: 202 to 251) */}
+        {artisanTextAlpha > 0 && (
+          <div style={{
+            position: "absolute",
+            top: "50%",
+            left: "10%",
+            transform: "translateY(-50%)",
+            maxWidth: "460px",
+            zIndex: 10,
+            opacity: artisanTextAlpha,
+            pointerEvents: "none",
+            transition: "opacity 0.15s ease-out",
+          }}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              gap: "1.2rem",
+            }}>
+              {/* Journal Tagline */}
+              <div style={{
+                fontFamily: "var(--font-inter, system-ui)",
+                fontSize: "0.58rem",
+                letterSpacing: "4px",
+                textTransform: "uppercase",
+                color: "#C9A84C",
+                fontWeight: 700,
+                display: "flex",
+                alignItems: "center",
+                gap: "0.6rem",
+              }}>
+                <span style={{ width: "16px", height: "1px", backgroundColor: "rgba(201, 168, 76, 0.5)" }} />
+                Generational Legacies
+              </div>
+
+              {/* Main Editorial Headline */}
+              <h2 style={{
+                fontFamily: "var(--font-cormorant, Georgia, serif)",
+                fontSize: "clamp(2rem, 3.5vw, 3rem)",
+                fontWeight: 300,
+                color: "#F5F0E8",
+                lineHeight: 1.15,
+                margin: 0,
+              }}>
+                The Custodians<br />
+                of <span style={{ fontStyle: "italic", color: "#C9A84C" }}>Ancient Heritage</span>
+              </h2>
+
+              {/* Journalistic Body */}
+              <p style={{
+                fontFamily: "var(--font-inter, system-ui)",
+                fontSize: "0.85rem",
+                lineHeight: 1.7,
+                color: "rgba(245, 240, 232, 0.7)",
+                margin: 0,
+              }}>
+                Honoring the master artisans who preserve rare, time-honored techniques passed down through centuries of dedication and silent mastery.
+              </p>
+            </div>
+          </div>
+        )}
 
         {/* ─── HERO CONTENT ─────────────────────────────────────────────── */}
         <div
@@ -507,7 +724,7 @@ export default function LuxuryHero() {
               style={{
                 position:"absolute",right:"6px",top:"50%",transform:"translateY(-50%)",
                 width:"34px",height:"34px",borderRadius:"50%",border:"none",cursor:"pointer",
-                background:"linear-gradient(135deg,#C9A84C,#E8C97A)",
+                backgroundColor:"#C9A84C",
                 display:"flex",alignItems:"center",justifyContent:"center",
                 color:"#1A1408",fontSize:".9rem",
               }}
@@ -594,7 +811,7 @@ export default function LuxuryHero() {
           padding: "1.5rem",
         }}>
           <div style={{
-            background: "linear-gradient(145deg, rgba(22, 19, 12, 0.96), rgba(10, 9, 6, 0.98))",
+            backgroundColor: "rgba(18, 16, 12, 0.98)",
             border: "1px solid rgba(201, 168, 76, 0.4)",
             borderRadius: "20px",
             padding: "2.4rem 2.2rem",

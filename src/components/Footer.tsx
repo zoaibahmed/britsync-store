@@ -19,14 +19,28 @@ export default function Footer() {
       }}>
         {/* Brand Section */}
         <div>
-          <h3 style={{ 
-            color: 'var(--accent)', 
-            marginBottom: '1.5rem', 
-            fontSize: '1.25rem',
-            fontFamily: 'var(--font-outfit)',
-            letterSpacing: '4px',
-            fontWeight: 300
-          }}>BRITSYNC</h3>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+            <img 
+              src="/logo.png" 
+              alt="Britsync Logo Emblem" 
+              style={{ 
+                height: '34px', 
+                width: '34px', 
+                borderRadius: '50%', 
+                objectFit: 'cover',
+                border: '1px solid var(--accent)',
+                boxShadow: '0 4px 12px rgba(212,175,55,0.3)' 
+              }} 
+            />
+            <h3 style={{ 
+              color: 'var(--accent)', 
+              margin: 0, 
+              fontSize: '1.25rem',
+              fontFamily: 'var(--font-playfair), Georgia, serif',
+              letterSpacing: '4px',
+              fontWeight: 300
+            }}>BRITSYNC</h3>
+          </div>
           <p style={{ opacity: 0.7, lineHeight: 1.8, fontSize: '0.85rem', maxWidth: '300px', marginBottom: '2rem' }}>
             The global registry for verified master artisans and heritage ateliers. Safeguarding rare provenance.
           </p>

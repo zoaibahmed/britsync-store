@@ -7,7 +7,7 @@ import { calculateSellingPrice } from '@/lib/pricing';
 import ProductCard from './ProductCard';
 import { Icons } from './Icons';
 import LuxuryHero from './LuxuryHero';
-import MagneticCategoryCarousel from './MagneticCategoryCarousel';
+import CategoryGalleryJourney from './CategoryGalleryJourney';
 import ArtisanGlobeJourney from './ArtisanGlobeJourney';
 import SafeguardsOriginExperience from './SafeguardsOriginExperience';
 import GuardiansOfLegacy from './GuardiansOfLegacy';
@@ -109,7 +109,7 @@ function Tilt3D({ children, style, className }: { children: React.ReactNode; sty
             inset: 0,
             pointerEvents: 'none',
             borderRadius: 'inherit',
-            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, rgba(212,175,55,${glare.opacity}) 0%, transparent 65%)`,
+            backgroundColor: `rgba(212,175,55,${glare.opacity * 0.4})`,
             transition: 'opacity 0.3s ease',
           }}
         />
@@ -168,122 +168,78 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
           ════════════════════════════════════════════════════════════ */}
       <LuxuryHero />
 
-      {/* 1B. EXPLORE CRAFT DISCIPLINES (RICH CATEGORY SHOWCASE) */}
-      <section style={{ padding: '7rem 3rem', backgroundColor: 'var(--surface)', borderBottom: '1px solid var(--glass-border)', position: 'relative' }}>
-        <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '5rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Guild Disciplines</span>
-            <h2 style={{ fontSize: '2.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Explore Royal Heritage Crafts</h2>
-            <p style={{ opacity: 0.7, maxWidth: '600px', margin: '1rem auto 0', fontSize: '0.95rem' }}>
-              Hand-curated collections across eight ancient craft disciplines, each protected by geographic appellations of origin.
-            </p>
-          </div>
+      {/* 1B. EXPLORE CRAFT DISCIPLINES (RICH CATEGORY SHOWCASE VIA SCROLL-SCRUBBED VIDEOS) */}
+      <CategoryGalleryJourney />
 
-          {/* Magnetic Carousel Section 2 */}
-          <MagneticCategoryCarousel categories={categories} />
-        </div>
-      </section>
-
-      {/* 2. TRUSTED BY — 3D Glass Ribbon */}
+      {/* 2. TRUSTED BY — Safeguarded in Collaboration With */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={revealVariants}
-        style={{ padding: '4.5rem 2rem', borderBottom: '1px solid var(--glass-border)', backgroundColor: 'var(--surface)' }}
+        style={{ padding: '6rem 2rem', borderBottom: '1px solid var(--glass-border)', backgroundColor: 'var(--surface)' }}
       >
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <p style={{ fontSize: '0.65rem', letterSpacing: '3px', textTransform: 'uppercase', opacity: 0.5, marginBottom: '2.2rem' }}>Safeguarded in Collaboration With</p>
-          <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: '2.5rem', alignItems: 'center' }}>
+        <div style={{ maxWidth: '1280px', margin: '0 auto', textAlign: 'center' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '0.6rem', marginBottom: '1rem' }}>
+            <span style={{ width: '24px', height: '1px', backgroundColor: 'var(--accent)' }} />
+            <span style={{ fontSize: '0.68rem', letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700 }}>
+              OFFICIAL HERITAGE & VERIFICATION ALLIANCES
+            </span>
+            <span style={{ width: '24px', height: '1px', backgroundColor: 'var(--accent)' }} />
+          </div>
+          <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: 'clamp(2rem, 3.5vw, 2.8rem)', fontWeight: 300, color: 'var(--text)', marginBottom: '2.5rem' }}>
+            Safeguarded in Collaboration With
+          </h2>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '1.8rem' }}>
             {[
-              "ROYAL HERITAGE COMMISSION",
-              "GLOBAL CRAFT ADVOCACY",
-              "WORLD APPELLATIONS LEAGUE",
-              "ATELIER AUDITING ALLIANCE"
+              { title: "ROYAL HERITAGE COMMISSION", icon: "🏛️", desc: "Crown-mandated cultural preservation board" },
+              { title: "GLOBAL CRAFT ADVOCACY", icon: "🌐", desc: "International artisan rights & fair compensation" },
+              { title: "WORLD APPELLATIONS LEAGUE", icon: "⚖️", desc: "Geographic Indication (GI) legal enforcement" },
+              { title: "ATELIER AUDITING ALLIANCE", icon: "📜", desc: "Independent physical workshop verification" }
             ].map((partner) => (
               <motion.div
-                key={partner}
-                whileHover={{ scale: 1.06, y: -4 }}
+                key={partner.title}
+                whileHover={{ scale: 1.03, y: -4 }}
                 transition={{ duration: 0.3 }}
                 style={{
-                  padding: '0.9rem 1.8rem',
-                  borderRadius: '30px',
-                  backgroundColor: 'rgba(212,175,55,0.03)',
+                  padding: '1.8rem 1.5rem',
+                  borderRadius: '16px',
+                  backgroundColor: 'var(--background)',
                   border: '1px solid var(--glass-border)',
+                  borderTop: '3px solid var(--accent)',
+                  boxShadow: 'var(--shadow-sm)',
+                  textAlign: 'left',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.6rem'
+                }}
+              >
+                <div style={{ fontSize: '1.8rem', marginBottom: '0.2rem' }}>{partner.icon}</div>
+                <h3 style={{
                   fontFamily: 'var(--font-playfair), serif',
                   fontSize: '0.95rem',
                   letterSpacing: '2px',
-                  fontWeight: 300,
+                  fontWeight: 600,
                   color: 'var(--text)',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.1)'
-                }}
-              >
-                {partner}
+                  margin: 0,
+                  textTransform: 'uppercase'
+                }}>
+                  {partner.title}
+                </h3>
+                <p style={{ fontSize: '0.8rem', opacity: 0.75, margin: 0, lineHeight: 1.5, color: 'var(--text-muted)' }}>
+                  {partner.desc}
+                </p>
               </motion.div>
             ))}
           </div>
         </div>
       </motion.section>
 
-      {/* 3. MARKETPLACE STATISTICS — 3D Floating Glass Cards */}
-      <motion.section 
-        initial="hidden"
-        whileInView="visible"
-        viewport={{ once: true }}
-        variants={revealVariants}
-        style={{ 
-          padding: '8rem 3rem', 
-          backgroundImage: 'linear-gradient(to right, rgba(10,10,12,0.92) 0%, rgba(10,10,12,0.82) 100%), url("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundAttachment: 'fixed',
-          color: '#FAF9F6', 
-          position: 'relative', 
-          overflow: 'hidden',
-          borderTop: '1px solid rgba(212,175,55,0.3)',
-          borderBottom: '1px solid rgba(212,175,55,0.3)'
-        }}
-      >
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }} />
-        <div className="glow-orb" style={{ bottom: '-10%', left: '10%', width: '400px', height: '400px', opacity: 0.4 }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2.5rem', position: 'relative', zIndex: 10 }}>
-          {[
-            { val: 100, suffix: "%", label: "Hand-Audited Studios" },
-            { val: 45, suffix: "+", label: "Protected Regions" },
-            { val: 1250000, suffix: "+", label: "Direct Patron Payouts (£)" },
-            { val: 15, suffix: "k", label: "Registered Masterpieces" }
-          ].map((stat) => (
-            <Tilt3D key={stat.label}>
-              <div 
-                style={{ 
-                  borderLeft: '3px solid var(--accent)', 
-                  backgroundColor: 'rgba(10,10,12,0.65)', 
-                  padding: '2.2rem 2rem', 
-                  borderRadius: '16px', 
-                  backdropFilter: 'blur(16px)',
-                  border: '1px solid rgba(212,175,55,0.2)',
-                  boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
-                  height: '100%',
-                }}
-              >
-                <h3 style={{ fontSize: '3.2rem', fontWeight: 200, color: 'var(--accent)', marginBottom: '0.4rem', margin: 0 }}>
-                  <PremiumCounter value={stat.val} suffix={stat.suffix} />
-                </h3>
-                <span style={{ fontSize: '0.72rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85, fontWeight: 500 }}>
-                  {stat.label}
-                </span>
-              </div>
-            </Tilt3D>
-          ))}
-        </div>
-      </motion.section>
-
-      {/* 4. GUARDIANS OF THE LEGACY */}
+      {/* 3. GUARDIANS OF THE LEGACY */}
       <GuardiansOfLegacy />
 
-
-
-      {/* 6. INTERACTIVE PASSPORT DEMO WITH HOLOGRAPHIC SCORE GAUGE */}
+      {/* 4. INTERACTIVE PASSPORT DEMO WITH HOLOGRAPHIC SCORE GAUGE */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
@@ -291,9 +247,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         variants={revealVariants}
         style={{ 
           padding: '10rem 3rem', 
-          backgroundImage: 'linear-gradient(to bottom, rgba(10,10,12,0.95), rgba(14,15,22,0.92)), url("https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1600")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
+          backgroundColor: '#0A0A0C',
           color: '#FAF9F6',
           borderTop: '1px solid rgba(212,175,55,0.3)', 
           borderBottom: '1px solid rgba(212,175,55,0.3)', 
@@ -301,8 +255,18 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
           overflow: 'hidden' 
         }}
       >
+        <div 
+          style={{ 
+            position: 'absolute', 
+            inset: 0, 
+            backgroundImage: 'url("https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1600")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.12,
+            pointerEvents: 'none'
+          }} 
+        />
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} />
-        <div className="glow-orb" style={{ top: '15%', right: '8%', width: '550px', height: '550px', opacity: 0.45 }} />
         
         <div style={{ maxWidth: '1240px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
           <div style={{ textAlign: 'center', marginBottom: '5.5rem' }}>
@@ -339,7 +303,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
                       backdropFilter: 'blur(20px)',
                       cursor: 'pointer', 
                       transition: 'all 0.35 ease',
-                      boxShadow: isSelected ? '0 15px 35px rgba(212,175,55,0.18), inset 0 1px 0 rgba(255,255,255,0.1)' : '0 8px 25px rgba(0,0,0,0.3)',
+                      boxShadow: isSelected ? '0 15px 35px rgba(212,175,55,0.18)' : '0 8px 25px rgba(0,0,0,0.3)',
                       position: 'relative',
                       overflow: 'hidden'
                     }}
@@ -371,12 +335,12 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
                   borderRadius: '24px',
                   position: 'relative', 
                   minHeight: '460px', 
-                  boxShadow: '0 30px 70px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.08)',
+                  boxShadow: '0 30px 70px rgba(0,0,0,0.7)',
                   color: '#FAF9F6'
                 }}
               >
                 {/* Gold metallic header band */}
-                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5px', background: 'linear-gradient(to right, #D4AF37, #F3E5AB, #D4AF37)', borderRadius: '24px 24px 0 0' }} />
+                <div style={{ position: 'absolute', top: 0, left: 0, right: 0, height: '5px', backgroundColor: '#D4AF37', borderRadius: '24px 24px 0 0' }} />
                 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: '1.4rem' }}>
                   <div>
@@ -385,7 +349,7 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
                     </span>
                     <div style={{ fontSize: '0.85rem', opacity: 0.85, fontFamily: 'monospace', marginTop: '0.3rem', color: 'rgba(250,249,246,0.7)' }}>ATELIER PASSPORT #BR-2026-94829</div>
                   </div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', backgroundColor: 'rgba(212,175,55,0.12)', padding: '0.5rem 1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.4)', boxShadow: '0 4px 15px rgba(0,0,0,0.2)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', backgroundColor: 'rgba(212,175,55,0.12)', padding: '0.5rem 1.2rem', borderRadius: '20px', border: '1px solid rgba(212,175,55,0.4)' }}>
                     <span style={{ fontSize: '0.9rem', color: 'var(--accent)' }}>★</span>
                     <span style={{ fontSize: '0.78rem', color: 'var(--accent)', fontWeight: 700, letterSpacing: '1px' }}>PROVENANCE SCORE: 98/100</span>
                   </div>
@@ -490,66 +454,103 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </motion.section>
 
-      {/* 7. HOW BRITSYNC SAFEGUARDS ORIGIN (INTERACTIVE 3D PROVENANCE CORE STORYTELLING) */}
+      {/* 5. HOW BRITSYNC SAFEGUARDS ORIGIN (INTERACTIVE PROVENANCE STORYTELLING) */}
       <SafeguardsOriginExperience />
 
-
-      {/* 8. GLOBAL ARTISAN REGISTRY — Scroll-scrubbed 3D globe journey */}
+      {/* 6. GLOBAL ARTISAN REGISTRY — Scroll-scrubbed 3D globe journey */}
       <ArtisanGlobeJourney />
 
-
-
-      {/* 11. MAKER STORIES (JOURNAL) */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)' }}>
+      {/* 7. MAKER STORIES (JOURNAL — Artisan Chronicles & Biographies) */}
+      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--background)', borderTop: '1px solid var(--glass-border)' }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Journal</span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Artisan Chronicles & Biographies</h2>
+            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3.5px', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
+              HERITAGE JOURNAL & FIELD BIOGRAPHIES
+            </span>
+            <h2 style={{ fontSize: 'clamp(2.4rem, 4vw, 3.4rem)', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: 'var(--text)' }}>
+              Artisan Chronicles & Biographies
+            </h2>
+            <p style={{ maxWidth: '620px', margin: '1rem auto 0', fontSize: '0.95rem', opacity: 0.75, lineHeight: 1.8, color: 'var(--text-muted)' }}>
+              Documenting the lives, organic raw materials, and oral traditions of master artisans across protected mountain valleys and historic guilds.
+            </p>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '3rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2.5rem' }}>
             <Tilt3D>
-              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume I &mdash; Morocco</span>
-                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Fatima: Rescuing High Atlas Kilims</h3>
-                <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Fatima expanded her mountaintop weaving loom cooperative to safeguard heritage geometric Berber lineage patterns, directly employing local young women weavers.</p>
-                <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3rem 2.6rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Volume I &mdash; High Atlas, Morocco</span>
+                  <h3 style={{ fontSize: '1.75rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.2rem', color: 'var(--text)' }}>Fatima: Rescuing High Atlas Kilims</h3>
+                  <p style={{ fontSize: '0.92rem', opacity: 0.82, lineHeight: 1.8, marginBottom: '2rem', color: 'var(--text-muted)' }}>
+                    Fatima expanded her mountaintop weaving loom cooperative to safeguard 200-year-old geometric Berber lineage patterns, directly empowering 24 local women weavers.
+                  </p>
+                </div>
+                <Link href="/stories/fatima-atlas-kilims" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.78rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  Read Full Biography &rarr;
+                </Link>
               </div>
             </Tilt3D>
 
             <Tilt3D>
-              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3.5rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
-                <span style={{ fontSize: '0.75rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>Volume II &mdash; Sindh</span>
-                <h3 style={{ fontSize: '1.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.5rem' }}>Aisha: The 21 Steps of Organic Dyeing</h3>
-                <p style={{ fontSize: '0.92rem', opacity: 0.8, lineHeight: 1.8, marginBottom: '2rem' }}>Detailing the rigorous chemistry of clay, mustard oil, water, and pure wood ash required to bind vegetable indigo dyes permanently into organic cotton textiles.</p>
-                <Link href="/stories" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.82rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Read Full Biography &rarr;</Link>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3rem 2.6rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Volume II &mdash; Sindh Valley, Pakistan</span>
+                  <h3 style={{ fontSize: '1.75rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.2rem', color: 'var(--text)' }}>Aisha: The 21 Steps of Organic Dyeing</h3>
+                  <p style={{ fontSize: '0.92rem', opacity: 0.82, lineHeight: 1.8, marginBottom: '2rem', color: 'var(--text-muted)' }}>
+                    Detailing the ancient chemistry of river clay, fermented indigo pits, mustard oil, and pomegranate skins required to produce authentic Indus Ajrak blockprints.
+                  </p>
+                </div>
+                <Link href="/stories/aisha-sindh-ajrak" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.78rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  Read Full Biography &rarr;
+                </Link>
+              </div>
+            </Tilt3D>
+
+            <Tilt3D>
+              <div style={{ backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', padding: '3rem 2.6rem', borderRadius: '20px', borderLeft: '4px solid var(--accent)', boxShadow: 'var(--shadow-md)', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--accent)', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700 }}>Volume III &mdash; Anatolia, Turkey</span>
+                  <h3 style={{ fontSize: '1.75rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: '1rem 0 1.2rem', color: 'var(--text)' }}>Zeynep: Quartz Frit & Pine Kiln Fires</h3>
+                  <p style={{ fontSize: '0.92rem', opacity: 0.82, lineHeight: 1.8, marginBottom: '2rem', color: 'var(--text-muted)' }}>
+                    Recreating 16th-century Ottoman Iznik ceramic formulas containing 85%+ quartz silica, fired in traditional pine wood kilns to achieve crystal-clear radiance.
+                  </p>
+                </div>
+                <Link href="/stories/zeynep-iznik-ceramics" style={{ textDecoration: 'none', color: 'var(--accent)', fontSize: '0.78rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
+                  Read Full Biography &rarr;
+                </Link>
               </div>
             </Tilt3D>
           </div>
         </div>
       </section>
 
-      {/* 12. CUSTOMER TESTIMONIALS */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--glass-border)' }}>
+      {/* 8. CUSTOMER TESTIMONIALS (Letters of Patronage) */}
+      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
         <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Patrons</span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>Letters of Patronage</h2>
+            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3.5px', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
+              VOICES OF DISTINGUISHED CUSTODIANS
+            </span>
+            <h2 style={{ fontSize: 'clamp(2.4rem, 4vw, 3.4rem)', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: 'var(--text)' }}>
+              Letters of Patronage
+            </h2>
           </div>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '2.5rem' }}>
             {[
-              { text: "The Ajrak Shawl is an absolute masterpiece. Having the exact GPS coordinates of Aisha's studio and viewing the inspector's signatures on the cryptographic passport makes me feel like a true custodian of Sindh history.", author: "Jane B. from London", rating: "★★★★★" },
-              { text: "The Iznik Ceramic Bowl is breathtaking. The colors and glaze are outstanding. The digital passport gives me complete trust that I am holding a genuine, legally protected piece of Iznik history.", author: "Hans M. from Munich", rating: "★★★★★" },
-              { text: "Acquiring the hand-spun alpaca throw has redefined my space. Knowing the exact weaver cooperative in Peru and reading Fatima's story created a deep, lasting connection to the work.", author: "Camille L. from Paris", rating: "★★★★★" }
+              { text: "The Ajrak Shawl is an absolute masterpiece. Having the exact GPS coordinates of Aisha's studio and viewing the inspector's signatures on the cryptographic passport makes me feel like a true custodian of Sindh history.", author: "Lady Eleanor P. from London", rating: "★★★★★" },
+              { text: "The Iznik Ceramic Vessel is breathtaking. The quartz glaze radiance is museum-grade. The digital passport gives me complete trust that I am holding a genuine, legally protected piece of Ottoman history.", author: "Hans M. from Munich", rating: "★★★★★" },
+              { text: "Acquiring the hand-spun alpaca throw has redefined our estate. Knowing the exact weaver cooperative in Peru and reading Fatima's biography created a deep, lasting connection to the work.", author: "Camille & Jean L. from Paris", rating: "★★★★★" }
             ].map((t, idx) => (
               <Tilt3D key={idx}>
-                <div style={{ padding: '3.5rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: '16px', borderTop: '4px solid var(--accent)', border: '1px solid var(--glass-border)', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
-                  <p style={{ fontStyle: 'italic', opacity: 0.88, lineHeight: 1.8, fontSize: '0.94rem', marginBottom: '2rem' }}>&ldquo;{t.text}&rdquo;</p>
+                <div style={{ padding: '3.5rem 3rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between', borderRadius: '18px', borderTop: '4px solid var(--accent)', border: '1px solid var(--glass-border)', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-md)', height: '100%' }}>
+                  <p style={{ fontFamily: 'var(--font-cormorant), Georgia, serif', fontStyle: 'italic', fontSize: '1.15rem', opacity: 0.9, lineHeight: 1.75, marginBottom: '2rem', color: 'var(--text)' }}>&ldquo;{t.text}&rdquo;</p>
                   <div>
-                    <div style={{ color: 'var(--accent)', marginBottom: '0.5rem', fontSize: '0.85rem', letterSpacing: '2px' }}>{t.rating}</div>
-                    <strong style={{ fontSize: '0.82rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text)' }}>{t.author}</strong>
-                    <span style={{ display: 'block', fontSize: '0.7rem', color: 'var(--accent)', marginTop: '0.3rem', fontWeight: 500 }}>✓ Verified Patron & Passport Holder</span>
+                    <div style={{ color: 'var(--accent)', marginBottom: '0.6rem', fontSize: '0.9rem', letterSpacing: '2px' }}>{t.rating}</div>
+                    <strong style={{ fontSize: '0.85rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--text)', fontFamily: 'var(--font-playfair), serif', fontWeight: 600 }}>{t.author}</strong>
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.72rem', color: 'var(--accent)', marginTop: '0.35rem', fontWeight: 600 }}>
+                      ✓ Verified Patron & Cryptographic Passport Holder
+                    </span>
                   </div>
                 </div>
               </Tilt3D>
@@ -558,121 +559,83 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         </div>
       </section>
 
-      {/* 13. LIVE INTERACTIVE ESCROW PAYOUT CALCULATOR SIMULATOR */}
+
+
+      {/* 10. MARKETPLACE STATISTICS (SHIFTED TO 3RD LAST POSITION!) */}
       <motion.section 
         initial="hidden"
         whileInView="visible"
         viewport={{ once: true }}
         variants={revealVariants}
         style={{ 
-          padding: '9rem 3rem', 
-          backgroundImage: 'linear-gradient(to bottom, rgba(10,10,12,0.94), rgba(10,10,12,0.88)), url("https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=1600")',
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          color: '#FAF9F6',
-          borderTop: '1px solid var(--glass-border)', 
+          padding: '8rem 3rem', 
+          backgroundColor: '#0A0A0C',
+          color: '#FAF9F6', 
           position: 'relative', 
-          overflow: 'hidden' 
+          overflow: 'hidden',
+          borderTop: '1px solid rgba(212,175,55,0.3)',
+          borderBottom: '1px solid rgba(212,175,55,0.3)'
         }}
       >
-        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.12, pointerEvents: 'none' }} />
-        <div className="glow-orb" style={{ top: '10%', right: '5%', width: '450px', height: '450px', opacity: 0.4 }} />
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '5rem', alignItems: 'center' }}>
-          <div>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '1rem' }}>Escrow Guarantee</span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginBottom: '1.5rem', fontWeight: 300 }}>100% Direct-Payout Transparency</h2>
-            <p style={{ fontSize: '0.98rem', lineHeight: 1.8, opacity: 0.85, marginBottom: '2.5rem' }}>
-              We bypass intermediate traders completely. 95% of your purchase goes directly to the verified maker's local bank/digital wallet instantly upon delivery confirmation. Britsync retains a fixed 5% escrow commission to cover cryptographic passport indexing and logistical support.
-            </p>
-            <div style={{ display: 'flex', gap: '3rem' }}>
-              <div>
-                <span style={{ fontSize: '2.6rem', color: 'var(--accent)', fontFamily: 'var(--font-playfair), serif', fontWeight: 400 }}>95%</span>
-                <span style={{ display: 'block', fontSize: '0.72rem', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '0.2rem' }}>Direct to Artisan</span>
-              </div>
-              <div>
-                <span style={{ fontSize: '2.6rem', color: 'var(--text)', fontFamily: 'var(--font-playfair), serif', fontWeight: 400 }}>5%</span>
-                <span style={{ display: 'block', fontSize: '0.72rem', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '1.5px', marginTop: '0.2rem' }}>Escrow & Registry Fee</span>
-              </div>
-            </div>
+        <div 
+          style={{ 
+            position: 'absolute', 
+            inset: 0, 
+            backgroundImage: 'url("https://images.unsplash.com/photo-1544816155-12df9643f363?auto=format&fit=crop&q=80&w=1600")',
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            opacity: 0.15,
+            pointerEvents: 'none'
+          }} 
+        />
+        <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.1, pointerEvents: 'none' }} />
+        
+        <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+          <div style={{ textAlign: 'center', marginBottom: '4rem' }}>
+            <span style={{ color: 'var(--accent)', fontSize: '0.72rem', letterSpacing: '3.5px', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '0.5rem' }}>
+              GLOBAL NETWORK METRICS
+            </span>
+            <h2 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '2.5rem', fontWeight: 300, color: '#FAF9F6' }}>
+              Authenticated Heritage Impact
+            </h2>
           </div>
 
-          {/* Live Interactive Slider Payout Visualizer with 3D Tilt */}
-          <Tilt3D>
-            <div style={{ border: '1px solid rgba(212,175,55,0.4)', borderRadius: '20px', padding: '3rem', backgroundColor: '#0D0D10', color: '#FAF9F6', display: 'flex', flexDirection: 'column', gap: '1.8rem', boxShadow: '0 25px 60px rgba(0,0,0,0.5)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h4 style={{ fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '2px', margin: 0, color: 'var(--accent)', fontWeight: 700 }}>LIVE PAYOUT CALCULATOR</h4>
-                <span className="glow-dot" />
-              </div>
-
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '0.8rem', opacity: 0.8 }}>
-                  <span>Slide Acquisition Price:</span>
-                  <strong style={{ color: 'var(--accent)', fontSize: '1.2rem', fontFamily: 'monospace' }}>£{escrowAmount}</strong>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2.5rem' }}>
+            {[
+              { val: 100, suffix: "%", label: "Hand-Audited Studios" },
+              { val: 45, suffix: "+", label: "Protected Regions" },
+              { val: 1250000, suffix: "+", label: "Direct Patron Payouts (£)" },
+              { val: 15, suffix: "k", label: "Registered Masterpieces" }
+            ].map((stat) => (
+              <Tilt3D key={stat.label}>
+                <div 
+                  style={{ 
+                    borderLeft: '3px solid var(--accent)', 
+                    backgroundColor: 'rgba(10,10,12,0.85)', 
+                    padding: '2.4rem 2rem', 
+                    borderRadius: '16px', 
+                    backdropFilter: 'blur(16px)',
+                    border: '1px solid rgba(212,175,55,0.2)',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.4)',
+                    height: '100%',
+                  }}
+                >
+                  <h3 style={{ fontSize: '3.2rem', fontWeight: 300, color: 'var(--accent)', marginBottom: '0.4rem', margin: 0 }}>
+                    <PremiumCounter value={stat.val} suffix={stat.suffix} />
+                  </h3>
+                  <span style={{ fontSize: '0.72rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.85, fontWeight: 600, color: '#FAF9F6' }}>
+                    {stat.label}
+                  </span>
                 </div>
-                <input
-                  type="range"
-                  min="100"
-                  max="5000"
-                  step="50"
-                  value={escrowAmount}
-                  onChange={(e) => setEscrowAmount(Number(e.target.value))}
-                  style={{ width: '100%', cursor: 'pointer', accentColor: 'var(--accent)' }}
-                />
-              </div>
-
-              {/* Visual Bar */}
-              <div style={{ height: '12px', borderRadius: '6px', backgroundColor: 'rgba(255,255,255,0.1)', overflow: 'hidden', display: 'flex' }}>
-                <div style={{ width: '95%', backgroundColor: 'var(--accent)' }} />
-                <div style={{ width: '5%', backgroundColor: '#666' }} />
-              </div>
-
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.92rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                <span style={{ opacity: 0.8 }}>Patron Purchase Total:</span>
-                <strong style={{ color: '#FAF9F6' }}>£{escrowAmount.toFixed(2)}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.95rem', color: 'var(--accent)', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.8rem' }}>
-                <span>Artisan Direct Payment (95%):</span>
-                <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.95).toFixed(2)}</strong>
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.88rem', opacity: 0.7 }}>
-                <span>Registry Fee (5%):</span>
-                <strong style={{ fontFamily: 'monospace' }}>£{(escrowAmount * 0.05).toFixed(2)}</strong>
-              </div>
-            </div>
-          </Tilt3D>
+              </Tilt3D>
+            ))}
+          </div>
         </div>
       </motion.section>
 
-      {/* 14. VERIFICATION PROCESS — 3D Soft Cards */}
-      <section style={{ padding: '9rem 3rem', backgroundColor: 'var(--surface)', borderTop: '1px solid var(--glass-border)', borderBottom: '1px solid var(--glass-border)' }}>
-        <div style={{ maxWidth: '1300px', margin: '0 auto' }}>
-          <div style={{ textAlign: 'center', marginBottom: '6rem' }}>
-            <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600 }}>Heritage Auditing</span>
-            <h2 style={{ fontSize: '2.8rem', fontFamily: 'var(--font-playfair), Georgia, serif', marginTop: '0.8rem', fontWeight: 300 }}>On-Site Inspection Guidelines</h2>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '2.5rem' }}>
-            {[
-              { icon: Icons.Shield, title: "Lineage Audit", body: "Artisans present family records, traditional tools, and apprentice records to document the heritage of the workshop." },
-              { icon: Icons.Compass, title: "Material Audit", body: "Board inspects organic pigments, raw clays, or heritage cottons to guarantee zero synthetic chemical substitutions." },
-              { icon: Icons.Lock, title: "Ledger Stamp", body: "Every approved item receives its individual serial hash, securing absolute digital representation for buyers." },
-            ].map((step) => {
-              const StepIcon = step.icon;
-              return (
-                <Tilt3D key={step.title}>
-                  <div style={{ padding: '3rem', border: '1px solid var(--glass-border)', borderRadius: '18px', backgroundColor: 'var(--background)', boxShadow: 'var(--shadow-sm)', height: '100%' }}>
-                    <div style={{ color: 'var(--accent)', marginBottom: '1.2rem' }}><StepIcon size={32} /></div>
-                    <h4 style={{ fontSize: '1.15rem', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '1rem', color: 'var(--text)' }}>{step.title}</h4>
-                    <p style={{ fontSize: '0.88rem', opacity: 0.75, lineHeight: 1.7, margin: 0 }}>{step.body}</p>
-                  </div>
-                </Tilt3D>
-              );
-            })}
-          </div>
-        </div>
-      </section>
 
-      {/* 15. CALL TO ACTION (HIGH IMPACT OBSIDIAN FINALE) */}
+      {/* 12. CALL TO ACTION (Registry Curation — Custodian of Generational Craft?) */}
       <section 
         style={{ 
           padding: '11rem 3rem', 
@@ -687,24 +650,27 @@ export default function HomeClient({ eliteProducts, generalProducts }: HomeClien
         <img 
           src="https://images.unsplash.com/photo-1570114668478-439564cbacda?auto=format&fit=crop&q=80&w=1600" 
           alt="Artisan Kiln Background" 
-          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.3, pointerEvents: 'none' }}
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: 0.2, pointerEvents: 'none' }}
         />
-        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, rgba(10,10,12,0.85) 0%, rgba(10,10,12,0.95) 100%)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(10,10,12,0.88)', pointerEvents: 'none' }} />
         <div className="grid-bg" style={{ position: 'absolute', inset: 0, opacity: 0.15, pointerEvents: 'none' }} />
-        <div className="glow-orb" style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: '800px', height: '800px', opacity: 0.35 }} />
         
-        <div style={{ maxWidth: '850px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
-          <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3px', textTransform: 'uppercase', fontWeight: 600, display: 'block', marginBottom: '1.5rem' }}>Registry Curation</span>
-          <h2 style={{ fontSize: '3.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--accent)', marginBottom: '2rem', fontWeight: 300, lineHeight: 1.2 }}>Custodian of Generational Craft?</h2>
-          <p style={{ fontSize: '1.15rem', opacity: 0.85, marginBottom: '4rem', lineHeight: 1.8 }}>
-            We invite master artisans to apply for registry curation. Focus entirely on your heritage craftsmanship; we will manage international secure logistics, digital cataloging, and direct escrow payouts.
+        <div style={{ maxWidth: '880px', margin: '0 auto', position: 'relative', zIndex: 10 }}>
+          <span style={{ color: 'var(--accent)', fontSize: '0.75rem', letterSpacing: '3.5px', textTransform: 'uppercase', fontWeight: 700, display: 'block', marginBottom: '1.5rem' }}>
+            REGISTRY CURATION & GUILD ONBOARDING
+          </span>
+          <h2 style={{ fontSize: 'clamp(2.5rem, 5vw, 3.8rem)', fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--accent)', marginBottom: '2rem', fontWeight: 300, lineHeight: 1.2 }}>
+            Custodian of Generational Craft?
+          </h2>
+          <p style={{ fontSize: '1.1rem', opacity: 0.88, marginBottom: '4rem', lineHeight: 1.85, color: 'rgba(250,249,246,0.88)' }}>
+            We invite master artisans and historic guilds to apply for registry curation. Protect your regional appellation while accessing international patrons with automated escrow payouts and global logistics support.
           </p>
           <div style={{ display: 'flex', gap: '1.5rem', justifyContent: 'center', flexWrap: 'wrap' }}>
-            <Link href="/become-a-maker" className="btn-accent" style={{ textDecoration: 'none', padding: '1.2rem 3rem', borderRadius: '8px', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 600 }}>
+            <Link href="/become-a-maker" className="btn-accent" style={{ textDecoration: 'none', padding: '1.25rem 3.2rem', borderRadius: '8px', fontSize: '0.82rem', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 700, backgroundColor: 'var(--accent)', color: '#000000', boxShadow: '0 10px 30px rgba(212,175,55,0.3)' }}>
               Apply for Curation &rarr;
             </Link>
-            <Link href="/docs/DASHBOARD_TESTING_GUIDE.md" style={{ textDecoration: 'none', backgroundColor: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.2)', color: '#FAF9F6', padding: '1.2rem 3rem', borderRadius: '8px', fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase', fontWeight: 500 }}>
-              Inspection Standards
+            <Link href="/how-we-earn" style={{ textDecoration: 'none', backgroundColor: 'rgba(255,255,255,0.06)', border: '1px solid rgba(212,175,55,0.3)', color: '#FAF9F6', padding: '1.25rem 3.2rem', borderRadius: '8px', fontSize: '0.82rem', letterSpacing: '2.5px', textTransform: 'uppercase', fontWeight: 600 }}>
+              Inspection Standards Guide
             </Link>
           </div>
         </div>

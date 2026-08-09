@@ -236,7 +236,7 @@ export default function MakerList({ makers }: { makers: MakerProfileWithCounts[]
                   <div style={{
                     position: 'absolute',
                     inset: 0,
-                    background: 'linear-gradient(to bottom, rgba(15,36,32,0.15), rgba(15,36,32,0.65))'
+                    backgroundColor: 'rgba(10, 10, 12, 0.35)',
                   }} />
                   
                   {/* Verification Badge */}

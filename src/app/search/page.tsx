@@ -225,7 +225,7 @@ function SearchContent() {
               <div style={{
                 position: 'absolute',
                 inset: 0,
-                background: 'linear-gradient(to top, rgba(15,36,32,0.92) 0%, rgba(15,36,32,0.4) 50%, transparent 100%)'
+                backgroundColor: 'rgba(10, 10, 12, 0.65)'
               }} />
               <div style={{ position: 'absolute', top: '1.5rem', left: '1.5rem', backgroundColor: 'rgba(15,36,32,0.85)', backdropFilter: 'blur(10px)', color: '#D4AF37', border: '1px solid rgba(212,175,55,0.5)', padding: '0.45rem 1.2rem', borderRadius: '30px', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '1.5px', textTransform: 'uppercase' }}>
                 ⭐ Heritage Atelier Spotlight

@@ -289,11 +289,11 @@ export default async function StoryDetailsPage({ params }: { params: Promise<{ i
             zIndex: 0
           }}
         />
-        {/* Gradient Overlay */}
+        {/* Solid Dark Overlay */}
         <div style={{
           position: 'absolute',
           inset: 0,
-          background: 'linear-gradient(to top, rgba(15, 36, 32, 0.96) 0%, rgba(15, 36, 32, 0.6) 65%, rgba(15, 36, 32, 0.25) 100%)',
+          backgroundColor: 'rgba(10, 10, 12, 0.72)',
           zIndex: 1
         }} />
 

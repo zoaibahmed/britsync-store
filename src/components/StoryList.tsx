@@ -99,7 +99,7 @@ export default function StoryList({ stories }: { stories: any[] }) {
                 <div style={{
                   position: 'absolute',
                   inset: 0,
-                  background: 'linear-gradient(to top, rgba(15,36,32,0.7) 0%, transparent 60%)'
+                  backgroundColor: 'rgba(10, 10, 12, 0.35)',
                 }} />
                 <div style={{ position: 'absolute', top: '1.2rem', left: '1.2rem', backgroundColor: 'rgba(15,36,32,0.85)', backdropFilter: 'blur(8px)', padding: '0.4rem 1.1rem', borderRadius: '30px', border: '1px solid rgba(212,175,55,0.4)' }}>
                   <span style={{ color: '#D4AF37', fontWeight: 600, textTransform: 'uppercase', fontSize: '0.72rem', letterSpacing: '1.5px' }}>

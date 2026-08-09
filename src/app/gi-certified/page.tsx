@@ -41,7 +41,8 @@ export default function GIProductsPage() {
             </div>
             
             {/* Immersive heritage origin map with pulsing hotspots */}
-            <div style={{ height: '500px', background: 'linear-gradient(rgba(0,0,0,0.1), rgba(0,0,0,0.25)), url(https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1200) center/cover', borderRadius: '16px', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(200, 164, 93, 0.15)' }}>
+            <div style={{ height: '500px', backgroundImage: 'url(https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1200)', backgroundSize: 'cover', backgroundPosition: 'center', borderRadius: '16px', position: 'relative', overflow: 'hidden', boxShadow: 'var(--shadow-md)', border: '1px solid rgba(200, 164, 93, 0.15)' }}>
+               <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.2)', pointerEvents: 'none' }} />
                <div style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', backgroundColor: 'var(--primary)', color: 'var(--accent)', padding: '0.6rem 1.2rem', borderRadius: '30px', fontWeight: 'bold', fontSize: '0.85rem', letterSpacing: '0.5px', boxShadow: 'var(--shadow-sm)', zIndex: 10 }}>
                  🛰️ Immersive Origin Registry
                </div>

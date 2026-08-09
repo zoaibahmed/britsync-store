@@ -1,112 +1,226 @@
 /**
  * globalFramePreloader.ts
  *
- * Singleton preloader that aggressively loads ALL animation frames
- * (Provenance Core + Artisan Globe) into browser memory during the
- * website's initial loading screen.
- *
- * Both SafeguardsOriginExperience and ArtisanGlobeJourney share
- * their own module-level caches. This module triggers their
- * population as early as possible so the user never sees lag.
+ * Singleton preloader with parallel workers (concurrency 32)
+ * populating shared Maps in RAM.
  */
 
-const PROVENANCE_TOTAL = 360;
-const GLOBE_ASIA_TOTAL = 120;
-const GLOBE_AFRICA_TOTAL = 80;
-
-// Shared caches — same objects imported by the actual components
 export const provenanceCache = new Map<number, HTMLImageElement>();
 export const globeCache = new Map<number, HTMLImageElement>();
+export const heroCache = new Map<number, HTMLImageElement>();
+export const categoryCache = new Map<number, HTMLImageElement>();
 
-let preloadStarted = false;
+const PROVENANCE_TOTAL = 360;
+const GLOBE_TOTAL = 130;
+const HERO_TOTAL = 912;
+const CATEGORY_TOTAL = 2400;
 
-function loadIntoCache(
-  cache: Map<number, HTMLImageElement>,
-  url: string,
-  index: number
-): Promise<void> {
-  if (cache.has(index)) return Promise.resolve();
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.decoding = "async";
-    img.src = url;
-    img.onload = () => { cache.set(index, img); resolve(); };
-    img.onerror = () => resolve(); // silently skip failed frames
-  });
+export function getHeroFrameUrl(index: number): string {
+  const ASIA_COUNT = 480;
+  const safeIdx = Math.max(0, Math.min(HERO_TOTAL - 1, Math.floor(index)));
+  if (safeIdx < ASIA_COUNT) {
+    const num = String(safeIdx + 1).padStart(4, "0");
+    return `/storyboard-frames/earth_asia_${num}.webp`;
+  } else {
+    const num = String(safeIdx - ASIA_COUNT + 1).padStart(4, "0");
+    return `/storyboard-frames/africa_${num}.webp`;
+  }
 }
 
-function sleep(ms: number) {
-  return new Promise<void>((r) => setTimeout(r, ms));
+export function getCategoryFrameUrl(index: number): string {
+  const num = String(Math.max(0, Math.min(CATEGORY_TOTAL - 1, index)) + 1).padStart(4, "0");
+  return `/gallery-frames/frame-${num}.webp`;
 }
 
-/**
- * Call once — fires off progressive frame loading for all sections.
- * Safe to call multiple times (no-ops on repeat calls).
- */
-export async function startGlobalFramePreload(): Promise<void> {
-  if (preloadStarted || typeof window === 'undefined') return;
-  preloadStarted = true;
+export function getProvenanceFrameUrl(index: number): string {
+  const num = String(Math.max(0, Math.min(PROVENANCE_TOTAL - 1, index)) + 1).padStart(4, "0");
+  return `/provenance-core/core_${num}.webp`;
+}
 
-  // ── Phase 1: Provenance Core — first 30 frames (priority) ────────
-  const p1: Promise<void>[] = [];
-  for (let i = 0; i < 30; i++) {
-    const url = '/provenance-core/core_' + String(i + 1).padStart(4, '0') + '.webp';
-    p1.push(loadIntoCache(provenanceCache, url, i));
-  }
-  await Promise.allSettled(p1);
+export function getGlobeFrameUrl(index: number): string {
+  const num = String(Math.max(0, Math.min(GLOBE_TOTAL - 1, index)) + 1).padStart(4, "0");
+  return `/hero-frames/frame-${num}.jpg`;
+}
 
-  // ── Phase 2: Globe — first 30 Asia frames (priority) ─────────────
-  const p2: Promise<void>[] = [];
-  for (let i = 0; i < 30; i++) {
-    const url = '/storyboard-frames/earth_asia_' + String(i + 1).padStart(4, '0') + '.webp';
-    p2.push(loadIntoCache(globeCache, url, i));
-  }
-  await Promise.allSettled(p2);
-  await sleep(50);
+class ParallelPreloader {
+  private activeConnections = 0;
+  private queue: Array<{
+    url: string;
+    cache: Map<number, HTMLImageElement>;
+    index: number;
+    resolve: () => void;
+  }> = [];
+  private concurrency = 32;
 
-  // ── Phase 3: Remaining Provenance Core in chunks ──────────────────
-  const remainingProvenance: number[] = [];
-  for (let i = 30; i < PROVENANCE_TOTAL; i++) remainingProvenance.push(i);
+  private initialLoadResolver: (() => void) | null = null;
+  private initialLoadPromise: Promise<void> | null = null;
+  private initialLoadTarget = 0;
+  private initialLoadCount = 0;
+  private isInitialLoadDone = false;
+  private isStarted = false;
+  private progressListeners: Array<(pct: number) => void> = [];
 
-  for (let i = 0; i < remainingProvenance.length; i += 15) {
-    const chunk = remainingProvenance.slice(i, i + 15);
-    await Promise.allSettled(
-      chunk.map((idx) => {
-        const url = '/provenance-core/core_' + String(idx + 1).padStart(4, '0') + '.webp';
-        return loadIntoCache(provenanceCache, url, idx);
-      })
-    );
-    await sleep(20);
+  constructor() {
+    if (typeof window !== 'undefined') {
+      this.initialLoadPromise = new Promise<void>((resolve) => {
+        this.initialLoadResolver = resolve;
+      });
+    }
   }
 
-  // ── Phase 4: Remaining Globe Asia frames ──────────────────────────
-  const remainingAsia: number[] = [];
-  for (let i = 30; i < GLOBE_ASIA_TOTAL; i++) remainingAsia.push(i);
-
-  for (let i = 0; i < remainingAsia.length; i += 15) {
-    const chunk = remainingAsia.slice(i, i + 15);
-    await Promise.allSettled(
-      chunk.map((idx) => {
-        const url = '/storyboard-frames/earth_asia_' + String(idx + 1).padStart(4, '0') + '.webp';
-        return loadIntoCache(globeCache, url, idx);
-      })
-    );
-    await sleep(20);
+  public getInitialLoadPromise(): Promise<void> {
+    return this.initialLoadPromise || Promise.resolve();
   }
 
-  // ── Phase 5: Globe Africa frames ──────────────────────────────────
-  const africaIndices: number[] = [];
-  for (let i = 0; i < GLOBE_AFRICA_TOTAL; i++) africaIndices.push(i);
-
-  for (let i = 0; i < africaIndices.length; i += 15) {
-    const chunk = africaIndices.slice(i, i + 15);
-    await Promise.allSettled(
-      chunk.map((idx) => {
-        const url = '/storyboard-frames/africa_' + String(idx + 1).padStart(4, '0') + '.webp';
-        // Globe Africa uses offset index (after Asia)
-        return loadIntoCache(globeCache, url, GLOBE_ASIA_TOTAL + idx);
-      })
-    );
-    await sleep(20);
+  public registerProgressListener(cb: (pct: number) => void) {
+    this.progressListeners.push(cb);
+    cb(this.getInitialProgress());
   }
+
+  public unregisterProgressListener(cb: (pct: number) => void) {
+    this.progressListeners = this.progressListeners.filter((l) => l !== cb);
+  }
+
+  public getInitialProgress(): number {
+    if (this.initialLoadTarget === 0) return 0;
+    return Math.min(100, Math.round((this.initialLoadCount / this.initialLoadTarget) * 100));
+  }
+
+  public addToQueue(
+    url: string,
+    cache: Map<number, HTMLImageElement>,
+    index: number,
+    isInitial = false
+  ): Promise<void> {
+    return new Promise<void>((resolve) => {
+      if (cache.has(index)) {
+        if (isInitial) {
+          this.initialLoadCount++;
+          this.checkInitialProgress();
+        }
+        resolve();
+        return;
+      }
+      this.queue.push({
+        url,
+        cache,
+        index,
+        resolve: () => {
+          if (isInitial) {
+            this.initialLoadCount++;
+            this.checkInitialProgress();
+          }
+          resolve();
+        },
+      });
+      this.processQueue();
+    });
+  }
+
+  private checkInitialProgress() {
+    const pct = this.getInitialProgress();
+    this.progressListeners.forEach((l) => l(pct));
+    if (this.isInitialLoadDone) return;
+    if (this.initialLoadCount >= this.initialLoadTarget) {
+      this.isInitialLoadDone = true;
+      if (this.initialLoadResolver) {
+        this.initialLoadResolver();
+      }
+    }
+  }
+
+  public setInitialLoadTarget(target: number) {
+    this.initialLoadTarget = target;
+    this.checkInitialProgress();
+  }
+
+  private async processQueue() {
+    if (this.activeConnections >= this.concurrency || this.queue.length === 0) return;
+
+    this.activeConnections++;
+    const item = this.queue.shift()!;
+
+    try {
+      await this.loadFrame(item.cache, item.url, item.index);
+    } catch (e) {
+      // silently fail
+    } finally {
+      this.activeConnections--;
+      item.resolve();
+      this.processQueue();
+    }
+  }
+
+  private loadFrame(
+    cache: Map<number, HTMLImageElement>,
+    url: string,
+    index: number
+  ): Promise<void> {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.decoding = "async";
+      img.src = url;
+      img.onload = () => {
+        cache.set(index, img);
+        resolve();
+      };
+      img.onerror = () => {
+        resolve(); // resolve anyway to keep queue moving
+      };
+    });
+  }
+
+  public startPreload() {
+    if (this.isStarted || typeof window === 'undefined') return;
+    this.isStarted = true;
+
+    // Define initial loads (Fast 25% for landing hero + first category view)
+    const initialHeroCount = Math.floor(HERO_TOTAL * 0.25); // 228
+    const initialCategoryCount = 100;
+    const initialProvenanceCount = 40;
+    const initialGlobeCount = 40;
+
+    const totalInitial =
+      initialHeroCount +
+      initialCategoryCount +
+      initialProvenanceCount +
+      initialGlobeCount;
+    this.setInitialLoadTarget(totalInitial);
+
+    // Queue initial vital frames first
+    for (let i = 0; i < initialHeroCount; i++) {
+      this.addToQueue(getHeroFrameUrl(i), heroCache, i, true);
+    }
+    for (let i = 0; i < initialCategoryCount; i++) {
+      this.addToQueue(getCategoryFrameUrl(i), categoryCache, i, true);
+    }
+    for (let i = 0; i < initialProvenanceCount; i++) {
+      this.addToQueue(getProvenanceFrameUrl(i), provenanceCache, i, true);
+    }
+    for (let i = 0; i < initialGlobeCount; i++) {
+      this.addToQueue(getGlobeFrameUrl(i), globeCache, i, true);
+    }
+
+    // Queue remaining frames in background with slightly deferred schedule
+    setTimeout(() => {
+      for (let i = initialHeroCount; i < HERO_TOTAL; i++) {
+        this.addToQueue(getHeroFrameUrl(i), heroCache, i, false);
+      }
+      for (let i = initialCategoryCount; i < CATEGORY_TOTAL; i++) {
+        this.addToQueue(getCategoryFrameUrl(i), categoryCache, i, false);
+      }
+      for (let i = initialProvenanceCount; i < PROVENANCE_TOTAL; i++) {
+        this.addToQueue(getProvenanceFrameUrl(i), provenanceCache, i, false);
+      }
+      for (let i = initialGlobeCount; i < GLOBE_TOTAL; i++) {
+        this.addToQueue(getGlobeFrameUrl(i), globeCache, i, false);
+      }
+    }, 200);
+  }
+}
+
+export const preloader = new ParallelPreloader();
+
+export function startGlobalFramePreload() {
+  preloader.startPreload();
 }

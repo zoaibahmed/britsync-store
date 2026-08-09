@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -109,7 +109,9 @@ export default function GuardiansOfLegacy() {
           left: "30%",
           width: "700px",
           height: "400px",
-          background: "radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)",
+          backgroundColor: "rgba(212,175,55,0.03)",
+          filter: "blur(60px)",
+          borderRadius: "50%",
           pointerEvents: "none",
         }}
       />
@@ -134,7 +136,7 @@ export default function GuardiansOfLegacy() {
                 fontWeight: 700,
               }}
             >
-              Living Guild Stage — No Card Container
+              Living Guild Stage — Heritage Guardians
             </span>
           </motion.div>
 
@@ -204,20 +206,20 @@ export default function GuardiansOfLegacy() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            className="guardians-stage-grid"
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(12, 1fr)",
+              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
               gap: "2.5rem",
               alignItems: "center",
               minHeight: "560px",
             }}
           >
-            {/* Left Column: Huge Portrait Stage (Columns 1 to 6) */}
+            {/* Left Column: Huge Portrait Stage */}
             <div
               style={{
-                gridColumn: "span 6",
                 position: "relative",
-                height: "560px",
+                height: "520px",
                 borderRadius: "20px",
                 overflow: "hidden",
               }}
@@ -233,13 +235,12 @@ export default function GuardiansOfLegacy() {
                 }}
               />
 
-              {/* Edge Gradient Overlay */}
+              {/* Edge Overlay */}
               <div
                 style={{
                   position: "absolute",
                   inset: 0,
-                  background:
-                    "linear-gradient(to top, rgba(10,10,12,0.92) 0%, rgba(10,10,12,0.3) 50%, transparent 100%), linear-gradient(to right, rgba(10,10,12,0.4) 0%, transparent 60%)",
+                  backgroundColor: "rgba(10, 10, 12, 0.45)",
                 }}
               />
 

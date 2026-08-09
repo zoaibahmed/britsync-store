@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Icons } from '@/components/Icons';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -10,7 +11,54 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
+  const [theme, setTheme] = useState<'light' | 'dark'>('dark');
   const pathname = usePathname();
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTheme = localStorage.getItem('britsync_theme');
+      const currentAttr = document.documentElement.getAttribute('data-theme');
+      let activeTheme: 'light' | 'dark' = 'dark';
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        activeTheme = savedTheme;
+      } else if (currentAttr === 'light' || currentAttr === 'dark') {
+        activeTheme = currentAttr;
+      }
+      setTheme(activeTheme);
+      document.documentElement.setAttribute('data-theme', activeTheme);
+      document.body.setAttribute('data-theme', activeTheme);
+      if (activeTheme === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.documentElement.classList.remove('light');
+        document.body.classList.add('dark');
+        document.body.classList.remove('light');
+      } else {
+        document.documentElement.classList.add('light');
+        document.documentElement.classList.remove('dark');
+        document.body.classList.add('light');
+        document.body.classList.remove('dark');
+      }
+    }
+  }, []);
+
+  const toggleTheme = () => {
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
+    localStorage.setItem('britsync_theme', nextTheme);
+    document.documentElement.setAttribute('data-theme', nextTheme);
+    document.body.setAttribute('data-theme', nextTheme);
+    if (nextTheme === 'dark') {
+      document.documentElement.classList.add('dark');
+      document.documentElement.classList.remove('light');
+      document.body.classList.add('dark');
+      document.body.classList.remove('light');
+    } else {
+      document.documentElement.classList.add('light');
+      document.documentElement.classList.remove('dark');
+      document.body.classList.add('light');
+      document.body.classList.remove('dark');
+    }
+  };
 
   const updateCounts = () => {
     if (typeof window !== 'undefined') {
@@ -49,10 +97,12 @@ export default function Navbar() {
       const currentScroll = window.scrollY;
       setScrolled(currentScroll > 30);
       
-      if (currentScroll > lastScroll && currentScroll > 80) {
-        setVisible(false); // Hide on scroll down
+      if (currentScroll <= 10) {
+        setVisible(true); // Always visible at the absolute top
+      } else if (currentScroll > lastScroll) {
+        setVisible(true); // Show on scroll down (comes back from top)
       } else {
-        setVisible(true); // Show on scroll up
+        setVisible(false); // Hide on scroll up
       }
       lastScroll = currentScroll;
     };
@@ -131,16 +181,35 @@ export default function Navbar() {
       }}>
         {/* Logo */}
         <Link href="/" style={{
-          color: shouldBeSolid ? 'var(--text)' : 'var(--accent)',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
           textDecoration: 'none',
-          fontSize: '1.35rem',
-          fontWeight: '400',
-          letterSpacing: '4px',
-          fontFamily: 'var(--font-playfair), Georgia, serif',
           zIndex: 1001,
-          transition: 'color var(--transition-fast)'
         }}>
-          BRITSYNC
+          <img 
+            src="/logo.png" 
+            alt="Britsync Logo Emblem" 
+            style={{ 
+              height: '36px', 
+              width: '36px', 
+              borderRadius: '50%',
+              objectFit: 'cover',
+              border: '1px solid var(--accent)',
+              boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
+              transition: 'transform 0.3s ease'
+            }}
+          />
+          <span style={{
+            color: shouldBeSolid ? 'var(--text)' : 'var(--accent)',
+            fontSize: '1.35rem',
+            fontWeight: '400',
+            letterSpacing: '4px',
+            fontFamily: 'var(--font-playfair), Georgia, serif',
+            transition: 'color var(--transition-fast)'
+          }}>
+            BRITSYNC
+          </span>
         </Link>
 
         {/* Desktop Links */}
@@ -212,9 +281,9 @@ export default function Navbar() {
             )}
           </Link>
           
-          <Link href="/login" style={{ color: 'inherit', opacity: 0.8 }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}><ProfileIcon /></Link>
-          <div style={{ width: '1px', height: '16px', backgroundColor: 'var(--glass-border)' }}></div>
-          
+          {/* Animated Theme Toggle */}
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
           <Link href="/become-a-maker" style={{
             color: 'inherit',
             textDecoration: 'none',
@@ -294,6 +363,12 @@ export default function Navbar() {
           <Link href="/search" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><SearchIcon /> Search</Link>
           <Link href="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><WishlistIcon /> Wishlist</Link>
           <Link href="/cart" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><CartIcon /> Cart</Link>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem' }}>
+            <span style={{ fontSize: '1rem', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif' }}>
+              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+            </span>
+            <ThemeToggle theme={theme} onToggle={toggleTheme} />
+          </div>
           <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--glass-border)', margin: '1rem 0' }}></div>
           <Link href="/become-a-maker" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Apply to Registry</Link>
           <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none' }}>Login / Portals</Link>
