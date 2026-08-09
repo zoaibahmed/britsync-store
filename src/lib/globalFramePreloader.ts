@@ -42,6 +42,63 @@ export function getGlobeFrameUrl(index: number): string {
   return `/hero-frames/frame-${num}.jpg`;
 }
 
+// Fallback high-res static images cached in RAM
+const fallbackImageMap = new Map<string, HTMLImageElement>();
+
+export function getFallbackImage(url: string = "/hero-artisan.jpg"): HTMLImageElement | null {
+  if (typeof window === 'undefined') return null;
+  let img = fallbackImageMap.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    fallbackImageMap.set(url, img);
+  }
+  if (img.complete && img.naturalWidth > 0) {
+    return img;
+  }
+  return null;
+}
+
+export function getFrameWithFallback(
+  cache: Map<number, HTMLImageElement>,
+  index: number,
+  getUrlFn: (i: number) => string,
+  fallbackUrl: string = "/hero-artisan.jpg"
+): HTMLImageElement | null {
+  // 1. Direct hit in RAM cache
+  const cached = cache.get(index);
+  if (cached && cached.complete && cached.naturalWidth > 0) {
+    return cached;
+  }
+
+  // 2. Search adjacent frames (+/- 15 frames)
+  for (let delta = 1; delta <= 15; delta++) {
+    const prev = cache.get(index - delta);
+    if (prev && prev.complete && prev.naturalWidth > 0) return prev;
+    const next = cache.get(index + delta);
+    if (next && next.complete && next.naturalWidth > 0) return next;
+  }
+
+  // 3. Trigger on-demand load
+  if (typeof window !== 'undefined') {
+    const url = getUrlFn(index);
+    const pendingImg = new Image();
+    pendingImg.decoding = "async";
+    pendingImg.src = url;
+    pendingImg.onload = () => {
+      cache.set(index, pendingImg);
+    };
+  }
+
+  // 4. Return initial frame in cache or high-res fallback image
+  const firstFrame = cache.get(0);
+  if (firstFrame && firstFrame.complete && firstFrame.naturalWidth > 0) {
+    return firstFrame;
+  }
+
+  return getFallbackImage(fallbackUrl);
+}
+
 class ParallelPreloader {
   private activeConnections = 0;
   private queue: Array<{

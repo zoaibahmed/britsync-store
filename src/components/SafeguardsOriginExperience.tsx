@@ -7,6 +7,7 @@ import {
   startGlobalFramePreload,
   preloader,
   getProvenanceFrameUrl,
+  getFrameWithFallback,
 } from "@/lib/globalFramePreloader";
 
 /* ─────────────────────────────────────────────
@@ -225,7 +226,7 @@ export default function SafeguardsOriginExperience() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
-    const img = getNearestFrame(frameIdx);
+    const img = getFrameWithFallback(provenanceCache, frameIdx, getProvenanceFrameUrl, "/bg2.jpg");
     if (!img) return;
     const W = canvas.width;
     const H = canvas.height;

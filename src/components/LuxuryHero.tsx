@@ -7,6 +7,7 @@ import {
   preloader,
   startGlobalFramePreload,
   getHeroFrameUrl,
+  getFrameWithFallback,
 } from "@/lib/globalFramePreloader";
 
 /* ─────────────────────────────────────────────────────────────────────────
@@ -112,28 +113,7 @@ export default function LuxuryHero() {
     if (!canvas) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-
-    // Bidirectional fallback search to prevent blank state
-    const getCachedImage = (index: number): HTMLImageElement | null => {
-      const img = heroCache.get(index);
-      if (img && img.complete && img.naturalWidth > 0) return img;
-
-      for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
-        const prevIdx = index - delta;
-        if (prevIdx >= 0) {
-          const prevImg = heroCache.get(prevIdx);
-          if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
-        }
-        const nextIdx = index + delta;
-        if (nextIdx < TOTAL_FRAMES) {
-          const nextImg = heroCache.get(nextIdx);
-          if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
-        }
-      }
-      return null;
-    };
-
-    const img = getCachedImage(frameIdx);
+    const img = getFrameWithFallback(heroCache, frameIdx, getHeroFrameUrl, "/hero-artisan.jpg");
     if (!img) return;
 
     let cw = canvasDimensions.current.w;

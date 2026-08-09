@@ -5,6 +5,8 @@ import Link from "next/link";
 import {
   categoryCache,
   startGlobalFramePreload,
+  getCategoryFrameUrl,
+  getFrameWithFallback,
 } from "@/lib/globalFramePreloader";
 
 const TOTAL_FRAMES = 2400;
@@ -106,28 +108,7 @@ export default function CategoryGalleryJourney() {
     if (!ctx) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-
-    // Bidirectional fallback search to prevent blank state or flickering
-    const getCachedImage = (index: number): HTMLImageElement | null => {
-      const img = categoryCache.get(index);
-      if (img && img.complete && img.naturalWidth > 0) return img;
-      
-      for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
-        const prevIdx = index - delta;
-        if (prevIdx >= 0) {
-          const prevImg = categoryCache.get(prevIdx);
-          if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
-        }
-        const nextIdx = index + delta;
-        if (nextIdx < TOTAL_FRAMES) {
-          const nextImg = categoryCache.get(nextIdx);
-          if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
-        }
-      }
-      return null;
-    };
-
-    const img = getCachedImage(frameIdx);
+    const img = getFrameWithFallback(categoryCache, frameIdx, getCategoryFrameUrl, "/bg1.jpg");
     if (!img) return;
 
     // Use cached width/height
