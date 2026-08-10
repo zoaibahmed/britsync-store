@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState, useEffect, useRef } from "react";
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
 
-// 1. FEATURED GUILD ARTISANS DATA (USED IN SECTION 3)
+// 1. FEATURED GUILD ARTISANS DATA (USED IN SECTION 4)
 const BRITSYNC_MAKERS = [
   {
     id: "fatima-morocco",
@@ -88,38 +88,50 @@ const BRITSYNC_MAKERS = [
   }
 ];
 
-// 2. HERO PARADIGM STAGES
-const HERO_PARADIGM_STAGES = [
+// 2. STICKY SCROLL MANAGED COMMERCE PILLARS DATA
+const SCROLL_PILLARS = [
   {
     id: "payout",
-    tag: "01. MAKER AUTONOMY",
-    title: "100% Desired Price Payout",
-    desc: "Artisans set their own price. Britsync adds a transparent managed markup on the buyer side. The maker receives 0% deductions and 0% commissions via smart contract escrow.",
-    img: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=900",
-    badge: "0% Maker Commissions",
-    accent: "Morocco Loom Guild"
+    num: "01",
+    title: "Maker Autonomy & Zero Fees",
+    subtitle: "100% Desired Payout Direct to Maker",
+    desc: "Traditional platforms charge 20% fees and demand SEO, copywriting, and international shipping management. Britsync takes ZERO maker commissions. Artisans state their desired price, and Britsync adds a transparent managed markup on the buyer side to cover escrow, custom crating, and insured freight.",
+    image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1400",
+    badge: "0% Maker Commission",
+    gps: "GPS: 31.6295° N, 7.9811° W",
+    meta1: "100% Desired Price Paid",
+    meta2: "Zero Tech Friction",
+    meta3: "Smart Escrow Safety"
   },
   {
     id: "audit",
-    tag: "02. PHYSICAL AUDIT",
-    title: "Satellite GPS Geofence",
-    desc: "Field inspectors deploy to historical craft valleys, logging exact satellite coordinates, laboratory material tests, and physical guild master signatures.",
-    img: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=900",
-    badge: "GPS Coordinates Verified",
-    accent: "Indus Ajrak Valley"
+    num: "02",
+    title: "Physical GPS Geofence Audits",
+    subtitle: "Field Inspector Verification On-Site",
+    desc: "Authenticity cannot be self-declared on a web form. Britsync field inspectors physically travel to isolated mountain ateliers, establishing satellite GPS geofencing boundaries around the studio, verifying 100% natural organic dyes, and securing physical guild master signatures.",
+    image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1400",
+    badge: "Geofence Verified",
+    gps: "GPS: 25.8072° N, 68.4907° E",
+    meta1: "Satellite Boundary Locked",
+    meta2: "Natural Dye Lab Tested",
+    meta3: "Guild Master Sealed"
   },
   {
     id: "passport",
-    tag: "03. DIGITAL PASSPORT",
-    title: "Cryptographic Heritage Ledger",
-    desc: "Every creation carries an unforgeable digital provenance seal with NFC chip verification, locking origin data, natural material composition, and lineage score.",
-    img: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=900",
-    badge: "Immutable Ledger Seal",
-    accent: "Iznik Quartz Kiln"
+    num: "03",
+    title: "Cryptographic Heritage Passports",
+    subtitle: "Immutable Provenance Ledger Seal",
+    desc: "Every creation registered on Britsync receives an unforgeable digital Cryptographic Heritage Passport. Embedded with encrypted NFC chips, it permanently logs the studio's satellite GPS coordinates, raw material composition, lineage score, and inspector signatures.",
+    image: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=1400",
+    badge: "Ledger Sealed #BR-2026",
+    gps: "GPS: 40.4286° N, 29.7214° E",
+    meta1: "NFC Chip Embedded",
+    meta2: "Immutable Ledger Hash",
+    meta3: "Museum-Grade Record"
   }
 ];
 
-// 3. CORE VALUES OF BRITSYNC
+// 3. CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
 const CORE_VALUES = [
   {
     num: "I",
@@ -173,7 +185,7 @@ const TRUST_FAQS = [
   }
 ];
 
-// Motion Variants for Staggered Animations
+// Motion Variants for Animations
 const fadeInUpVariants = {
   hidden: { opacity: 0, y: 35 },
   visible: (i: number = 0) => ({
@@ -191,300 +203,339 @@ export default function AboutWebflowClient() {
   const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
   const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  const [heroStageIdx, setHeroStageIdx] = useState<number>(0);
+  const [activePillarIdx, setActivePillarIdx] = useState<number>(0);
+
+  const stickyContainerRef = useRef<HTMLDivElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: stickyContainerRef,
+    offset: ["start start", "end end"]
+  });
+
+  // Calculate current pillar index based on scroll position
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", (latest) => {
+      if (latest < 0.33) {
+        setActivePillarIdx(0);
+      } else if (latest < 0.66) {
+        setActivePillarIdx(1);
+      } else {
+        setActivePillarIdx(2);
+      }
+    });
+    return () => unsubscribe();
+  }, [scrollYProgress]);
 
   const activeMaker = BRITSYNC_MAKERS[activeMakerIdx];
-  const currentHeroStage = HERO_PARADIGM_STAGES[heroStageIdx];
+  const currentPillar = SCROLL_PILLARS[activePillarIdx];
 
   return (
     <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden" }}>
       
       {/* ════════════════════════════════════════════════════════════
-          1. LUXURY HERO SECTION: MANAGED GLOBAL COMMERCE PARADIGM
+          1. HERO HEADER SECTION: MANIFESTO & HEADING
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
-          padding: "11rem 2rem 8rem",
+          padding: "11rem 2rem 5rem",
           backgroundColor: "var(--background)",
           position: "relative",
+          textAlign: "center",
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
         <div className="grid-bg" style={{ position: "absolute", inset: 0, opacity: 0.05, pointerEvents: "none" }} />
 
-        <div
-          style={{
-            maxWidth: "1400px",
-            margin: "0 auto",
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
-            gap: "5rem",
-            alignItems: "center",
-            position: "relative",
-            zIndex: 10,
-          }}
-        >
-          {/* Left Column: Editorial Headline & Manifesto */}
-          <div>
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUpVariants}
-              custom={0}
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.8rem",
-                marginBottom: "2rem",
-                padding: "0.4rem 1rem",
-                backgroundColor: "var(--surface)",
-                border: "1px solid var(--glass-border)",
-              }}
-            >
-              <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent)" }} />
-              <span
-                style={{
-                  color: "var(--accent)",
-                  fontSize: "0.68rem",
-                  letterSpacing: "3.5px",
-                  textTransform: "uppercase",
-                  fontWeight: 700,
-                }}
-              >
-                BRITSYNC • MANAGED COMMERCE THESIS
-              </span>
-            </motion.div>
-
-            <motion.h1
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUpVariants}
-              custom={1}
-              style={{
-                fontSize: "clamp(3rem, 5.5vw, 5.2rem)",
-                fontFamily: "var(--font-playfair), Georgia, serif",
-                fontWeight: 300,
-                lineHeight: 1.05,
-                color: "var(--text)",
-                marginBottom: "2rem",
-                letterSpacing: "-0.03em",
-              }}
-            >
-              Preserving Human Heritage<br />
-              <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Through Managed Commerce</span>
-            </motion.h1>
-
-            <motion.p
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUpVariants}
-              custom={2}
-              style={{
-                fontSize: "1.12rem",
-                lineHeight: 1.85,
-                color: "var(--text-muted)",
-                marginBottom: "3rem",
-                fontWeight: 300,
-                maxWidth: "600px",
-              }}
-            >
-              Britsync is the world&apos;s first **Managed Global Commerce Platform**. We eliminate 100% of digital, financial, and shipping friction for master artisans in isolated mountain valleys. The maker focuses solely on crafting — Britsync manages photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
-            </motion.p>
-
-            {/* Action Buttons */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUpVariants}
-              custom={3}
-              style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", marginBottom: "3.5rem" }}
-            >
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/collections"
-                  className="btn-accent"
-                  style={{
-                    textDecoration: "none",
-                    padding: "1.25rem 3.2rem",
-                    borderRadius: "0px",
-                    fontSize: "0.78rem",
-                    letterSpacing: "3px",
-                    textTransform: "uppercase",
-                    fontWeight: 700,
-                    backgroundColor: "var(--accent)",
-                    color: "var(--primary)",
-                    border: "1px solid var(--accent)",
-                    boxShadow: "var(--shadow-md)",
-                    display: "inline-block"
-                  }}
-                >
-                  Explore Registered Masterpieces &rarr;
-                </Link>
-              </motion.div>
-
-              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Link
-                  href="/how-we-earn"
-                  style={{
-                    textDecoration: "none",
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--glass-border)",
-                    color: "var(--text)",
-                    padding: "1.25rem 3.2rem",
-                    borderRadius: "0px",
-                    fontSize: "0.78rem",
-                    letterSpacing: "3px",
-                    textTransform: "uppercase",
-                    fontWeight: 600,
-                    display: "inline-block"
-                  }}
-                >
-                  Zero-Fee Maker Model
-                </Link>
-              </motion.div>
-            </motion.div>
-
-            {/* Core Metrics Grid */}
-            <motion.div
-              initial="hidden"
-              whileInView="visible"
-              viewport={{ once: true }}
-              variants={fadeInUpVariants}
-              custom={4}
-              style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
-                gap: "1.8rem",
-                borderTop: "1px solid var(--glass-border)",
-                paddingTop: "2rem"
-              }}
-            >
-              {[
-                { val: "0%", label: "Maker Commissions" },
-                { val: "100%", label: "Desired Price Paid" },
-                { val: "45+", label: "Appellation Guilds" },
-                { val: "100%", label: "Smart Escrow Safety" },
-              ].map((m) => (
-                <div key={m.label}>
-                  <div style={{ fontSize: "1.7rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400 }}>{m.val}</div>
-                  <div style={{ fontSize: "0.64rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>{m.label}</div>
-                </div>
-              ))}
-            </motion.div>
-          </div>
-
-          {/* Right Column: Webflow Interactive Managed Commerce Showcase Stage */}
+        <div style={{ maxWidth: "980px", margin: "0 auto", position: "relative", zIndex: 10 }}>
           <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
+            initial="hidden"
+            whileInView="visible"
             viewport={{ once: true }}
-            transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            variants={fadeInUpVariants}
+            custom={0}
             style={{
-              position: "relative",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.8rem",
+              marginBottom: "2rem",
+              padding: "0.5rem 1.2rem",
               backgroundColor: "var(--surface)",
               border: "1px solid var(--glass-border)",
-              borderTop: "4px solid var(--accent)",
-              padding: "2.8rem",
-              boxShadow: "var(--shadow-lg)",
             }}
           >
-            {/* Top Passport Header Bar */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1rem" }}>
-              <div>
-                <span style={{ fontSize: "0.62rem", letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block" }}>
-                  BRITSYNC MANAGED ECOSYSTEM
-                </span>
-                <span style={{ fontSize: "0.82rem", fontFamily: "monospace", color: "var(--text)", fontWeight: 600 }}>
-                  PASSPORT: #BR-2026-HERITAGE
-                </span>
-              </div>
-              <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.4rem 0.9rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
-                100% ESCROW PROTECTED
-              </span>
-            </div>
+            <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent)" }} />
+            <span
+              style={{
+                color: "var(--accent)",
+                fontSize: "0.7rem",
+                letterSpacing: "4px",
+                textTransform: "uppercase",
+                fontWeight: 700,
+              }}
+            >
+              BRITSYNC • THE MANAGED GLOBAL COMMERCE PLATFORM
+            </span>
+          </motion.div>
 
-            {/* Stage Selector Pills */}
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.8rem" }}>
-              {HERO_PARADIGM_STAGES.map((stg, i) => {
-                const isActive = i === heroStageIdx;
+          <motion.h1
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUpVariants}
+            custom={1}
+            style={{
+              fontSize: "clamp(3.2rem, 6vw, 5.6rem)",
+              fontFamily: "var(--font-playfair), Georgia, serif",
+              fontWeight: 300,
+              lineHeight: 1.05,
+              color: "var(--text)",
+              marginBottom: "2rem",
+              letterSpacing: "-0.03em",
+            }}
+          >
+            Preserving Human Heritage<br />
+            <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Through Managed Commerce</span>
+          </motion.h1>
+
+          <motion.p
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUpVariants}
+            custom={2}
+            style={{
+              fontSize: "1.18rem",
+              lineHeight: 1.9,
+              color: "var(--text-muted)",
+              marginBottom: "3.2rem",
+              fontWeight: 300,
+              maxWidth: "820px",
+              margin: "0 auto 3.2rem"
+            }}
+          >
+            Britsync is the world&apos;s first **Managed Global Commerce Platform**. Traditional marketplaces force master creators in remote mountain valleys to become web designers, SEO marketers, and international shipping agents. Britsync abstracts 100% of non-creative friction: the maker focuses purely on crafting masterworks — we manage photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
+          </motion.p>
+
+          {/* Action Buttons */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUpVariants}
+            custom={3}
+            style={{ display: "flex", gap: "1.4rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "4rem" }}
+          >
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                href="/collections"
+                className="btn-accent"
+                style={{
+                  textDecoration: "none",
+                  padding: "1.25rem 3.4rem",
+                  borderRadius: "0px",
+                  fontSize: "0.78rem",
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  backgroundColor: "var(--accent)",
+                  color: "var(--primary)",
+                  border: "1px solid var(--accent)",
+                  boxShadow: "var(--shadow-md)",
+                  display: "inline-block"
+                }}
+              >
+                Explore Registered Masterpieces &rarr;
+              </Link>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                href="/how-we-earn"
+                style={{
+                  textDecoration: "none",
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--glass-border)",
+                  color: "var(--text)",
+                  padding: "1.25rem 3.4rem",
+                  borderRadius: "0px",
+                  fontSize: "0.78rem",
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  display: "inline-block"
+                }}
+              >
+                Zero-Fee Maker Model
+              </Link>
+            </motion.div>
+          </motion.div>
+
+          {/* Core Metrics Grid */}
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true }}
+            variants={fadeInUpVariants}
+            custom={4}
+            style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+              gap: "2rem",
+              borderTop: "1px solid var(--glass-border)",
+              paddingTop: "2.5rem"
+            }}
+          >
+            {[
+              { val: "0%", label: "Maker Commissions" },
+              { val: "100%", label: "Desired Price Paid" },
+              { val: "45+", label: "Appellation Guilds" },
+              { val: "100%", label: "Smart Escrow Safety" },
+            ].map((m) => (
+              <div key={m.label}>
+                <div style={{ fontSize: "2rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400 }}>{m.val}</div>
+                <div style={{ fontSize: "0.68rem", letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.3rem" }}>{m.label}</div>
+              </div>
+            ))}
+          </motion.div>
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          2. STICKY SCROLL SHOWCASE: THE 3 MANAGED COMMERCE PILLARS
+          ════════════════════════════════════════════════════════════ */}
+      <section
+        ref={stickyContainerRef}
+        style={{
+          height: "300vh",
+          position: "relative",
+          backgroundColor: "var(--background)",
+          borderBottom: "1px solid var(--glass-border)",
+        }}
+      >
+        <div
+          style={{
+            position: "sticky",
+            top: "90px",
+            height: "calc(100vh - 110px)",
+            maxWidth: "1400px",
+            margin: "0 auto",
+            padding: "2rem",
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+            gap: "4rem",
+            alignItems: "center",
+          }}
+        >
+          {/* Left Column: Pillar Navigation & Text Content */}
+          <div style={{ display: "flex", flexDirection: "column", justifyContent: "center" }}>
+            <span style={{ fontSize: "0.68rem", letterSpacing: "4px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, marginBottom: "1.2rem", display: "block" }}>
+              ✦ SCROLL EXPLORATION • MANAGED ARCHITECTURE
+            </span>
+
+            {/* Pillar Selector Tabs */}
+            <div style={{ display: "flex", gap: "0.6rem", marginBottom: "2.5rem" }}>
+              {SCROLL_PILLARS.map((pil, idx) => {
+                const isActive = idx === activePillarIdx;
                 return (
                   <button
-                    key={stg.id}
-                    onClick={() => setHeroStageIdx(i)}
+                    key={pil.id}
+                    onClick={() => setActivePillarIdx(idx)}
                     style={{
-                      flex: 1,
-                      padding: "0.6rem 0.4rem",
-                      fontSize: "0.65rem",
-                      letterSpacing: "1.5px",
+                      padding: "0.6rem 1.2rem",
+                      fontSize: "0.7rem",
+                      letterSpacing: "2px",
                       textTransform: "uppercase",
                       fontWeight: isActive ? 700 : 400,
                       color: isActive ? "var(--primary)" : "var(--text-muted)",
-                      backgroundColor: isActive ? "var(--accent)" : "var(--background)",
+                      backgroundColor: isActive ? "var(--accent)" : "var(--surface)",
                       border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
                       cursor: "pointer",
-                      transition: "all 0.25s ease",
-                      textAlign: "center"
+                      transition: "all 0.3s ease",
                     }}
                   >
-                    {stg.tag}
+                    {pil.num}. {pil.id}
                   </button>
                 );
               })}
             </div>
 
-            {/* Dynamic Stage Display */}
+            {/* Dynamic Pillar Text Stage */}
             <AnimatePresence mode="wait">
               <motion.div
-                key={currentHeroStage.id}
-                initial={{ opacity: 0, x: 15 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -15 }}
-                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+                key={currentPillar.id}
+                initial={{ opacity: 0, y: 25 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -25 }}
+                transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               >
-                {/* Visual Image Banner */}
-                <div style={{ position: "relative", height: "230px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid var(--glass-border)" }}>
-                  <img
-                    src={currentHeroStage.img}
-                    alt={currentHeroStage.title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.92)" }}
-                  />
-                  <div style={{ position: "absolute", top: "0.8rem", left: "0.8rem", backgroundColor: "var(--accent)", color: "var(--primary)", padding: "0.35rem 0.8rem", fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700 }}>
-                    {currentHeroStage.badge}
-                  </div>
-                  <div style={{ position: "absolute", bottom: "0.8rem", right: "0.8rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.35rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", fontFamily: "monospace" }}>
-                    {currentHeroStage.accent}
-                  </div>
-                </div>
+                <span style={{ fontSize: "0.75rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.8rem" }}>
+                  {currentPillar.subtitle}
+                </span>
 
-                <h3 style={{ fontSize: "1.45rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.6rem", fontWeight: 400 }}>
-                  {currentHeroStage.title}
-                </h3>
-                <p style={{ fontSize: "0.92rem", lineHeight: 1.7, color: "var(--text-muted)", margin: "0 0 1.8rem", fontWeight: 300 }}>
-                  {currentHeroStage.desc}
+                <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.6rem)", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", fontWeight: 300, lineHeight: 1.1, marginBottom: "1.5rem" }}>
+                  {currentPillar.title}
+                </h2>
+
+                <p style={{ fontSize: "1.05rem", lineHeight: 1.85, color: "var(--text-muted)", fontWeight: 300, marginBottom: "2.2rem" }}>
+                  {currentPillar.desc}
                 </p>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "0.8rem" }}>
+                  <span style={{ fontSize: "0.78rem", backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)", padding: "0.5rem 1.1rem", color: "var(--text)" }}>
+                    ✦ {currentPillar.meta1}
+                  </span>
+                  <span style={{ fontSize: "0.78rem", backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)", padding: "0.5rem 1.1rem", color: "var(--text)" }}>
+                    ✦ {currentPillar.meta2}
+                  </span>
+                  <span style={{ fontSize: "0.78rem", backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)", padding: "0.5rem 1.1rem", color: "var(--text)" }}>
+                    ✦ {currentPillar.meta3}
+                  </span>
+                </div>
               </motion.div>
             </AnimatePresence>
+          </div>
 
-            {/* Bottom Card Footer */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                Audited Protocol: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>#BR-MANAGED-V2</strong>
-              </span>
-              <Link href="/how-we-earn" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
-                Read Founder Thesis &rarr;
-              </Link>
-            </div>
-          </motion.div>
+          {/* Right Column: Dynamic High-Res Photo & Passport Badge Stage */}
+          <div style={{ position: "relative" }}>
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentPillar.id}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95 }}
+                transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+                style={{
+                  position: "relative",
+                  height: "520px",
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--glass-border)",
+                  borderTop: "4px solid var(--accent)",
+                  boxShadow: "var(--shadow-lg)",
+                  overflow: "hidden"
+                }}
+              >
+                <img
+                  src={currentPillar.image}
+                  alt={currentPillar.title}
+                  style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.9) contrast(1.05)" }}
+                />
 
+                {/* Top Badge */}
+                <div style={{ position: "absolute", top: "1.8rem", left: "1.8rem", backgroundColor: "var(--accent)", color: "var(--primary)", padding: "0.45rem 1.1rem", fontSize: "0.72rem", letterSpacing: "2.5px", textTransform: "uppercase", fontWeight: 700 }}>
+                  {currentPillar.badge}
+                </div>
+
+                {/* GPS Badge */}
+                <div style={{ position: "absolute", bottom: "1.8rem", right: "1.8rem", backgroundColor: "rgba(10,10,12,0.88)", backdropFilter: "blur(12px)", padding: "0.6rem 1.2rem", border: "1px solid rgba(212,175,55,0.4)", color: "var(--accent)", fontSize: "0.75rem", fontFamily: "monospace", fontWeight: 600 }}>
+                  {currentPillar.gps}
+                </div>
+              </motion.div>
+            </AnimatePresence>
+          </div>
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          2. THE SIX CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
+          3. THE SIX CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -585,7 +636,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          3. MEET OUR LIVING GUILD ARTISANS (AUTHENTIC MAKERS SHOWCASE)
+          4. MEET OUR LIVING GUILD ARTISANS (AUTHENTIC MAKERS SHOWCASE)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -911,7 +962,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          4. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
+          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1015,7 +1066,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          5. TRUST FAQ ACCORDION
+          6. TRUST FAQ ACCORDION
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1096,7 +1147,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          6. CALL TO ACTION SECTION
+          7. CALL TO ACTION SECTION
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
