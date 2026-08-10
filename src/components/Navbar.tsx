@@ -1,4 +1,5 @@
 'use client';
+
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
@@ -98,16 +99,15 @@ export default function Navbar() {
       setScrolled(currentScroll > 30);
       
       if (currentScroll <= 10) {
-        setVisible(true); // Always visible at the absolute top
+        setVisible(true);
       } else if (currentScroll > lastScroll) {
-        setVisible(true); // Show on scroll down (comes back from top)
+        setVisible(true);
       } else {
-        setVisible(false); // Hide on scroll up
+        setVisible(false);
       }
       lastScroll = currentScroll;
     };
 
-    // Initialize immediately on mount
     handleScroll();
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -124,17 +124,13 @@ export default function Navbar() {
     };
   }, []);
 
-  // Determine navbar aesthetics based on scroll state
   const isHomepage = pathname === '/';
   const shouldBeSolid = scrolled || !isHomepage;
 
-  // Premium adaptive header variables
-  const navBackground = shouldBeSolid ? 'var(--glass-bg)' : 'transparent';
-  const navBorderColor = scrolled 
-    ? 'var(--glass-border)' 
-    : (shouldBeSolid ? 'var(--glass-border)' : 'transparent');
-  const navTextColor = shouldBeSolid ? 'var(--text)' : '#FAF9F6';
-  const navShadow = scrolled ? 'var(--shadow-sm)' : 'none';
+  const navBackground = shouldBeSolid ? 'var(--surface)' : 'transparent';
+  const navBorderColor = scrolled ? 'var(--glass-border)' : (shouldBeSolid ? 'var(--glass-border)' : 'transparent');
+  const navTextColor = 'var(--text)';
+  const navShadow = scrolled ? 'var(--shadow-md)' : 'none';
   const activeGold = 'var(--accent)';
 
   const navLinks = [
@@ -143,14 +139,11 @@ export default function Navbar() {
     { name: 'Origins', path: '/countries' },
     { name: 'Transparency', path: '/how-we-earn' },
     { name: 'About', path: '/about' },
-    { name: 'Contact', path: '/about#contact' },
   ];
 
-  // Icons mapped to the unified icon registry
   const SearchIcon = () => <Icons.Search size={17} />;
   const WishlistIcon = () => <Icons.Wishlist size={17} />;
   const CartIcon = () => <Icons.Cart size={17} />;
-  const ProfileIcon = () => <Icons.Profile size={17} />;
 
   const isNavVisible = visible && (!isHomepage || !heroActive);
 
@@ -158,7 +151,7 @@ export default function Navbar() {
     <>
       <nav style={{
         position: 'fixed',
-        top: scrolled ? '1.5rem' : '0',
+        top: scrolled ? '1rem' : '0',
         left: '50%',
         transform: isNavVisible 
           ? 'translateX(-50%) translateY(0)' 
@@ -166,70 +159,84 @@ export default function Navbar() {
         width: scrolled ? '92%' : '100%',
         maxWidth: scrolled ? '1400px' : '100%',
         zIndex: 1000,
-        padding: scrolled ? '1.25rem 3rem' : '2rem 4rem',
+        padding: scrolled ? '1rem 2.5rem' : '1.8rem 3.5rem',
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        transition: 'all 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'all 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         backgroundColor: navBackground,
         backdropFilter: shouldBeSolid ? 'blur(20px)' : 'none',
         WebkitBackdropFilter: shouldBeSolid ? 'blur(20px)' : 'none',
         border: '1px solid',
         borderColor: navBorderColor,
+        borderTop: scrolled ? '2px solid var(--accent)' : '1px solid ' + navBorderColor,
         color: navTextColor,
         boxShadow: navShadow
       }}>
-        {/* Logo */}
+        {/* Brand Logo & Tag */}
         <Link href="/" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.75rem',
+          gap: '0.85rem',
           textDecoration: 'none',
           zIndex: 1001,
         }}>
-          <img 
-            src="/logo.png" 
-            alt="Britsync Logo Emblem" 
-            style={{ 
-              height: '36px', 
-              width: '36px', 
-              borderRadius: '50%',
-              objectFit: 'cover',
-              border: '1px solid var(--accent)',
-              boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
-              transition: 'transform 0.3s ease'
-            }}
-          />
-          <span style={{
-            color: shouldBeSolid ? 'var(--text)' : 'var(--accent)',
-            fontSize: '1.35rem',
-            fontWeight: '400',
-            letterSpacing: '4px',
-            fontFamily: 'var(--font-playfair), Georgia, serif',
-            transition: 'color var(--transition-fast)'
-          }}>
-            BRITSYNC
-          </span>
+          <div style={{ position: 'relative' }}>
+            <img 
+              src="/logo.png" 
+              alt="Britsync Logo" 
+              style={{ 
+                height: '38px', 
+                width: '38px', 
+                borderRadius: '50%',
+                objectFit: 'cover',
+                border: '1px solid var(--accent)',
+                boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
+              }}
+            />
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            <span style={{
+              color: 'var(--text)',
+              fontSize: '1.35rem',
+              fontWeight: '400',
+              letterSpacing: '4px',
+              fontFamily: 'var(--font-playfair), Georgia, serif',
+              lineHeight: 1.05
+            }}>
+              BRITSYNC
+            </span>
+            <span style={{
+              color: 'var(--accent)',
+              fontSize: '0.55rem',
+              letterSpacing: '2.5px',
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              marginTop: '0.15rem'
+            }}>
+              MANAGED COMMERCE
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Links */}
-        <div className="desktop-nav-links" style={{ display: 'flex', gap: '2.5rem', alignItems: 'center' }}>
+        <div className="desktop-nav-links" style={{ display: 'flex', gap: '2.4rem', alignItems: 'center' }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.path;
             return (
               <Link key={link.name} href={link.path} style={{
-                color: 'inherit',
+                color: isActive ? 'var(--accent)' : 'var(--text)',
                 textDecoration: 'none',
-                fontWeight: isActive ? '400' : '300',
+                fontWeight: isActive ? '700' : '400',
                 fontSize: '0.72rem',
                 textTransform: 'uppercase',
                 letterSpacing: '2.5px',
                 position: 'relative',
-                opacity: isActive ? 1 : 0.75,
+                opacity: isActive ? 1 : 0.8,
                 transition: 'all var(--transition-fast)'
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.opacity = '1')}
-              onMouseLeave={(e) => (e.currentTarget.style.opacity = isActive ? '1' : '0.75')}
+              onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = isActive ? 'var(--accent)' : 'var(--text)')}
               >
                 {link.name}
                 {isActive && (
@@ -238,7 +245,7 @@ export default function Navbar() {
                     bottom: '-6px',
                     left: 0,
                     width: '100%',
-                    height: '1px',
+                    height: '2px',
                     backgroundColor: activeGold
                   }} />
                 )}
@@ -248,61 +255,77 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="desktop-nav-actions" style={{ display: 'flex', gap: '1.8rem', alignItems: 'center' }}>
-          <Link href="/search" style={{ color: 'inherit', opacity: 0.8 }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}><SearchIcon /></Link>
+        <div className="desktop-nav-actions" style={{ display: 'flex', gap: '1.4rem', alignItems: 'center' }}>
+          <Link href="/search" style={{ color: 'var(--text)', opacity: 0.85, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}><SearchIcon /></Link>
           
-          <Link href="/wishlist" style={{ color: 'inherit', opacity: 0.8, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}>
+          <Link href="/wishlist" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
             <WishlistIcon />
             {wishlistCount > 0 && (
               <span style={{
                 position: 'absolute',
-                top: '-2px',
-                right: '-2px',
+                top: '-4px',
+                right: '-4px',
                 backgroundColor: activeGold,
+                color: 'var(--primary)',
                 borderRadius: '50%',
-                width: '6px',
-                height: '6px'
-              }} />
+                width: '14px',
+                height: '14px',
+                fontSize: '0.58rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {wishlistCount}
+              </span>
             )}
           </Link>
           
-          <Link href="/cart" style={{ color: 'inherit', opacity: 0.8, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.8'}>
+          <Link href="/cart" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
             <CartIcon />
             {cartCount > 0 && (
               <span style={{
                 position: 'absolute',
-                top: '-2px',
-                right: '-2px',
+                top: '-4px',
+                right: '-4px',
                 backgroundColor: activeGold,
+                color: 'var(--primary)',
                 borderRadius: '50%',
-                width: '6px',
-                height: '6px'
-              }} />
+                width: '14px',
+                height: '14px',
+                fontSize: '0.58rem',
+                fontWeight: 700,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                {cartCount}
+              </span>
             )}
           </Link>
-          
-          {/* Animated Theme Toggle */}
+
+          <span style={{ width: '1px', height: '20px', backgroundColor: 'var(--glass-border)' }} />
+
+          {/* Theme Toggle Button */}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
           <Link href="/become-a-maker" style={{
-            color: 'inherit',
+            color: 'var(--primary)',
+            backgroundColor: 'var(--accent)',
             textDecoration: 'none',
-            fontSize: '0.7rem',
+            fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '2.5px',
-            fontWeight: '400',
-            border: '1px solid',
-            borderColor: shouldBeSolid ? 'var(--text)' : 'rgba(255, 255, 255, 0.4)',
-            padding: '0.6rem 1.2rem',
+            fontWeight: '700',
+            padding: '0.65rem 1.4rem',
+            boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = navTextColor;
-            e.currentTarget.style.color = shouldBeSolid ? 'var(--background)' : '#111111';
+            e.currentTarget.style.opacity = '0.9';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'transparent';
-            e.currentTarget.style.color = 'inherit';
+            e.currentTarget.style.opacity = '1';
           }}
           >Apply to Registry</Link>
         </div>
@@ -314,7 +337,7 @@ export default function Navbar() {
           style={{
             background: 'none',
             border: 'none',
-            color: 'inherit',
+            color: 'var(--text)',
             cursor: 'pointer',
             zIndex: 1001,
             display: 'none'
@@ -336,42 +359,46 @@ export default function Navbar() {
         </button>
       </nav>
 
-      {/* Mobile Slide-in */}
+      {/* Mobile Slide-in Menu */}
       <div style={{
         position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',
         height: '100vh',
-        backgroundColor: 'var(--secondary)',
+        backgroundColor: 'var(--surface)',
         color: 'var(--text)',
         zIndex: 999,
         display: 'flex',
         flexDirection: 'column',
         padding: '7rem 3rem 3rem',
         transform: mobileMenuOpen ? 'translateX(0)' : 'translateX(100%)',
-        transition: 'transform 0.5s cubic-bezier(0.16, 1, 0.3, 1)',
+        transition: 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
         overflowY: 'auto'
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', fontSize: '1.1rem', fontWeight: '300', letterSpacing: '2.5px', textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif' }}>
           {navLinks.map((link) => (
-            <Link key={link.name} href={link.path} onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none' }}>
+            <Link key={link.name} href={link.path} onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none' }}>
               {link.name}
             </Link>
           ))}
+          
           <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--glass-border)', margin: '1rem 0' }}></div>
-          <Link href="/search" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><SearchIcon /> Search</Link>
-          <Link href="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><WishlistIcon /> Wishlist</Link>
-          <Link href="/cart" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><CartIcon /> Cart</Link>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.5rem' }}>
-            <span style={{ fontSize: '1rem', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif' }}>
-              {theme === 'dark' ? 'Dark Mode' : 'Light Mode'}
+          
+          <Link href="/search" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><SearchIcon /> Search</Link>
+          <Link href="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><WishlistIcon /> Wishlist ({wishlistCount})</Link>
+          <Link href="/cart" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><CartIcon /> Cart ({cartCount})</Link>
+          
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.8rem', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)' }}>
+            <span style={{ fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--text)' }}>
+              Appearance Theme
             </span>
             <ThemeToggle theme={theme} onToggle={toggleTheme} />
           </div>
+
           <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--glass-border)', margin: '1rem 0' }}></div>
-          <Link href="/become-a-maker" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent)', textDecoration: 'none' }}>Apply to Registry</Link>
-          <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ color: 'inherit', textDecoration: 'none' }}>Login / Portals</Link>
+          
+          <Link href="/become-a-maker" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700 }}>Apply to Registry &rarr;</Link>
         </div>
       </div>
       
