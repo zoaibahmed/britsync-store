@@ -193,7 +193,7 @@ const CORE_VALUES = [
   }
 ];
 
-// 4. PROVENANCE PROTOCOL STAGES (SECTION 5 - REFINED PATRON-FIRST COPY)
+// 4. PROVENANCE PROTOCOL STAGES (SECTION 5)
 const PROTOCOL_STAGES = [
   {
     step: "STAGE 01",
@@ -225,23 +225,27 @@ const PROTOCOL_STAGES = [
   }
 ];
 
-// 5. TRUST FAQ ACCORDION DATA
+// 5. QUESTIONS OF TRUST FAQ DATA (REFINED HIGH-TRUST FAQ)
 const TRUST_FAQS = [
   {
-    q: "What makes Britsync different from platforms like Etsy or Amazon Handmade?",
-    a: "Etsy and Amazon require master creators to act as web developers, SEO copywriters, English customer service reps, and international shipping managers — creating an insurmountable barrier for isolated artisans. Britsync is a Managed Commerce Platform: the maker focuses solely on crafting their masterwork, while Britsync manages 100% of photography, storytelling, GPS audits, customs clearance, and global shipping."
+    q: "What makes Britsync different from traditional marketplaces?",
+    a: "Britsync is a managed commerce platform. Instead of asking artisans to manage photography, digital storefronts, international logistics, and customer operations themselves, Britsync handles the commercial infrastructure around their work. The maker remains focused on the craft."
   },
   {
-    q: "How does Britsync ensure artisans receive fair payouts with zero fees?",
-    a: "We charge ZERO fees or commissions to the maker. The artisan states their desired price. Britsync adds a transparent managed markup on the buyer side to cover logistics, insurance, and audit operations. Upon verified delivery, 100% of the maker's desired price is released automatically via smart escrow."
+    q: "How does Britsync give makers 100% of their desired payout?",
+    a: "Artisans state their exact desired payout price. Britsync adds a transparent managed markup on the buyer side to cover logistics, insurance, verification, and operations. 100% of the maker's requested price is held in escrow and released directly to their account upon delivery."
   },
   {
-    q: "What is a Cryptographic Heritage Passport?",
-    a: "It is a digital authenticity seal issued for every registered piece. It logs the studio's exact satellite GPS geofence coordinates, laboratory material purity reports (e.g. 100% natural wool, 85%+ quartz clay), field inspector signatures, and an immutable ledger block hash."
+    q: "How does Britsync verify authenticity?",
+    a: "Every eligible creation passes through our 4-stage provenance protocol: Maker & Guild Verification, Material Verification, Studio Location Verification, and a Digital Provenance Record."
   },
   {
-    q: "How are Geographic Indication (GI) appellations protected?",
-    a: "Geographic Indication is a legal standard protecting goods possessing qualities specific to their geographical origin. Britsync enforces physical satellite geofencing around certified historical valleys to guarantee that factory counterfeit knock-offs cannot receive accreditation."
+    q: "What is a Britsync Provenance Passport?",
+    a: "A permanent digital record connecting a verified creation to its maker, origin, materials, and verification history. Where applicable, cryptographic identifiers and NFC technology make the record easy to access and difficult to alter."
+  },
+  {
+    q: "How does Britsync handle Geographic Indications (GIs)?",
+    a: "Where a maker or region holds a recognized Geographic Indication, Britsync records and respects that designation as part of the provenance record. Britsync's own verification system does not replace government or legally recognized GI certification."
   }
 ];
 
@@ -1035,7 +1039,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES - REFINED PATRON COPY)
+          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1131,7 +1135,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          6. TRUST FAQ ACCORDION
+          6. QUESTIONS OF TRUST FAQ ACCORDION (QUIET & SOPHISTICATED)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1162,9 +1166,12 @@ export default function AboutWebflowClient() {
             >
               FREQUENTLY ASKED QUESTIONS
             </span>
-            <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)" }}>
-              Managed Commerce Governance
+            <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)", margin: "0 0 1rem" }}>
+              Questions of Trust
             </h2>
+            <p style={{ fontSize: "1rem", color: "var(--text-muted)", fontWeight: 300, maxWidth: "640px", margin: "0 auto" }}>
+              The practical answers behind Britsync&apos;s maker, provenance, and commerce model.
+            </p>
           </motion.div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
@@ -1181,7 +1188,8 @@ export default function AboutWebflowClient() {
                   onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
                   style={{
                     backgroundColor: "var(--background)",
-                    border: isOpen ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
+                    border: "1px solid var(--glass-border)",
+                    borderLeft: isOpen ? "4px solid var(--accent)" : "1px solid var(--glass-border)",
                     padding: "1.8rem 2.2rem",
                     cursor: "pointer",
                     transition: "all 0.3s ease",
@@ -1198,7 +1206,7 @@ export default function AboutWebflowClient() {
                       initial={{ opacity: 0, height: 0 }}
                       animate={{ opacity: 1, height: "auto" }}
                       transition={{ duration: 0.3 }}
-                      style={{ marginTop: "1rem", fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", margin: "1rem 0 0", fontWeight: 300 }}
+                      style={{ marginTop: "1rem", fontSize: "0.95rem", lineHeight: 1.85, color: "var(--text-muted)", margin: "1rem 0 0", fontWeight: 300 }}
                     >
                       {faq.a}
                     </motion.p>
