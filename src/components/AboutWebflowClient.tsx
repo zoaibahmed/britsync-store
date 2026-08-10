@@ -4,87 +4,103 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-// 1. FEATURED GUILD ARTISANS DATA (SECTION 4)
+// 1. FEATURED GUILD ARTISANS DATA (SECTION 4 - REFINED HIGH-TRUST COPY)
 const BRITSYNC_MAKERS = [
   {
     id: "fatima-morocco",
     num: "01",
-    name: "Fatima Ait-Ouahi",
+    name: "Fatima Aït-Ouahi",
     role: "Master Weaver & Guild Matriarch",
-    location: "Aït Bouguemez Valley, High Atlas, Morocco",
+    location: "Aït Bouguemez Valley · High Atlas · Morocco",
     regionCode: "MAR-ATL-401",
-    lineage: "7th Generation Lineage",
+    lineage: "7TH GENERATION LINEAGE",
     craft: "High-Atlas Heritage Loom Weaving",
     coordinates: "31.6295° N, 7.9811° W",
-    materials: ["100% Mountain Sheep Wool", "Wild Saffron Dyes", "Crushed Indigo Mineral"],
-    story: "In the secluded high-altitude valleys of the High Atlas, Fatima leads a collective of 24 women weavers, preserving 200-year-old tribal Berber geometries transmitted orally without written notes.",
+    locationBadge: "STUDIO LOCATION VERIFIED · High Atlas · Morocco",
+    materials: [
+      { name: "100% Mountain Sheep Wool", status: "Origin Verified" },
+      { name: "Wild Saffron Dye", status: "Material Inspection Completed" },
+      { name: "Natural Indigo Mineral", status: "Lab Tested Organic" }
+    ],
+    story: "Fatima leads a collective of 24 women weavers, preserving traditional Berber geometries and oral weaving techniques passed down through generations without written notes.",
     quote: "Our loom carries the memory of seven generations. Each knot is a word spoken in a language that never dies.",
     image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800",
-    verificationScore: "99.8%",
-    status: "GI Appellation Protected",
-    payoutModel: "100% Desired Price Paid via Escrow",
-    britsyncRole: "Manages export logistics, custom wooden crating, and UK customs clearance."
+    status: "BRITSYNC GUILD APPELLATION · VERIFIED",
+    payoutModel: "100% Desired Price Paid via Smart Escrow",
+    britsyncRole: "Britsync handles export logistics, protective crating, and customs clearance so the atelier can remain focused on its craft."
   },
   {
     id: "soomro-pakistan",
     num: "02",
     name: "Aisha & Ghulam Soomro",
     role: "Master Blockprinters & Dye Alchemists",
-    location: "Bhit Shah, Sindh Valley, Pakistan",
+    location: "Bhit Shah · Sindh Valley · Pakistan",
     regionCode: "PAK-SND-104",
-    lineage: "5th Generation Guild Keepers",
+    lineage: "5TH GENERATION GUILD KEEPERS",
     craft: "21-Step Natural Dye Ajrak Blockprinting",
     coordinates: "25.8072° N, 68.4907° E",
-    materials: ["Handspun Indus Organic Cotton", "Fermented Indigo Pits", "Pomegranate Shell Extract"],
-    story: "Maintaining the sacred 21-step natural vegetable dyeing ritual. Each Indus cotton textile undergoes weeks of river washing, mud-resist carving, and natural fermented indigo pit immersion.",
+    locationBadge: "STUDIO LOCATION VERIFIED · Sindh Valley · Pakistan",
+    materials: [
+      { name: "Handspun Indus Cotton", status: "Origin Verified" },
+      { name: "Fermented Indigo Pits", status: "Lab Tested Organic" },
+      { name: "Pomegranate Shell Dye", status: "Material Inspection Completed" }
+    ],
+    story: "Aisha and Ghulam maintain the sacred 21-step natural vegetable dyeing ritual. Each Indus cotton textile undergoes weeks of river washing, mud-resist carving, and natural fermented indigo pit immersion.",
     quote: "Twenty-one stages of mud, river water, sun, and indigo. When you work with nature, fabric acquires a soul.",
     image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
-    verificationScore: "100%",
-    status: "Indus Heritage Registry Sealed",
+    status: "BRITSYNC GUILD APPELLATION · VERIFIED",
     payoutModel: "Direct Local Guild Account Escrow",
-    britsyncRole: "Handles professional photography, story copywriting, and European distribution."
+    britsyncRole: "Britsync manages photography, storytelling, and European distribution so the master printers can focus entirely on their 21-stage craft."
   },
   {
     id: "zeynep-turkey",
     num: "03",
     name: "Zeynep Kilic",
     role: "Master Ceramicist & Quartz Glazer",
-    location: "Iznik Atelier, Anatolia, Turkey",
+    location: "Iznik Atelier · Anatolia · Turkey",
     regionCode: "TUR-IZN-302",
-    lineage: "4th Generation Kiln Master",
+    lineage: "4TH GENERATION KILN MASTER",
     craft: "Ottoman High-Quartz Silica Ceramics",
     coordinates: "40.4286° N, 29.7214° E",
-    materials: ["85% Quartz Frit Clay", "Cobalt Oxide Mineral", "Pine Wood Kiln Fire"],
-    story: "Recreating 16th-century Ottoman royal Iznik formulas containing over 85% pure quartz silica, fired in traditional pine wood kilns to achieve crystal-clear radiance.",
+    locationBadge: "STUDIO LOCATION VERIFIED · Iznik Atelier · Turkey",
+    materials: [
+      { name: "85% Quartz Frit Clay", status: "Purity Tested 85%+" },
+      { name: "Cobalt Oxide Glaze", status: "Material Inspection Completed" },
+      { name: "Pine Wood Firing", status: "Kiln Protocol Verified" }
+    ],
+    story: "Zeynep recreates 16th-century Ottoman royal Iznik formulas containing over 85% pure quartz silica, fired in traditional pine wood kilns to achieve crystal-clear radiance.",
     quote: "Quartz is fire frozen into glass. Under 1,200 degrees of wood heat, history is sealed forever.",
     image: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=800",
-    verificationScore: "99.5%",
-    status: "Anatolian Guild Certified",
+    status: "BRITSYNC GUILD APPELLATION · VERIFIED",
     payoutModel: "Escrow Released Upon UK Collector Inspection",
-    britsyncRole: "Deploys on-site GPS geofencing and physical material chemical testing."
+    britsyncRole: "Britsync deploys physical material testing and insured shock-proof crating so the ceramicist can remain focused on her firing formulas."
   },
   {
     id: "rajesh-india",
     num: "04",
     name: "Rajesh Kumar",
     role: "Master Teak Carver & Brass Inlayer",
-    location: "Saharanpur, Uttar Pradesh, India",
+    location: "Saharanpur · Uttar Pradesh · India",
     regionCode: "IND-SAH-509",
-    lineage: "6th Generation Lineage",
+    lineage: "6TH GENERATION LINEAGE",
     craft: "Teakwood High-Relief & Brass Tarkashi",
     coordinates: "29.9640° N, 77.5460° E",
-    materials: ["Reclaimed Seasoned Teak", "Pure Brass Sheet Wire", "Beeswax Polish"],
-    story: "Hand-carving reclaimed teakwood with hand chisels and embedding solid brass wire Tarkashi inlay in solitary manual sessions that take up to 90 days per piece.",
+    locationBadge: "STUDIO LOCATION VERIFIED · Saharanpur · India",
+    materials: [
+      { name: "Reclaimed Seasoned Teak", status: "FSC Origin Verified" },
+      { name: "Pure Brass Sheet Wire", status: "Purity Tested 99.9%" },
+      { name: "Beeswax Polish", status: "Material Inspection Completed" }
+    ],
+    story: "Rajesh hand-carves reclaimed teakwood with hand chisels and embeds solid brass wire Tarkashi inlay in solitary manual sessions that take up to 90 days per piece.",
     quote: "The chisel speaks only when the mind is still. Seasoned teak remembers every strike for centuries.",
     image: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800",
-    verificationScore: "99.7%",
-    status: "Saharanpur Guild Sealed",
+    status: "BRITSYNC GUILD APPELLATION · VERIFIED",
     payoutModel: "100% Desired Price Guaranteed",
-    britsyncRole: "Manages white-glove insured airfreight logistics directly from workshop."
+    britsyncRole: "Britsync handles climate-controlled export packaging and UK customs clearance so the master carver can focus on his 90-day chisel sessions."
   }
 ];
 
@@ -143,7 +159,7 @@ const MANAGED_STAGES = [
   }
 ];
 
-// 3. CORE VALUES OF BRITSYNC (PERFECT ELEVATED COPY - NO OVERLAP)
+// 3. CORE VALUES OF BRITSYNC (PERFECT ELEVATED COPY)
 const CORE_VALUES = [
   {
     num: "I",
@@ -667,7 +683,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          4. MEET OUR LIVING GUILD ARTISANS (AUTHENTIC MAKERS SHOWCASE)
+          4. MEET OUR LIVING GUILD ARTISANS (REFINED HIGH-TRUST SECTION)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -772,7 +788,7 @@ export default function AboutWebflowClient() {
               }}
             >
               {/* Left Column: Studio Portrait */}
-              <div style={{ position: "relative", height: "500px", border: "1px solid var(--glass-border)" }}>
+              <div style={{ position: "relative", height: "520px", border: "1px solid var(--glass-border)" }}>
                 <img
                   src={activeMaker.image}
                   alt={activeMaker.name}
@@ -784,23 +800,23 @@ export default function AboutWebflowClient() {
                   }}
                 />
 
-                {/* GPS Coordinates Badge */}
+                {/* Sleek High-End Location Badge */}
                 <div
                   style={{
                     position: "absolute",
                     top: "1.5rem",
                     right: "1.5rem",
-                    backgroundColor: "rgba(10,10,12,0.85)",
+                    backgroundColor: "rgba(10,10,12,0.88)",
+                    backdropFilter: "blur(10px)",
                     border: "1px solid rgba(212,175,55,0.4)",
                     padding: "0.5rem 1.1rem",
                     color: "var(--accent)",
                     fontSize: "0.68rem",
-                    fontFamily: "monospace",
                     letterSpacing: "1.5px",
                     fontWeight: 600,
                   }}
                 >
-                  GPS: {activeMaker.coordinates}
+                  ✦ {activeMaker.locationBadge}
                 </div>
 
                 {/* Lineage Badge */}
@@ -821,17 +837,17 @@ export default function AboutWebflowClient() {
                   {activeMaker.lineage}
                 </div>
 
-                {/* Quote Overlay */}
+                {/* Prominent Maker Quote Overlay */}
                 <div
                   style={{
                     position: "absolute",
                     bottom: "1.5rem",
                     left: "1.5rem",
                     right: "1.5rem",
-                    backgroundColor: "rgba(10,10,12,0.85)",
+                    backgroundColor: "rgba(10,10,12,0.88)",
                     backdropFilter: "blur(12px)",
-                    padding: "1.5rem",
-                    border: "1px solid rgba(212,175,55,0.25)",
+                    padding: "1.6rem",
+                    border: "1px solid rgba(212,175,55,0.3)",
                     color: "#FFFFFF"
                   }}
                 >
@@ -839,9 +855,9 @@ export default function AboutWebflowClient() {
                     style={{
                       fontFamily: "var(--font-playfair), Georgia, serif",
                       fontStyle: "italic",
-                      fontSize: "1.05rem",
-                      lineHeight: 1.6,
-                      color: "rgba(255,255,255,0.92)",
+                      fontSize: "1.1rem",
+                      lineHeight: 1.65,
+                      color: "rgba(255,255,255,0.95)",
                       margin: 0,
                       fontWeight: 300,
                     }}
@@ -851,7 +867,7 @@ export default function AboutWebflowClient() {
                 </div>
               </div>
 
-              {/* Right Column: Details */}
+              {/* Right Column: High-Trust Maker Details */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
                   <span
@@ -863,13 +879,13 @@ export default function AboutWebflowClient() {
                       fontWeight: 700,
                     }}
                   >
-                    {activeMaker.status} • {activeMaker.verificationScore} VERIFIED
+                    {activeMaker.status}
                   </span>
                 </div>
 
                 <h3
                   style={{
-                    fontSize: "clamp(2.2rem, 3.8vw, 3.4rem)",
+                    fontSize: "clamp(2.4rem, 4vw, 3.5rem)",
                     fontFamily: "var(--font-playfair), Georgia, serif",
                     fontWeight: 300,
                     lineHeight: 1.1,
@@ -882,7 +898,7 @@ export default function AboutWebflowClient() {
 
                 <span
                   style={{
-                    fontSize: "0.92rem",
+                    fontSize: "0.95rem",
                     color: "var(--text-muted)",
                     display: "block",
                     marginBottom: "2rem",
@@ -892,7 +908,45 @@ export default function AboutWebflowClient() {
                   {activeMaker.role} &bull; {activeMaker.location}
                 </span>
 
-                <div style={{ marginBottom: "1.8rem" }}>
+                {/* Verified Materials */}
+                <div style={{ marginBottom: "2rem" }}>
+                  <span
+                    style={{
+                      fontSize: "0.65rem",
+                      letterSpacing: "3px",
+                      textTransform: "uppercase",
+                      color: "var(--accent)",
+                      fontWeight: 700,
+                      display: "block",
+                      marginBottom: "0.8rem",
+                    }}
+                  >
+                    VERIFIED MATERIALS
+                  </span>
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.6rem" }}>
+                    {activeMaker.materials.map((mat) => (
+                      <div
+                        key={mat.name}
+                        style={{
+                          fontSize: "0.85rem",
+                          backgroundColor: "var(--background)",
+                          border: "1px solid var(--glass-border)",
+                          padding: "0.6rem 1.1rem",
+                          color: "var(--text)",
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center"
+                        }}
+                      >
+                        <span>✦ <strong>{mat.name}</strong></span>
+                        <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase" }}>{mat.status}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Britsync Managed Support */}
+                <div style={{ marginBottom: "2rem" }}>
                   <span
                     style={{
                       fontSize: "0.65rem",
@@ -911,79 +965,35 @@ export default function AboutWebflowClient() {
                   </p>
                 </div>
 
-                <div style={{ marginBottom: "2.2rem" }}>
-                  <span
-                    style={{
-                      fontSize: "0.65rem",
-                      letterSpacing: "3px",
-                      textTransform: "uppercase",
-                      color: "var(--accent)",
-                      fontWeight: 700,
-                      display: "block",
-                      marginBottom: "0.8rem",
-                    }}
-                  >
-                    AUDITED NATURAL MATERIALS
-                  </span>
-                  <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
-                    {activeMaker.materials.map((mat) => (
-                      <span
-                        key={mat}
-                        style={{
-                          fontSize: "0.78rem",
-                          backgroundColor: "var(--background)",
-                          border: "1px solid var(--glass-border)",
-                          padding: "0.45rem 1rem",
-                          color: "var(--text)",
-                          letterSpacing: "0.5px",
-                        }}
-                      >
-                        ✦ {mat}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
+                {/* Maker Narrative */}
                 <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "var(--text-muted)", marginBottom: "2.5rem", fontWeight: 300 }}>
                   {activeMaker.story}
                 </p>
 
-                <div style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", alignItems: "center" }}>
+                {/* Premium Concise CTA */}
+                <div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedAuditMaker(activeMaker)}
                     style={{
-                      padding: "1.15rem 2.5rem",
+                      padding: "1.2rem 3rem",
                       backgroundColor: "var(--accent)",
                       color: "var(--primary)",
                       border: "none",
-                      fontSize: "0.75rem",
-                      letterSpacing: "2.5px",
+                      fontSize: "0.78rem",
+                      letterSpacing: "3px",
                       textTransform: "uppercase",
                       fontWeight: 700,
                       cursor: "pointer",
+                      boxShadow: "var(--shadow-md)"
                     }}
                   >
-                    Inspect Studio Provenance Audit &rarr;
+                    INSPECT PROVENANCE &rarr;
                   </motion.button>
-
-                  <Link
-                    href="/makers"
-                    style={{
-                      padding: "1.15rem 2.2rem",
-                      border: "1px solid var(--glass-border)",
-                      backgroundColor: "var(--background)",
-                      color: "var(--text)",
-                      fontSize: "0.75rem",
-                      letterSpacing: "2px",
-                      textTransform: "uppercase",
-                      fontWeight: 600,
-                      textDecoration: "none",
-                    }}
-                  >
-                    All Guild Makers
-                  </Link>
+                  <div style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.6rem" }}>
+                    Studio • Materials • Lineage • Inspector
+                  </div>
                 </div>
               </div>
             </motion.div>
@@ -1407,12 +1417,8 @@ export default function AboutWebflowClient() {
                     <span style={{ color: "var(--accent)" }}>{selectedAuditMaker.coordinates}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ opacity: 0.6 }}>LINEAGE SCORE:</span>
-                    <span style={{ color: "#10B981" }}>{selectedAuditMaker.verificationScore} AUDITED</span>
-                  </div>
-                  <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ opacity: 0.6 }}>GUILD CERTIFICATION:</span>
-                    <span style={{ color: "var(--text)" }}>{selectedAuditMaker.status}</span>
+                    <span style={{ opacity: 0.6 }}>LINEAGE STATUS:</span>
+                    <span style={{ color: "#10B981" }}>{selectedAuditMaker.status}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ opacity: 0.6 }}>MAKER PAYOUT:</span>
