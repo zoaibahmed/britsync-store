@@ -139,6 +139,7 @@ export default function Navbar() {
     { name: 'Origins', path: '/countries' },
     { name: 'Transparency', path: '/how-we-earn' },
     { name: 'About', path: '/about' },
+    { name: 'Contact', path: '/contact' },
   ];
 
   const SearchIcon = () => <Icons.Search size={17} />;
