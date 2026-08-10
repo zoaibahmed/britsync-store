@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  provenanceCache,
+  getProvenanceCacheMap,
   startGlobalFramePreload,
   preloader,
   getProvenanceFrameUrl,
@@ -84,19 +84,20 @@ const STAGES = [
 type Stage = (typeof STAGES)[number];
 
 function getNearestFrame(frameIdx: number): HTMLImageElement | null {
+  const pCache = getProvenanceCacheMap();
   const rounded = Math.round(frameIdx);
-  const img = provenanceCache.get(rounded);
+  const img = pCache.get(rounded);
   if (img && img.complete && img.naturalWidth > 0) return img;
 
   for (let delta = 1; delta < TOTAL_FRAMES; delta++) {
     const prevIdx = rounded - delta;
     if (prevIdx >= 0) {
-      const prevImg = provenanceCache.get(prevIdx);
+      const prevImg = pCache.get(prevIdx);
       if (prevImg && prevImg.complete && prevImg.naturalWidth > 0) return prevImg;
     }
     const nextIdx = rounded + delta;
     if (nextIdx < TOTAL_FRAMES) {
-      const nextImg = provenanceCache.get(nextIdx);
+      const nextImg = pCache.get(nextIdx);
       if (nextImg && nextImg.complete && nextImg.naturalWidth > 0) return nextImg;
     }
   }
@@ -130,14 +131,15 @@ export default function SafeguardsOriginExperience() {
     async function localFallback() {
       // Wait briefly for global preload to get the first 30 frames
       await new Promise((r) => setTimeout(r, 200));
-      if (!cancelled && provenanceCache.size < 20) {
+      const pCache = getProvenanceCacheMap();
+      if (!cancelled && pCache.size < 20) {
         // Global preload hasn't run yet — do it ourselves
         const essential: number[] = [];
         for (let i = 0; i < 30; i++) essential.push(i);
         STAGES.forEach((s) => essential.push(Math.floor((s.minFrame + s.maxFrame) / 2)));
         await Promise.allSettled(
           essential.map((idx) =>
-            preloader.addToQueue(getProvenanceFrameUrl(idx), provenanceCache, idx, true)
+            preloader.addToQueue(getProvenanceFrameUrl(idx), pCache, idx, true)
           )
         );
       }
@@ -145,7 +147,8 @@ export default function SafeguardsOriginExperience() {
     }
 
     // If global already has frames, mark loaded immediately
-    if (provenanceCache.size >= 20) {
+    const pCache = getProvenanceCacheMap();
+    if (pCache.size >= 20) {
       setIsLoaded(true);
     } else {
       localFallback();
@@ -226,7 +229,8 @@ export default function SafeguardsOriginExperience() {
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
-    const img = getFrameWithFallback(provenanceCache, frameIdx, getProvenanceFrameUrl, "/bg2.jpg");
+    const pCache = getProvenanceCacheMap();
+    const img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl, "/bg2.jpg");
     if (!img) return;
     const W = canvas.width;
     const H = canvas.height;

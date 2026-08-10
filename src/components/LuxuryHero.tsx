@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import Link from "next/link";
 import {
-  heroCache,
+  getHeroCacheMap,
   preloader,
   startGlobalFramePreload,
   getHeroFrameUrl,
@@ -14,10 +14,10 @@ import {
    CONFIG
 ───────────────────────────────────────────────────────────────────────── */
 const ASIA_COUNT = 480;
-const AFRICA_COUNT = 432;
-const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 912
+const AFRICA_COUNT = 480;  // 480 africa_*.webp files in /public/storyboard-frames/
+const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 960
 const DELTA_PER_FRAME    = 12;     // px of scroll needed to advance one frame
-const CONTENT_THRESHOLD  = 660;    // frame index at which content starts appearing
+const CONTENT_THRESHOLD  = 720;    // frame index at which content starts appearing (scaled for 960 total)
 
 /* Deterministic particles */
 const PARTICLES = [
@@ -113,7 +113,8 @@ export default function LuxuryHero() {
     if (!canvas) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(heroCache, frameIdx, getHeroFrameUrl, "/hero-artisan.jpg");
+    const hCache = getHeroCacheMap();
+    const img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl, "/hero-artisan.jpg");
     if (!img) return;
 
     let cw = canvasDimensions.current.w;

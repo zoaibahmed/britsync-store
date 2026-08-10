@@ -4,7 +4,7 @@ import React, { useRef, useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import {
-  globeCache,
+  getGlobeCacheMap,
   startGlobalFramePreload,
   getGlobeFrameUrl,
   getFrameWithFallback,
@@ -118,7 +118,7 @@ export default function ArtisanGlobeJourney() {
     if (!ctx) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(globeCache, frameIdx, getGlobeFrameUrl, "/hero-artisan.jpg");
+    const img = getFrameWithFallback(getGlobeCacheMap(), frameIdx, getGlobeFrameUrl, "/hero-artisan.jpg");
     if (!img) return;
 
     // Use cached width/height

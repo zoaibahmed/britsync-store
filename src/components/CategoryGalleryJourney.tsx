@@ -3,7 +3,7 @@
 import React, { useRef, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
-  categoryCache,
+  getCategoryCacheMap,
   startGlobalFramePreload,
   getCategoryFrameUrl,
   getFrameWithFallback,
@@ -108,7 +108,7 @@ export default function CategoryGalleryJourney() {
     if (!ctx) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(categoryCache, frameIdx, getCategoryFrameUrl, "/bg1.jpg");
+    const img = getFrameWithFallback(getCategoryCacheMap(), frameIdx, getCategoryFrameUrl, "/bg1.jpg");
     if (!img) return;
 
     // Use cached width/height
