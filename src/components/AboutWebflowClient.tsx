@@ -159,7 +159,7 @@ const MANAGED_STAGES = [
   }
 ];
 
-// 3. CORE VALUES OF BRITSYNC (PERFECT ELEVATED COPY)
+// 3. CORE VALUES OF BRITSYNC (SECTION 3)
 const CORE_VALUES = [
   {
     num: "I",
@@ -193,7 +193,39 @@ const CORE_VALUES = [
   }
 ];
 
-// 4. TRUST FAQ ACCORDION DATA
+// 4. PROVENANCE PROTOCOL STAGES (SECTION 5 - REFINED PATRON-FIRST COPY)
+const PROTOCOL_STAGES = [
+  {
+    step: "STAGE 01",
+    title: "Maker & Guild Verification",
+    subtech: "Genealogy & Guild Audit",
+    question: "Who made it?",
+    detail: "We verify the maker's lineage, apprenticeship history, oral traditions, and recognized guild affiliations."
+  },
+  {
+    step: "STAGE 02",
+    title: "Material Verification",
+    subtech: "Natural Material Analysis",
+    question: "What is it made from?",
+    detail: "Materials are examined through laboratory and field testing to verify natural fibers, dyes, minerals, and declared components."
+  },
+  {
+    step: "STAGE 03",
+    title: "Studio Location Verification",
+    subtech: "GPS Geofence Boundary",
+    question: "Where was it made?",
+    detail: "Field inspectors verify the atelier's physical location and establish a GPS boundary around the verified workspace."
+  },
+  {
+    step: "STAGE 04",
+    title: "Digital Provenance Record",
+    subtech: "Cryptographic Record",
+    question: "How can I verify it later?",
+    detail: "Each verified creation receives a unique identifier linked to its maker, materials, origin, and verification history."
+  }
+];
+
+// 5. TRUST FAQ ACCORDION DATA
 const TRUST_FAQS = [
   {
     q: "What makes Britsync different from platforms like Etsy or Amazon Handmade?",
@@ -1003,7 +1035,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
+          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES - REFINED PATRON COPY)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1012,7 +1044,7 @@ export default function AboutWebflowClient() {
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
-        <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
+        <div style={{ maxWidth: "1350px", margin: "0 auto" }}>
           
           <motion.div
             initial="hidden"
@@ -1034,37 +1066,17 @@ export default function AboutWebflowClient() {
             >
               VERIFICATION BLUEPRINT
             </span>
-            <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)" }}>
+            <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)", margin: "0 0 1rem" }}>
               The 4-Stage Provenance Protocol
             </h2>
-            <p style={{ maxWidth: "620px", margin: "1rem auto 0", opacity: 0.72, fontSize: "0.95rem", lineHeight: 1.8, color: "var(--text-muted)", fontWeight: 300 }}>
-              Four independent audit checkpoints executed before any creation receives the Britsync Provenance Seal.
+            <p style={{ maxWidth: "680px", margin: "0 auto", fontSize: "1.05rem", lineHeight: 1.8, color: "var(--text-muted)", fontWeight: 300 }}>
+              Four verification checkpoints completed before a creation receives the Britsync Provenance Seal.
             </p>
           </motion.div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "2rem" }}>
-            {[
-              {
-                step: "STAGE 01",
-                title: "Genealogy & Guild Audit",
-                detail: "Historical board review of oral tradition pattern transmission, master builder apprenticeship records, and regional guild accreditation.",
-              },
-              {
-                step: "STAGE 02",
-                title: "Natural Material Analysis",
-                detail: "Laboratory and field chemical analysis verifying 100% natural organic dyes, high-silica quartz, and zero synthetic fiber blends.",
-              },
-              {
-                step: "STAGE 03",
-                title: "GPS Geofence Boundary",
-                detail: "Field inspectors establish exact satellite GPS geofencing coordinates around the physical workshop where crafting takes place.",
-              },
-              {
-                step: "STAGE 04",
-                title: "Cryptographic Ledger Block",
-                detail: "Minting a unique serial hash paired with an encrypted NFC passport stored permanently on the Britsync ledger.",
-              },
-            ].map((stg, idx) => (
+          {/* Sequential 4-Stage Connected Blueprint Cards */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "2rem", position: "relative" }}>
+            {PROTOCOL_STAGES.map((stg, idx) => (
               <motion.div
                 key={stg.step}
                 initial="hidden"
@@ -1078,31 +1090,43 @@ export default function AboutWebflowClient() {
                   backgroundColor: "var(--background)",
                   border: "1px solid var(--glass-border)",
                   borderTop: "3px solid var(--accent)",
-                  transition: "border-color 0.3s ease, transform 0.3s ease"
+                  transition: "border-color 0.3s ease, transform 0.3s ease",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  position: "relative"
                 }}
               >
-                <span
-                  style={{
-                    fontSize: "0.7rem",
-                    color: "var(--accent)",
-                    letterSpacing: "3px",
-                    textTransform: "uppercase",
-                    fontWeight: 700,
-                    display: "block",
-                    marginBottom: "1rem",
-                  }}
-                >
-                  {stg.step}
-                </span>
-                <h3 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: "1.35rem", color: "var(--text)", fontWeight: 400, marginBottom: "1rem" }}>
-                  {stg.title}
-                </h3>
-                <p style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
-                  {stg.detail}
-                </p>
+                <div>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                    <span style={{ fontSize: "0.7rem", color: "var(--accent)", letterSpacing: "3px", textTransform: "uppercase", fontWeight: 700 }}>
+                      {stg.step}
+                    </span>
+                    {idx < 3 && (
+                      <span style={{ fontSize: "0.85rem", color: "var(--accent)", opacity: 0.6 }}>→</span>
+                    )}
+                  </div>
+
+                  <h3 style={{ fontFamily: "var(--font-playfair), Georgia, serif", fontSize: "1.35rem", color: "var(--text)", fontWeight: 400, marginBottom: "0.4rem" }}>
+                    {stg.title}
+                  </h3>
+
+                  <div style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", marginBottom: "1rem", fontWeight: 600 }}>
+                    {stg.subtech}
+                  </div>
+
+                  <p style={{ fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
+                    {stg.detail}
+                  </p>
+                </div>
+
+                <div style={{ borderTop: "1px dashed var(--glass-border)", paddingTop: "1rem", marginTop: "1.8rem", fontSize: "0.75rem", color: "var(--text)", fontWeight: 600, letterSpacing: "1px" }}>
+                  ✦ QUESTION ANSWERED: <span style={{ color: "var(--accent)", fontWeight: 400 }}>{stg.question}</span>
+                </div>
               </motion.div>
             ))}
           </div>
+
         </div>
       </section>
 
