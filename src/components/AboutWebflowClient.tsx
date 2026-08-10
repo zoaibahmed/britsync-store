@@ -5,7 +5,59 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Icons } from "./Icons";
 
-// 1. MASTER ARTISAN CHRONICLES DATA
+// 1. HERO FEATURED SHOWCASE CRAFTS
+const HERO_SHOWCASE_ITEMS = [
+  {
+    id: "hero-morocco",
+    title: "High-Atlas Berber Loom Tapestry",
+    artisan: "Fatima Ait-Ouahi",
+    role: "7th Gen Guild Matriarch",
+    location: "Aït Bouguemez Valley, Morocco",
+    coordinates: "31.6295° N, 7.9811° W",
+    materials: "100% Organic Wool & Wild Saffron",
+    image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
+    passportId: "#BR-2026-ATL-401",
+    score: "99.8%"
+  },
+  {
+    id: "hero-pakistan",
+    title: "21-Step Ajrak Mineral Indigo Blockprint",
+    artisan: "Aisha & Ghulam Soomro",
+    role: "5th Gen Dye Alchemists",
+    location: "Bhit Shah, Sindh Valley, Pakistan",
+    coordinates: "25.8072° N, 68.4907° E",
+    materials: "Handspun Cotton & Fermented Indigo",
+    image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1200",
+    passportId: "#BR-2026-SND-104",
+    score: "100%"
+  },
+  {
+    id: "hero-turkey",
+    title: "Ottoman High-Silica Quartz Ceramic Vessel",
+    artisan: "Zeynep Kilic",
+    role: "4th Gen Kiln Master",
+    location: "Iznik Atelier, Anatolia, Turkey",
+    coordinates: "40.4286° N, 29.7214° E",
+    materials: "85% Quartz Frit Clay & Cobalt Oxide",
+    image: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=1200",
+    passportId: "#BR-2026-IZN-302",
+    score: "99.5%"
+  },
+  {
+    id: "hero-india",
+    title: "Saharanpur Relief Teakwood & Tarkashi Inlay",
+    artisan: "Rajesh Kumar",
+    role: "6th Gen Wood Carver",
+    location: "Saharanpur, Uttar Pradesh, India",
+    coordinates: "29.9640° N, 77.5460° E",
+    materials: "Reclaimed Teak & Solid Brass Wire",
+    image: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&q=80&w=1200",
+    passportId: "#BR-2026-SAH-509",
+    score: "99.7%"
+  }
+];
+
+// 2. MASTER ARTISAN CHRONICLES DATA
 const ARTISAN_CHRONICLES = [
   {
     id: "fatima-morocco",
@@ -80,7 +132,6 @@ const ARTISAN_CHRONICLES = [
     lineage: "6th Generation Lineage",
     craft: "Teakwood High-Relief & Brass Tarkashi",
     coordinates: "29.9640° N, 77.5460° E",
-    altitude: "269m Above Sea Level",
     materials: ["Reclaimed Seasoned Teak", "Pure Brass Sheet Wire", "Beeswax Polish"],
     story: "Hand-carving reclaimed teakwood with hand chisels and embedding solid brass wire Tarkashi inlay in solitary manual sessions that take up to 90 days per piece.",
     quote: "The chisel speaks only when the mind is still. Seasoned teak remembers every strike for centuries.",
@@ -114,7 +165,7 @@ const ARTISAN_CHRONICLES = [
   }
 ];
 
-// 2. TRUST MANIFESTO PILLARS
+// 3. TRUST MANIFESTO PILLARS
 const MANIFESTO_PILLARS = [
   {
     id: "pillar-01",
@@ -150,7 +201,7 @@ const MANIFESTO_PILLARS = [
   }
 ];
 
-// 3. TRUST FAQ ACCORDION DATA
+// 4. TRUST FAQ ACCORDION DATA
 const TRUST_FAQS = [
   {
     q: "How does Britsync protect master artisans from middleman exploitation?",
@@ -171,18 +222,20 @@ const TRUST_FAQS = [
 ];
 
 export default function AboutWebflowClient() {
+  const [heroCraftIdx, setHeroCraftIdx] = useState<number>(0);
   const [activeArtisanIdx, setActiveArtisanIdx] = useState<number>(0);
   const [selectedAuditArtisan, setSelectedAuditArtisan] = useState<typeof ARTISAN_CHRONICLES[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
   const [activeManifestoPillar, setActiveManifestoPillar] = useState<string>("pillar-01");
 
+  const currentHeroCraft = HERO_SHOWCASE_ITEMS[heroCraftIdx];
   const activeArtisan = ARTISAN_CHRONICLES[activeArtisanIdx];
 
   return (
     <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden" }}>
       
       {/* ════════════════════════════════════════════════════════════
-          1. HERO SECTION (RICH 2-COLUMN LUXURY VISUAL LAYOUT)
+          1. ULTRA-LUXURY 2-COLUMN HERO WITH INTERACTIVE CRAFT STAGE
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -196,17 +249,17 @@ export default function AboutWebflowClient() {
 
         <div
           style={{
-            maxWidth: "1350px",
+            maxWidth: "1380px",
             margin: "0 auto",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
-            gap: "4.5rem",
+            gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+            gap: "5rem",
             alignItems: "center",
             position: "relative",
             zIndex: 10,
           }}
         >
-          {/* Left Column: Editorial Headline & Copy */}
+          {/* Left Editorial Column */}
           <div>
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -247,8 +300,8 @@ export default function AboutWebflowClient() {
                 letterSpacing: "-0.025em",
               }}
             >
-              Sustaining the World&apos;s<br />
-              <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Rarest Human Masterworks</span>
+              Custodians of Living<br />
+              <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Generational Masterwork</span>
             </motion.h1>
 
             <motion.p
@@ -327,7 +380,7 @@ export default function AboutWebflowClient() {
             </div>
           </div>
 
-          {/* Right Column: Hero Visual Masterpiece Passport Showcase Card */}
+          {/* Right Column: 3-Layer Interactive Showcase Stage */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -337,48 +390,86 @@ export default function AboutWebflowClient() {
               backgroundColor: "var(--surface)",
               border: "1px solid var(--glass-border)",
               borderTop: "4px solid var(--accent)",
-              padding: "2.5rem",
+              padding: "2rem",
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            {/* Top Badge */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-              <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "2.5px", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                <span className="glow-dot" /> PROVENANCE PASSPORT #BR-2026-HERITAGE
-              </span>
-              <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.3rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
-                99.8% VERIFIED
-              </span>
+            {/* Interactive Craft Switcher Tabs */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+              {HERO_SHOWCASE_ITEMS.map((item, idx) => {
+                const isActive = idx === heroCraftIdx;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setHeroCraftIdx(idx)}
+                    style={{
+                      padding: "0.45rem 0.9rem",
+                      fontSize: "0.65rem",
+                      letterSpacing: "1.5px",
+                      textTransform: "uppercase",
+                      fontWeight: isActive ? 700 : 400,
+                      color: isActive ? "var(--primary)" : "var(--text)",
+                      backgroundColor: isActive ? "var(--accent)" : "var(--background)",
+                      border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
+                      cursor: "pointer",
+                      transition: "all 0.25s ease",
+                    }}
+                  >
+                    0{idx + 1}. {item.location.split(",")[0]}
+                  </button>
+                );
+              })}
             </div>
 
-            {/* Showcase Image */}
-            <div style={{ position: "relative", height: "300px", overflow: "hidden", marginBottom: "1.8rem", border: "1px solid var(--glass-border)" }}>
-              <img
-                src="https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1000"
-                alt="High Atlas Loom Weaving"
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-              />
-              <div style={{ position: "absolute", bottom: "1rem", left: "1rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.4rem 1rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", letterSpacing: "1.5px", fontFamily: "monospace" }}>
-                GPS: 31.6295° N, 7.9811° W
-              </div>
-            </div>
+            {/* Dynamic Card Display */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={currentHeroCraft.id}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.4 }}
+              >
+                {/* Top Badge Info */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
+                  <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                    <span className="glow-dot" /> PROVENANCE PASSPORT {currentHeroCraft.passportId}
+                  </span>
+                  <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.3rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
+                    {currentHeroCraft.score} VERIFIED
+                  </span>
+                </div>
 
-            {/* Title & Description */}
-            <h3 style={{ fontSize: "1.5rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.5rem", fontWeight: 400 }}>
-              High-Atlas Berber Loom Tapestry
-            </h3>
-            <p style={{ fontSize: "0.88rem", lineHeight: 1.65, color: "var(--text-muted)", margin: "0 0 1.5rem", fontWeight: 300 }}>
-              Hand-loomed in Ait Bouguemez Valley, Morocco by 7th generation matriarch Fatima Ait-Ouahi. 100% organic wool dyed with wild saffron and indigo.
-            </p>
+                {/* Showcase Image Container */}
+                <div style={{ position: "relative", height: "290px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid var(--glass-border)" }}>
+                  <img
+                    src={currentHeroCraft.image}
+                    alt={currentHeroCraft.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
+                  />
+                  <div style={{ position: "absolute", bottom: "1rem", left: "1rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.4rem 1rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", letterSpacing: "1.5px", fontFamily: "monospace" }}>
+                    GPS: {currentHeroCraft.coordinates}
+                  </div>
+                </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
-              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                Cryptographic Seal: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>0x7D3A...99E1</strong>
-              </span>
-              <Link href="/stories/fatima-atlas-kilims" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
-                Inspect Ledger &rarr;
-              </Link>
-            </div>
+                {/* Title & Craft Metadata */}
+                <h3 style={{ fontSize: "1.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.4rem", fontWeight: 400 }}>
+                  {currentHeroCraft.title}
+                </h3>
+                <p style={{ fontSize: "0.88rem", lineHeight: 1.6, color: "var(--text-muted)", margin: "0 0 1.5rem", fontWeight: 300 }}>
+                  Crafted by {currentHeroCraft.artisan} ({currentHeroCraft.role}) in {currentHeroCraft.location}. Materials: {currentHeroCraft.materials}.
+                </p>
+
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                    Ledger Status: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>AUTHENTICATED</strong>
+                  </span>
+                  <Link href="/collections" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
+                    Inspect Masterpiece &rarr;
+                  </Link>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </motion.div>
 
         </div>
