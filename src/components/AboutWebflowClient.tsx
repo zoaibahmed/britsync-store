@@ -88,54 +88,57 @@ const BRITSYNC_MAKERS = [
   }
 ];
 
-// 2. MANAGED COMMERCE PARADIGM STAGES
+// 2. MANAGED COMMERCE PARADIGM STAGES (SIMPLIFIED & HIGH-TRUST LANGUAGE)
 const MANAGED_STAGES = [
   {
-    id: "autonomy",
+    id: "payout",
     num: "01",
-    title: "Maker Autonomy & 0% Fees",
-    subtitle: "100% Desired Payout Direct to Atelier",
-    tag: "MAKER PAYOUT GUARANTEE",
-    desc: "Traditional marketplaces charge 20%+ commissions and force master creators to run web stores, SEO marketing, and international logistics. Britsync takes ZERO maker fees. Artisans quote their desired price, and Britsync adds a transparent managed markup on the buyer side to cover escrow, custom crating, and insured freight.",
+    stepLabel: "01 — MAKER AUTONOMY",
+    title: "Maker Payout Guarantee",
+    subtitle: "100% of the desired payout goes directly to the atelier.",
+    tag: "MAKER AUTONOMY",
+    desc: "Authenticity starts with fairness. Traditional platforms take 20%+ fees and force remote creators to manage marketing and export logistics. On Britsync, 100% of the maker's requested price is paid directly to their studio account with ZERO commissions.",
     image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1400",
-    badge: "0% MAKER COMMISSION",
-    gps: "GPS: 31.6295° N, 7.9811° W",
-    highlights: [
-      "0% Maker Fees or SaaS Subscriptions",
-      "100% Desired Price Paid via Smart Escrow",
-      "Zero Digital Friction (WhatsApp / Local Guild Onboarding)"
+    badge: "100% DESIRED PAYOUT",
+    gps: "GPS: 31.6295° N, 7.9811° W (High Atlas, Morocco)",
+    checks: [
+      { title: "DESIRED MAKER PRICE GUARANTEED", detail: "0% commission deducted from artisan payout" },
+      { title: "MANAGED LOGISTICS & CUSTOMS", detail: "Britsync handles 100% of crating, tariffs & delivery" },
+      { title: "SMART ESCROW PROTECTION", detail: "Funds held securely and released upon patron delivery" }
     ]
   },
   {
     id: "audit",
     num: "02",
-    title: "Physical GPS Geofence Audits",
-    subtitle: "Satellite Studio Coordinates & Material Testing",
-    tag: "ON-SITE FIELD AUDIT",
-    desc: "Authenticity cannot be self-declared on a web form. Britsync field inspectors physically travel to isolated mountain ateliers, establishing satellite GPS geofencing boundaries around the studio, conducting lab tests on 100% natural organic dyes, and securing physical guild master signatures.",
+    stepLabel: "02 — PHYSICAL VERIFICATION",
+    title: "Verified Maker Studios",
+    subtitle: "GPS location, materials, and physical signatures are independently verified.",
+    tag: "PHYSICAL VERIFICATION",
+    desc: "Authenticity isn't self-declared on a website. Britsync field inspectors physically visit remote ateliers to map satellite GPS boundaries, test organic natural materials, and record physical signatures with local craft guilds.",
     image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1400",
-    badge: "GPS BOUNDARY LOCKED",
-    gps: "GPS: 25.8072° N, 68.4907° E",
-    highlights: [
-      "Physical Satellite Geofence Coordinate Verification",
-      "100% Organic Dye & Material Chemical Lab Analysis",
-      "Guild Inspector Physical Signatures & Appellation Seal"
+    badge: "STUDIO GEOFENCE VERIFIED",
+    gps: "GPS: 25.8072° N, 68.4907° E (Sindh Valley, Pakistan)",
+    checks: [
+      { title: "STUDIO LOCATION CONFIRMED", detail: "Exact satellite GPS coordinates locked and audited" },
+      { title: "MATERIALS INDEPENDENTLY TESTED", detail: "100% natural dyes and organic fibers chemical report" },
+      { title: "INSPECTOR SIGNATURE RECORDED", detail: "Physical field auditor & guild master accreditation" }
     ]
   },
   {
     id: "passport",
     num: "03",
-    title: "Cryptographic Heritage Passports",
-    subtitle: "Immutable Ledger Authenticity Seal",
-    tag: "DIGITAL HERITAGE LEDGER",
-    desc: "Every creation registered on Britsync carries an unforgeable digital Cryptographic Heritage Passport. Embedded with encrypted NFC chips, it permanently locks the studio's satellite GPS coordinates, raw material composition, lineage score, and inspector signatures on the ledger.",
+    stepLabel: "03 — DIGITAL PROVENANCE",
+    title: "Provenance Passport",
+    subtitle: "Every verified piece receives a permanent authenticity record.",
+    tag: "DIGITAL PROVENANCE",
+    desc: "Every creation carries an unforgeable Digital Provenance Passport. Embedded with an encrypted NFC seal, it links physical items directly to permanent studio GPS coordinates, raw material reports, and guild certificates.",
     image: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=1400",
-    badge: "LEDGER SEALED #BR-2026",
-    gps: "GPS: 40.4286° N, 29.7214° E",
-    highlights: [
-      "Encrypted Physical NFC Chip embedded in creation",
-      "Immutable Ledger Block Serial Hash (#BR-2026-HERITAGE)",
-      "Museum-Grade Collector Provenance Certificate"
+    badge: "PASSPORT ISSUED #BR-2026",
+    gps: "GPS: 40.4286° N, 29.7214° E (Iznik Atelier, Turkey)",
+    checks: [
+      { title: "PERMANENT DIGITAL PASSPORT", detail: "Unforgeable record linked directly to physical piece" },
+      { title: "NFC CHIP INTEGRATION", detail: "Scan physical item with phone to inspect origin data" },
+      { title: "MUSEUM-GRADE CERTIFICATE", detail: "Immutable ledger block hash (#BR-2026-HERITAGE)" }
     ]
   }
 ];
@@ -212,7 +215,7 @@ export default function AboutWebflowClient() {
   const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
   const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  const [activeStageIdx, setActiveStageIdx] = useState<number>(0);
+  const [activeStageIdx, setActiveStageIdx] = useState<number>(1); // Default to Stage 02 - Physical Verification
 
   const activeMaker = BRITSYNC_MAKERS[activeMakerIdx];
   const currentStage = MANAGED_STAGES[activeStageIdx];
@@ -225,7 +228,7 @@ export default function AboutWebflowClient() {
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
-          padding: "12rem 2rem 8rem",
+          padding: "11rem 2rem 7rem",
           backgroundColor: "var(--surface)",
           position: "relative",
           borderBottom: "1px solid var(--glass-border)",
@@ -243,18 +246,18 @@ export default function AboutWebflowClient() {
             viewport={{ once: true }}
             variants={fadeInUpVariants}
             custom={0}
-            style={{ display: "inline-block", marginBottom: "2.2rem" }}
+            style={{ display: "inline-block", marginBottom: "2rem" }}
           >
             <span
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.8rem",
-                padding: "0.6rem 1.6rem",
+                padding: "0.55rem 1.5rem",
                 backgroundColor: "var(--background)",
                 border: "1px solid var(--accent)",
                 color: "var(--accent)",
-                fontSize: "0.72rem",
+                fontSize: "0.7rem",
                 letterSpacing: "4px",
                 textTransform: "uppercase",
                 fontWeight: 700,
@@ -295,13 +298,13 @@ export default function AboutWebflowClient() {
             variants={fadeInUpVariants}
             custom={2}
             style={{
-              fontSize: "1.2rem",
+              fontSize: "1.18rem",
               lineHeight: 1.9,
               color: "var(--text-muted)",
-              marginBottom: "3.5rem",
+              marginBottom: "3.2rem",
               fontWeight: 300,
               maxWidth: "860px",
-              margin: "0 auto 3.5rem"
+              margin: "0 auto 3.2rem"
             }}
           >
             Britsync is the world&apos;s first **Managed Global Commerce Platform**. Traditional marketplaces assume isolated master creators in mountain valleys are digital marketers, SEO copywriters, and international shipping agents. Britsync abstracts 100% of non-creative friction: the maker focuses purely on crafting masterworks — we manage photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
@@ -314,7 +317,7 @@ export default function AboutWebflowClient() {
             viewport={{ once: true }}
             variants={fadeInUpVariants}
             custom={3}
-            style={{ display: "flex", gap: "1.4rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "4.5rem" }}
+            style={{ display: "flex", gap: "1.4rem", justifyContent: "center", flexWrap: "wrap", marginBottom: "4rem" }}
           >
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
               <Link
@@ -322,7 +325,7 @@ export default function AboutWebflowClient() {
                 className="btn-accent"
                 style={{
                   textDecoration: "none",
-                  padding: "1.3rem 3.6rem",
+                  padding: "1.25rem 3.4rem",
                   borderRadius: "0px",
                   fontSize: "0.78rem",
                   letterSpacing: "3px",
@@ -347,7 +350,7 @@ export default function AboutWebflowClient() {
                   backgroundColor: "var(--background)",
                   border: "1px solid var(--glass-border)",
                   color: "var(--text)",
-                  padding: "1.3rem 3.6rem",
+                  padding: "1.25rem 3.4rem",
                   borderRadius: "0px",
                   fontSize: "0.78rem",
                   letterSpacing: "3px",
@@ -375,7 +378,7 @@ export default function AboutWebflowClient() {
               backgroundColor: "var(--background)",
               border: "1px solid var(--glass-border)",
               borderTop: "3px solid var(--accent)",
-              padding: "2.8rem 2rem",
+              padding: "2.5rem 2rem",
               boxShadow: "var(--shadow-md)",
             }}
           >
@@ -396,32 +399,49 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          2. WEBFLOW ULTRA-LUXURY MANAGED COMMERCE SHOWCASE STAGE
+          2. BENEFIT-DRIVEN MANAGED ARCHITECTURE & VERIFICATION REPORT STAGE
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
-          padding: "9.5rem 2rem",
+          padding: "7.5rem 2rem 8.5rem",
           backgroundColor: "var(--background)",
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
         <div style={{ maxWidth: "1380px", margin: "0 auto" }}>
           
-          {/* Section Heading */}
-          <div style={{ textAlign: "center", marginBottom: "5rem" }}>
+          {/* Benefit-Driven Section Heading & Intro */}
+          <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <span style={{ fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.8rem" }}>
               THE MANAGED ARCHITECTURE
             </span>
-            <h2 style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.8rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)", margin: 0 }}>
-              How Britsync Works for Makers & Patrons
+            <h2 style={{ fontSize: "clamp(2.4rem, 4.5vw, 3.8rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)", margin: "0 0 1rem" }}>
+              A Trust Layer for Makers & Patrons
             </h2>
+            <p style={{ fontSize: "1.08rem", color: "var(--text-muted)", fontWeight: 300, maxWidth: "680px", margin: "0 auto" }}>
+              Three layers protect makers, verify provenance, and give patrons confidence.
+            </p>
           </div>
 
-          {/* Interactive 2-Column Luxury Display Stage */}
+          {/* Connected 3-Stage Progression & Inspection Report Stage */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "4.5rem", alignItems: "center" }}>
             
-            {/* Left Column: Interactive Pillar Step Selectors */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
+            {/* Left Column: Connected Vertical Progression Cards */}
+            <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: "1.8rem" }}>
+              
+              {/* Connecting Vertical Gold Progression Line */}
+              <div
+                style={{
+                  position: "absolute",
+                  left: "2.4rem",
+                  top: "3rem",
+                  bottom: "3rem",
+                  width: "2px",
+                  backgroundColor: "var(--glass-border)",
+                  zIndex: 0,
+                }}
+              />
+
               {MANAGED_STAGES.map((stg, idx) => {
                 const isActive = idx === activeStageIdx;
                 return (
@@ -430,27 +450,33 @@ export default function AboutWebflowClient() {
                     onClick={() => setActiveStageIdx(idx)}
                     whileHover={{ x: 6 }}
                     style={{
-                      padding: "2.2rem 2rem",
-                      backgroundColor: isActive ? "var(--surface)" : "transparent",
+                      position: "relative",
+                      zIndex: 2,
+                      padding: "2rem 2.2rem 2rem 4rem",
+                      backgroundColor: isActive ? "var(--surface)" : "var(--background)",
                       border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
-                      borderLeft: isActive ? "5px solid var(--accent)" : "1px solid var(--glass-border)",
+                      borderLeft: isActive ? "6px solid var(--accent)" : "1px solid var(--glass-border)",
                       cursor: "pointer",
                       transition: "all 0.35s ease",
+                      boxShadow: isActive ? "var(--shadow-md)" : "none"
                     }}
                   >
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.8rem" }}>
+                    {/* Active Step Indicator Pill */}
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
                       <span style={{ fontSize: "0.68rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>
-                        {stg.tag}
+                        {stg.stepLabel}
                       </span>
-                      <span style={{ fontSize: "0.85rem", fontFamily: "var(--font-playfair), Georgia, serif", color: isActive ? "var(--accent)" : "var(--text-muted)" }}>
-                        STAGE {stg.num}
-                      </span>
+                      {isActive && (
+                        <span style={{ fontSize: "0.62rem", backgroundColor: "rgba(212,175,55,0.15)", color: "var(--accent)", padding: "0.25rem 0.75rem", border: "1px solid rgba(212,175,55,0.4)", fontWeight: 700, letterSpacing: "1.5px" }}>
+                          ● ACTIVE STAGE
+                        </span>
+                      )}
                     </div>
 
-                    <h3 style={{ fontSize: "1.45rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.6rem", fontWeight: 400 }}>
+                    <h3 style={{ fontSize: "1.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.4rem", fontWeight: 400 }}>
                       {stg.title}
                     </h3>
-                    <p style={{ fontSize: "0.88rem", lineHeight: 1.7, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
+                    <p style={{ fontSize: "0.92rem", lineHeight: 1.6, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
                       {stg.subtitle}
                     </p>
                   </motion.div>
@@ -458,7 +484,7 @@ export default function AboutWebflowClient() {
               })}
             </div>
 
-            {/* Right Column: Museum-Grade Visual Display Frame */}
+            {/* Right Column: OFFICIAL BRITSYNC VERIFICATION REPORT PANEL */}
             <div style={{ position: "relative" }}>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -475,37 +501,61 @@ export default function AboutWebflowClient() {
                     boxShadow: "var(--shadow-lg)",
                   }}
                 >
-                  {/* Photo Frame */}
-                  <div style={{ position: "relative", height: "300px", overflow: "hidden", marginBottom: "2rem", border: "1px solid var(--glass-border)" }}>
+                  {/* Verification Report Header Bar */}
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1rem" }}>
+                    <div>
+                      <span style={{ fontSize: "0.65rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block" }}>
+                        BRITSYNC VERIFICATION REPORT
+                      </span>
+                      <span style={{ fontSize: "0.85rem", fontFamily: "monospace", color: "var(--text)", fontWeight: 600 }}>
+                        AUDIT RECORD #{currentStage.id.toUpperCase()}-2026
+                      </span>
+                    </div>
+                    <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(16,185,129,0.12)", color: "#10B981", padding: "0.4rem 0.9rem", border: "1px solid rgba(16,185,129,0.3)", fontWeight: 700, letterSpacing: "1.5px" }}>
+                      ● STATUS — VERIFIED
+                    </span>
+                  </div>
+
+                  {/* Authentic Craft Studio Photograph */}
+                  <div style={{ position: "relative", height: "260px", overflow: "hidden", marginBottom: "1.8rem", border: "1px solid var(--glass-border)" }}>
                     <img
                       src={currentStage.image}
                       alt={currentStage.title}
                       style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.92)" }}
                     />
-                    <div style={{ position: "absolute", top: "1rem", left: "1rem", backgroundColor: "var(--accent)", color: "var(--primary)", padding: "0.4rem 1rem", fontSize: "0.68rem", letterSpacing: "2.5px", textTransform: "uppercase", fontWeight: 700 }}>
+                    <div style={{ position: "absolute", top: "0.9rem", left: "0.9rem", backgroundColor: "var(--accent)", color: "var(--primary)", padding: "0.4rem 0.9rem", fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700 }}>
                       {currentStage.badge}
                     </div>
-                    <div style={{ position: "absolute", bottom: "1rem", right: "1rem", backgroundColor: "rgba(10,10,12,0.88)", backdropFilter: "blur(10px)", padding: "0.45rem 1rem", border: "1px solid rgba(212,175,55,0.3)", color: "var(--accent)", fontSize: "0.72rem", fontFamily: "monospace" }}>
+                    <div style={{ position: "absolute", bottom: "0.9rem", right: "0.9rem", backgroundColor: "rgba(10,10,12,0.88)", backdropFilter: "blur(10px)", padding: "0.45rem 1rem", border: "1px solid rgba(212,175,55,0.3)", color: "var(--accent)", fontSize: "0.72rem", fontFamily: "monospace" }}>
                       {currentStage.gps}
                     </div>
                   </div>
 
-                  {/* Stage Narrative Description */}
-                  <h3 style={{ fontSize: "1.6rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
+                  {/* Stage Headline & Concrete Narrative */}
+                  <h3 style={{ fontSize: "1.5rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
                     {currentStage.title}
                   </h3>
-                  <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "var(--text-muted)", marginBottom: "1.8rem", fontWeight: 300 }}>
+                  <p style={{ fontSize: "0.95rem", lineHeight: 1.75, color: "var(--text-muted)", marginBottom: "1.8rem", fontWeight: 300 }}>
                     {currentStage.desc}
                   </p>
 
-                  {/* Bullet Highlights */}
-                  <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.5rem" }}>
-                    {currentStage.highlights.map((hl) => (
-                      <div key={hl} style={{ fontSize: "0.85rem", color: "var(--text)", display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                        <span style={{ color: "var(--accent)" }}>✦</span> {hl}
+                  {/* Inspection Verification Checkmarks */}
+                  <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.6rem" }}>
+                    {currentStage.checks.map((chk) => (
+                      <div key={chk.title} style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1rem 1.2rem", display: "flex", alignItems: "flex-start", gap: "0.9rem" }}>
+                        <span style={{ color: "#10B981", fontSize: "1.1rem", lineHeight: 1, marginTop: "0.1rem" }}>✓</span>
+                        <div>
+                          <div style={{ fontSize: "0.78rem", letterSpacing: "1.5px", textTransform: "uppercase", color: "var(--text)", fontWeight: 700 }}>
+                            {chk.title}
+                          </div>
+                          <div style={{ fontSize: "0.85rem", color: "var(--text-muted)", marginTop: "0.2rem", fontWeight: 300 }}>
+                            {chk.detail}
+                          </div>
+                        </div>
                       </div>
                     ))}
                   </div>
+
                 </motion.div>
               </AnimatePresence>
             </div>
