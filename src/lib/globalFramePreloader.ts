@@ -7,6 +7,9 @@
  * Uses a window-level singleton to prevent dual-instantiation
  * in Next.js production code-split builds, which caused frame-swap
  * between LuxuryHero and SafeguardsOriginExperience on VPS.
+ *
+ * IMPORTANT: ParallelPreloader class MUST be declared before any code
+ * that references it, to avoid Temporal Dead Zone (TDZ) crashes.
  */
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -44,121 +47,7 @@ export function getGlobeFrameUrl(index: number): string {
   return `/hero-frames/frame-${num}.jpg`;
 }
 
-// ─── Window-level singleton state ─────────────────────────────────────────────
-// Using window.__britsynFrameState prevents Next.js code-splitting from
-// creating duplicate module instances with separate Maps/classes on the VPS.
-declare global {
-  interface Window {
-    __britsyncFrameState?: {
-      heroCache: Map<number, HTMLImageElement>;
-      provenanceCache: Map<number, HTMLImageElement>;
-      globeCache: Map<number, HTMLImageElement>;
-      categoryCache: Map<number, HTMLImageElement>;
-      preloader: ParallelPreloader;
-      started: boolean;
-    };
-  }
-}
-
-function getWindowState() {
-  if (typeof window === "undefined") return null;
-  if (!window.__britsyncFrameState) {
-    window.__britsyncFrameState = {
-      heroCache:       new Map<number, HTMLImageElement>(),
-      provenanceCache: new Map<number, HTMLImageElement>(),
-      globeCache:      new Map<number, HTMLImageElement>(),
-      categoryCache:   new Map<number, HTMLImageElement>(),
-      preloader:       new ParallelPreloader(),
-      started:         false,
-    };
-  }
-  return window.__britsyncFrameState;
-}
-
-// ─── Exported cache accessors (always return the singleton Maps) ───────────────
-export function getHeroCacheMap(): Map<number, HTMLImageElement> {
-  const s = getWindowState();
-  return s ? s.heroCache : new Map();
-}
-export function getProvenanceCacheMap(): Map<number, HTMLImageElement> {
-  const s = getWindowState();
-  return s ? s.provenanceCache : new Map();
-}
-export function getGlobeCacheMap(): Map<number, HTMLImageElement> {
-  const s = getWindowState();
-  return s ? s.globeCache : new Map();
-}
-export function getCategoryCacheMap(): Map<number, HTMLImageElement> {
-  const s = getWindowState();
-  return s ? s.categoryCache : new Map();
-}
-
-// Legacy named exports — these are module-level references that proxy to
-// the window singleton. Components that imported these directly will still
-// work because we re-assign them on first access via the getters above.
-// For new code, prefer the getter functions.
-export const heroCache: Map<number, HTMLImageElement> =
-  typeof window !== "undefined" ? getHeroCacheMap() : new Map();
-export const provenanceCache: Map<number, HTMLImageElement> =
-  typeof window !== "undefined" ? getProvenanceCacheMap() : new Map();
-export const globeCache: Map<number, HTMLImageElement> =
-  typeof window !== "undefined" ? getGlobeCacheMap() : new Map();
-export const categoryCache: Map<number, HTMLImageElement> =
-  typeof window !== "undefined" ? getCategoryCacheMap() : new Map();
-
-// ─── Fallback image cache ─────────────────────────────────────────────────────
-const _fallbackImageMap = new Map<string, HTMLImageElement>();
-
-export function getFallbackImage(url: string = "/hero-artisan.jpg"): HTMLImageElement | null {
-  if (typeof window === "undefined") return null;
-  let img = _fallbackImageMap.get(url);
-  if (!img) {
-    img = new Image();
-    img.src = url;
-    _fallbackImageMap.set(url, img);
-  }
-  if (img.complete && img.naturalWidth > 0) return img;
-  return null;
-}
-
-// ─── Frame lookup with fallback ───────────────────────────────────────────────
-export function getFrameWithFallback(
-  cache: Map<number, HTMLImageElement>,
-  index: number,
-  getUrlFn: (i: number) => string,
-  fallbackUrl: string = "/hero-artisan.jpg"
-): HTMLImageElement | null {
-  // 1. Direct hit
-  const cached = cache.get(index);
-  if (cached && cached.complete && cached.naturalWidth > 0) return cached;
-
-  // 2. Search adjacent frames (+/- 15)
-  for (let delta = 1; delta <= 15; delta++) {
-    const prev = cache.get(index - delta);
-    if (prev && prev.complete && prev.naturalWidth > 0) return prev;
-    const next = cache.get(index + delta);
-    if (next && next.complete && next.naturalWidth > 0) return next;
-  }
-
-  // 3. On-demand load trigger
-  if (typeof window !== "undefined") {
-    const url = getUrlFn(index);
-    const pendingImg = new Image();
-    pendingImg.decoding = "async";
-    pendingImg.src = url;
-    pendingImg.onload = () => {
-      cache.set(index, pendingImg);
-    };
-  }
-
-  // 4. Return frame 0 or fallback
-  const firstFrame = cache.get(0);
-  if (firstFrame && firstFrame.complete && firstFrame.naturalWidth > 0) return firstFrame;
-
-  return getFallbackImage(fallbackUrl);
-}
-
-// ─── Parallel preloader class ─────────────────────────────────────────────────
+// ─── Parallel preloader class (MUST be defined before getWindowState) ─────────
 class ParallelPreloader {
   private activeConnections = 0;
   private queue: Array<{
@@ -277,24 +166,19 @@ class ParallelPreloader {
         cache.set(index, img);
         resolve();
       };
-      img.onerror = () => resolve(); // keep queue moving on 404
+      img.onerror = () => resolve();
     });
   }
 
-  public startPreload() {
+  public startPreload(
+    hCache: Map<number, HTMLImageElement>,
+    cCache: Map<number, HTMLImageElement>,
+    pCache: Map<number, HTMLImageElement>,
+    gCache: Map<number, HTMLImageElement>
+  ) {
     if (this.isStarted || typeof window === "undefined") return;
     this.isStarted = true;
 
-    // Get the singleton caches (guaranteed to be the same Maps as components use)
-    const state = getWindowState();
-    if (!state) return;
-
-    const hCache = state.heroCache;
-    const cCache = state.categoryCache;
-    const pCache = state.provenanceCache;
-    const gCache = state.globeCache;
-
-    // Initial vital batch: first 25% of hero + 100 category + 40 provenance + 40 globe
     const initialHeroCount       = Math.floor(HERO_TOTAL * 0.25); // 240
     const initialCategoryCount   = 100;
     const initialProvenanceCount = 40;
@@ -317,7 +201,6 @@ class ParallelPreloader {
     for (let i = 0; i < initialGlobeCount; i++)
       this.addToQueue(getGlobeFrameUrl(i), gCache, i, true);
 
-    // Remaining frames in background
     setTimeout(() => {
       for (let i = initialHeroCount; i < HERO_TOTAL; i++)
         this.addToQueue(getHeroFrameUrl(i), hCache, i, false);
@@ -331,19 +214,119 @@ class ParallelPreloader {
   }
 }
 
-// ─── Global singleton accessor ────────────────────────────────────────────────
+// ─── Window-level singleton (defined AFTER ParallelPreloader class) ───────────
+// This prevents Next.js code-split builds from creating duplicate module
+// instances with separate Map objects, which caused frame-swapping on VPS.
+declare global {
+  interface Window {
+    __britsyncFrameState?: {
+      heroCache:       Map<number, HTMLImageElement>;
+      provenanceCache: Map<number, HTMLImageElement>;
+      globeCache:      Map<number, HTMLImageElement>;
+      categoryCache:   Map<number, HTMLImageElement>;
+      preloader:       ParallelPreloader;
+      started:         boolean;
+    };
+  }
+}
+
+function getWindowState() {
+  if (typeof window === "undefined") return null;
+  if (!window.__britsyncFrameState) {
+    window.__britsyncFrameState = {
+      heroCache:       new Map<number, HTMLImageElement>(),
+      provenanceCache: new Map<number, HTMLImageElement>(),
+      globeCache:      new Map<number, HTMLImageElement>(),
+      categoryCache:   new Map<number, HTMLImageElement>(),
+      preloader:       new ParallelPreloader(),
+      started:         false,
+    };
+  }
+  return window.__britsyncFrameState;
+}
+
+// ─── Exported cache getters (always return the singleton Maps) ─────────────────
+export function getHeroCacheMap(): Map<number, HTMLImageElement> {
+  const s = getWindowState();
+  return s ? s.heroCache : new Map();
+}
+export function getProvenanceCacheMap(): Map<number, HTMLImageElement> {
+  const s = getWindowState();
+  return s ? s.provenanceCache : new Map();
+}
+export function getGlobeCacheMap(): Map<number, HTMLImageElement> {
+  const s = getWindowState();
+  return s ? s.globeCache : new Map();
+}
+export function getCategoryCacheMap(): Map<number, HTMLImageElement> {
+  const s = getWindowState();
+  return s ? s.categoryCache : new Map();
+}
+
+// ─── Fallback image cache ─────────────────────────────────────────────────────
+const _fallbackImageMap = new Map<string, HTMLImageElement>();
+
+export function getFallbackImage(url: string = "/hero-artisan.jpg"): HTMLImageElement | null {
+  if (typeof window === "undefined") return null;
+  let img = _fallbackImageMap.get(url);
+  if (!img) {
+    img = new Image();
+    img.src = url;
+    _fallbackImageMap.set(url, img);
+  }
+  if (img.complete && img.naturalWidth > 0) return img;
+  return null;
+}
+
+// ─── Frame lookup with fallback ───────────────────────────────────────────────
+export function getFrameWithFallback(
+  cache: Map<number, HTMLImageElement>,
+  index: number,
+  getUrlFn: (i: number) => string,
+  fallbackUrl: string = "/hero-artisan.jpg"
+): HTMLImageElement | null {
+  // 1. Direct hit
+  const cached = cache.get(index);
+  if (cached && cached.complete && cached.naturalWidth > 0) return cached;
+
+  // 2. Search adjacent frames (+/- 15)
+  for (let delta = 1; delta <= 15; delta++) {
+    const prev = cache.get(index - delta);
+    if (prev && prev.complete && prev.naturalWidth > 0) return prev;
+    const next = cache.get(index + delta);
+    if (next && next.complete && next.naturalWidth > 0) return next;
+  }
+
+  // 3. On-demand load trigger
+  if (typeof window !== "undefined") {
+    const url = getUrlFn(index);
+    const pendingImg = new Image();
+    pendingImg.decoding = "async";
+    pendingImg.src = url;
+    pendingImg.onload = () => {
+      cache.set(index, pendingImg);
+    };
+  }
+
+  // 4. Return frame 0 or static fallback
+  const firstFrame = cache.get(0);
+  if (firstFrame && firstFrame.complete && firstFrame.naturalWidth > 0) return firstFrame;
+
+  return getFallbackImage(fallbackUrl);
+}
+
+// ─── Exported singleton preloader ─────────────────────────────────────────────
 export const preloader: ParallelPreloader = (() => {
   if (typeof window === "undefined") return new ParallelPreloader();
-  const state = getWindowState();
-  return state!.preloader;
+  const s = getWindowState();
+  return s!.preloader;
 })();
 
+// ─── Public start function ────────────────────────────────────────────────────
 export function startGlobalFramePreload() {
   if (typeof window === "undefined") return;
-  const state = getWindowState();
-  if (!state) return;
-  if (!state.started) {
-    state.started = true;
-    state.preloader.startPreload();
-  }
+  const s = getWindowState();
+  if (!s || s.started) return;
+  s.started = true;
+  s.preloader.startPreload(s.heroCache, s.categoryCache, s.provenanceCache, s.globeCache);
 }
