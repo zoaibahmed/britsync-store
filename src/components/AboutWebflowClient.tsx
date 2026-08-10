@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-// 1. FEATURED GUILD ARTISANS DATA (SECTION 4 - REFINED HIGH-TRUST COPY)
+// 1. FEATURED GUILD ARTISANS DATA (SECTION 5)
 const BRITSYNC_MAKERS = [
   {
     id: "fatima-morocco",
@@ -159,7 +159,41 @@ const MANAGED_STAGES = [
   }
 ];
 
-// 3. CORE VALUES OF BRITSYNC (SECTION 3)
+// 3. FINANCIAL TRANSPARENCY COVERAGE (SECTION 3)
+const MARKUP_COVERAGE = [
+  {
+    num: "01",
+    title: "Physical Atelier Verification",
+    desc: "Deploying field auditors to remote mountain valleys to map satellite GPS boundaries, verify master lineage, and record physical guild accreditation."
+  },
+  {
+    num: "02",
+    title: "Atelier Documentaries & Photography",
+    desc: "Hiring local craft historians, translators, and photographers to document the master creator's technique and oral tradition without digital friction."
+  },
+  {
+    num: "03",
+    title: "Museum-Grade Logistics & Customs",
+    desc: "Coordinating insured white-glove airfreight, custom wooden crating, tariffs, VAT processing, and UK customs clearance directly from the atelier."
+  },
+  {
+    num: "04",
+    title: "Smart Escrow Protection",
+    desc: "Holding 100% of patron payments in secure escrow, releasing the artisan's full requested price automatically upon verified UK delivery."
+  },
+  {
+    num: "05",
+    title: "Digital Provenance Ledgers",
+    desc: "Sustaining digital infrastructure, encrypted NFC physical tags, and permanent provenance records for every registered creation."
+  },
+  {
+    num: "06",
+    title: "24/7 Mayfair Patron Concierge",
+    desc: "Managing all collector inquiries, custom crating requests, translation, and white-glove delivery tracking."
+  }
+];
+
+// 4. CORE VALUES OF BRITSYNC (SECTION 4)
 const CORE_VALUES = [
   {
     num: "I",
@@ -193,7 +227,7 @@ const CORE_VALUES = [
   }
 ];
 
-// 4. PROVENANCE PROTOCOL STAGES (SECTION 5)
+// 5. PROVENANCE PROTOCOL STAGES (SECTION 6)
 const PROTOCOL_STAGES = [
   {
     step: "STAGE 01",
@@ -225,7 +259,7 @@ const PROTOCOL_STAGES = [
   }
 ];
 
-// 5. QUESTIONS OF TRUST FAQ DATA (REFINED HIGH-TRUST FAQ)
+// 6. QUESTIONS OF TRUST FAQ DATA (SECTION 7)
 const TRUST_FAQS = [
   {
     q: "What makes Britsync different from traditional marketplaces?",
@@ -286,12 +320,10 @@ export default function AboutWebflowClient() {
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
-        {/* Subtle Luxury Pattern Background Overlay */}
         <div style={{ position: "absolute", inset: 0, opacity: 0.04, backgroundImage: "radial-gradient(var(--accent) 1px, transparent 1px)", backgroundSize: "24px 24px", pointerEvents: "none" }} />
 
         <div style={{ maxWidth: "1240px", margin: "0 auto", position: "relative", zIndex: 10, textAlign: "center" }}>
           
-          {/* Eyebrow Pill */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -321,7 +353,6 @@ export default function AboutWebflowClient() {
             </span>
           </motion.div>
 
-          {/* Grand Headline */}
           <motion.h1
             initial="hidden"
             whileInView="visible"
@@ -342,7 +373,6 @@ export default function AboutWebflowClient() {
             <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Through Managed Commerce</span>
           </motion.h1>
 
-          {/* Subtitle Manifesto */}
           <motion.p
             initial="hidden"
             whileInView="visible"
@@ -362,7 +392,6 @@ export default function AboutWebflowClient() {
             Britsync is the world&apos;s first **Managed Global Commerce Platform**. Traditional marketplaces assume isolated master creators in mountain valleys are digital marketers, SEO copywriters, and international shipping agents. Britsync abstracts 100% of non-creative friction: the maker focuses purely on crafting masterworks — we manage photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
           </motion.p>
 
-          {/* Action CTAs */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -395,8 +424,8 @@ export default function AboutWebflowClient() {
             </motion.div>
 
             <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-              <Link
-                href="/how-we-earn"
+              <a
+                href="#transparency"
                 style={{
                   textDecoration: "none",
                   backgroundColor: "var(--background)",
@@ -412,11 +441,10 @@ export default function AboutWebflowClient() {
                 }}
               >
                 Zero-Fee Maker Model
-              </Link>
+              </a>
             </motion.div>
           </motion.div>
 
-          {/* 4-Metric Luxury Counter Frame */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -462,7 +490,6 @@ export default function AboutWebflowClient() {
       >
         <div style={{ maxWidth: "1380px", margin: "0 auto" }}>
           
-          {/* Benefit-Driven Section Heading & Intro */}
           <div style={{ textAlign: "center", marginBottom: "3rem" }}>
             <span style={{ fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.8rem" }}>
               THE MANAGED ARCHITECTURE
@@ -475,13 +502,9 @@ export default function AboutWebflowClient() {
             </p>
           </div>
 
-          {/* Connected 3-Stage Progression & Inspection Report Stage */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "4.5rem", alignItems: "center" }}>
             
-            {/* Left Column: Connected Vertical Progression Cards */}
             <div style={{ position: "relative", display: "flex", flexDirection: "column", gap: "1.8rem" }}>
-              
-              {/* Connecting Vertical Gold Progression Line */}
               <div
                 style={{
                   position: "absolute",
@@ -513,7 +536,6 @@ export default function AboutWebflowClient() {
                       boxShadow: isActive ? "var(--shadow-md)" : "none"
                     }}
                   >
-                    {/* Active Step Indicator Pill */}
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
                       <span style={{ fontSize: "0.68rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>
                         {stg.stepLabel}
@@ -536,7 +558,6 @@ export default function AboutWebflowClient() {
               })}
             </div>
 
-            {/* Right Column: OFFICIAL BRITSYNC VERIFICATION REPORT PANEL */}
             <div style={{ position: "relative" }}>
               <AnimatePresence mode="wait">
                 <motion.div
@@ -553,7 +574,6 @@ export default function AboutWebflowClient() {
                     boxShadow: "var(--shadow-lg)",
                   }}
                 >
-                  {/* Verification Report Header Bar */}
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1rem" }}>
                     <div>
                       <span style={{ fontSize: "0.65rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block" }}>
@@ -568,7 +588,6 @@ export default function AboutWebflowClient() {
                     </span>
                   </div>
 
-                  {/* Authentic Craft Studio Photograph */}
                   <div style={{ position: "relative", height: "260px", overflow: "hidden", marginBottom: "1.8rem", border: "1px solid var(--glass-border)" }}>
                     <img
                       src={currentStage.image}
@@ -583,7 +602,6 @@ export default function AboutWebflowClient() {
                     </div>
                   </div>
 
-                  {/* Stage Headline & Concrete Narrative */}
                   <h3 style={{ fontSize: "1.5rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
                     {currentStage.title}
                   </h3>
@@ -591,7 +609,6 @@ export default function AboutWebflowClient() {
                     {currentStage.desc}
                   </p>
 
-                  {/* Inspection Verification Checkmarks */}
                   <div style={{ display: "flex", flexDirection: "column", gap: "0.9rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.6rem" }}>
                     {currentStage.checks.map((chk) => (
                       <div key={chk.title} style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1rem 1.2rem", display: "flex", alignItems: "flex-start", gap: "0.9rem" }}>
@@ -617,12 +634,136 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          3. THE SIX CORE VALUES OF BRITSYNC (UNDERSTATED LUXURY RESTRAINT)
+          3. INTEGRATED TRANSPARENCY & ZERO-FEE MODEL SECTION
+          ════════════════════════════════════════════════════════════ */}
+      <section
+        id="transparency"
+        style={{
+          padding: "8.5rem 2rem",
+          backgroundColor: "var(--surface)",
+          borderBottom: "1px solid var(--glass-border)",
+        }}
+      >
+        <div style={{ maxWidth: "1340px", margin: "0 auto" }}>
+          
+          <div style={{ textAlign: "center", marginBottom: "4.5rem" }}>
+            <span style={{ fontSize: "0.7rem", letterSpacing: "4px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.8rem" }}>
+              100% FINANCIAL TRANSPARENCY
+            </span>
+            <h2 style={{ fontSize: "clamp(2.4rem, 4.2vw, 3.6rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)", margin: "0 0 1rem" }}>
+              How We Earn: The Zero-Fee Maker Model
+            </h2>
+            <p style={{ fontSize: "1.05rem", color: "var(--text-muted)", fontWeight: 300, maxWidth: "760px", margin: "0 auto" }}>
+              Britsync takes 0% commission from artisans. Instead of forcing creators to act as shipping managers and copywriters, we cover operations through a transparent buyer-side markup.
+            </p>
+          </div>
+
+          {/* 2 Pillars Grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))", gap: "3rem", marginBottom: "5rem" }}>
+            
+            <div style={{ padding: "3rem", backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", borderTop: "4px solid var(--accent)" }}>
+              <span style={{ fontSize: "0.68rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.6rem" }}>
+                PILLAR 01
+              </span>
+              <h3 style={{ fontSize: "1.6rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 1rem", fontWeight: 400 }}>
+                100% Desired Artisan Payout
+              </h3>
+              <p style={{ fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", marginBottom: "1.8rem", fontWeight: 300 }}>
+                Every master maker defines their own desired payout price. This is the exact, uncompromised amount they receive upon acquisition. Artisans pay ZERO listing fees or platform sales commissions.
+              </p>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)", padding: "1.2rem 1.5rem" }}>
+                <span style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, display: "block", marginBottom: "0.2rem" }}>
+                  MAKER COMMISSION DEDUCTED
+                </span>
+                <strong style={{ fontSize: "1.5rem", color: "var(--accent)", fontFamily: "var(--font-playfair), Georgia, serif" }}>
+                  £0.00 (0% Fee)
+                </strong>
+              </div>
+            </div>
+
+            <div style={{ padding: "3rem", backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", borderTop: "4px solid var(--accent)" }}>
+              <span style={{ fontSize: "0.68rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.6rem" }}>
+                PILLAR 02
+              </span>
+              <h3 style={{ fontSize: "1.6rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 1rem", fontWeight: 400 }}>
+                Managed Operational Markup
+              </h3>
+              <p style={{ fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", marginBottom: "1.8rem", fontWeight: 300 }}>
+                Britsync adds a transparent managed markup on top of the artisan&apos;s payout. Paid by the patron at checkout, this markup directly finances field audits, customs processing, insured crating, and white-glove delivery.
+              </p>
+              <div style={{ backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)", padding: "1.2rem 1.5rem" }}>
+                <span style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, display: "block", marginBottom: "0.2rem" }}>
+                  BUYER MARKUP COVERAGE
+                </span>
+                <strong style={{ fontSize: "1.5rem", color: "var(--text)", fontFamily: "var(--font-playfair), Georgia, serif" }}>
+                  100% Operations & Audit Funded
+                </strong>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Illustrative Financial Breakdown */}
+          <div style={{ textAlign: "center", backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "3.5rem 2.5rem" }}>
+            <span style={{ fontSize: "0.68rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.6rem" }}>
+              TRANSPARENT TRANSACTION EXAMPLE
+            </span>
+            <h3 style={{ fontSize: "1.8rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
+              How a £240 Masterpiece Payout Breaks Down
+            </h3>
+            <p style={{ fontSize: "0.92rem", color: "var(--text-muted)", marginBottom: "2.8rem", fontWeight: 300, maxWidth: "600px", margin: "0 auto 2.8rem" }}>
+              Here is how a £240 acquisition breaks down transparently between the maker payout and managed operational coverage:
+            </p>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.8rem", alignItems: "center" }}>
+              <div style={{ padding: "2rem 1.5rem", backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)" }}>
+                <span style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, display: "block", marginBottom: "0.4rem" }}>
+                  1. MAKER PAYOUT
+                </span>
+                <div style={{ fontSize: "2.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 300, margin: "0.4rem 0" }}>
+                  £150
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 300 }}>
+                  100% of desired price paid via escrow
+                </span>
+              </div>
+
+              <div style={{ padding: "2rem 1.5rem", backgroundColor: "var(--surface)", border: "1px solid var(--glass-border)" }}>
+                <span style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 700, display: "block", marginBottom: "0.4rem" }}>
+                  2. MANAGED COVERAGE
+                </span>
+                <div style={{ fontSize: "2.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", fontWeight: 300, margin: "0.4rem 0" }}>
+                  £90
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 300 }}>
+                  Audits, crating, airfreight & customs
+                </span>
+              </div>
+
+              <div style={{ padding: "2rem 1.5rem", backgroundColor: "var(--surface)", border: "1px solid var(--accent)", borderTop: "3px solid var(--accent)" }}>
+                <span style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block", marginBottom: "0.4rem" }}>
+                  3. PATRON ACQUISITION
+                </span>
+                <div style={{ fontSize: "2.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400, margin: "0.4rem 0" }}>
+                  £240
+                </div>
+                <span style={{ fontSize: "0.78rem", color: "var(--text-muted)", fontWeight: 300 }}>
+                  Final checkout price
+                </span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      {/* ════════════════════════════════════════════════════════════
+          4. THE SIX CORE VALUES OF BRITSYNC (UNDERSTATED LUXURY RESTRAINT)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
           padding: "8.5rem 2rem",
-          backgroundColor: "var(--surface)",
+          backgroundColor: "var(--background)",
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
@@ -661,7 +802,6 @@ export default function AboutWebflowClient() {
             </h2>
           </motion.div>
 
-          {/* Clean Restrained 6-Card Grid: Subtle 2-3px Micro-Hover */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.2rem" }}>
             {CORE_VALUES.map((val, idx) => (
               <motion.div
@@ -674,7 +814,7 @@ export default function AboutWebflowClient() {
                 whileHover={{ y: -3 }}
                 style={{
                   padding: "3rem 2.4rem",
-                  backgroundColor: "var(--background)",
+                  backgroundColor: "var(--surface)",
                   border: "1px solid var(--glass-border)",
                   borderTop: "3px solid var(--accent)",
                   display: "flex",
@@ -719,18 +859,17 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          4. MEET OUR LIVING GUILD ARTISANS (REFINED HIGH-TRUST SECTION)
+          5. MEET OUR LIVING GUILD ARTISANS (REFINED HIGH-TRUST SECTION)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
           padding: "9.5rem 2rem",
-          backgroundColor: "var(--background)",
+          backgroundColor: "var(--surface)",
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
         <div style={{ maxWidth: "1350px", margin: "0 auto" }}>
           
-          {/* Section Header */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -775,7 +914,6 @@ export default function AboutWebflowClient() {
                 The Artisans Behind the Masterpieces
               </h2>
 
-              {/* Selector Tabs */}
               <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
                 {BRITSYNC_MAKERS.map((maker, idx) => {
                   const isActive = idx === activeMakerIdx;
@@ -790,7 +928,7 @@ export default function AboutWebflowClient() {
                         textTransform: "uppercase",
                         fontWeight: isActive ? 700 : 400,
                         color: isActive ? "var(--primary)" : "var(--text)",
-                        backgroundColor: isActive ? "var(--accent)" : "var(--surface)",
+                        backgroundColor: isActive ? "var(--accent)" : "var(--background)",
                         border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
                         cursor: "pointer",
                         transition: "all 0.3s ease",
@@ -804,7 +942,6 @@ export default function AboutWebflowClient() {
             </div>
           </motion.div>
 
-          {/* Interactive Feature Display Stage */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeMaker.id}
@@ -817,13 +954,12 @@ export default function AboutWebflowClient() {
                 gridTemplateColumns: "repeat(auto-fit, minmax(350px, 1fr))",
                 gap: "4.5rem",
                 alignItems: "center",
-                backgroundColor: "var(--surface)",
+                backgroundColor: "var(--background)",
                 padding: "3.8rem",
                 border: "1px solid var(--glass-border)",
                 boxShadow: "var(--shadow-lg)"
               }}
             >
-              {/* Left Column: Studio Portrait */}
               <div style={{ position: "relative", height: "520px", border: "1px solid var(--glass-border)" }}>
                 <img
                   src={activeMaker.image}
@@ -836,7 +972,6 @@ export default function AboutWebflowClient() {
                   }}
                 />
 
-                {/* Sleek High-End Location Badge */}
                 <div
                   style={{
                     position: "absolute",
@@ -855,7 +990,6 @@ export default function AboutWebflowClient() {
                   ✦ {activeMaker.locationBadge}
                 </div>
 
-                {/* Lineage Badge */}
                 <div
                   style={{
                     position: "absolute",
@@ -873,7 +1007,6 @@ export default function AboutWebflowClient() {
                   {activeMaker.lineage}
                 </div>
 
-                {/* Prominent Maker Quote Overlay */}
                 <div
                   style={{
                     position: "absolute",
@@ -903,7 +1036,6 @@ export default function AboutWebflowClient() {
                 </div>
               </div>
 
-              {/* Right Column: High-Trust Maker Details */}
               <div>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
                   <span
@@ -944,7 +1076,6 @@ export default function AboutWebflowClient() {
                   {activeMaker.role} &bull; {activeMaker.location}
                 </span>
 
-                {/* Verified Materials */}
                 <div style={{ marginBottom: "2rem" }}>
                   <span
                     style={{
@@ -965,7 +1096,7 @@ export default function AboutWebflowClient() {
                         key={mat.name}
                         style={{
                           fontSize: "0.85rem",
-                          backgroundColor: "var(--background)",
+                          backgroundColor: "var(--surface)",
                           border: "1px solid var(--glass-border)",
                           padding: "0.6rem 1.1rem",
                           color: "var(--text)",
@@ -981,7 +1112,6 @@ export default function AboutWebflowClient() {
                   </div>
                 </div>
 
-                {/* Britsync Managed Support */}
                 <div style={{ marginBottom: "2rem" }}>
                   <span
                     style={{
@@ -1001,12 +1131,10 @@ export default function AboutWebflowClient() {
                   </p>
                 </div>
 
-                {/* Maker Narrative */}
                 <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "var(--text-muted)", marginBottom: "2.5rem", fontWeight: 300 }}>
                   {activeMaker.story}
                 </p>
 
-                {/* Premium Concise CTA */}
                 <div>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -1039,12 +1167,12 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          5. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
+          6. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
           padding: "8.5rem 2rem",
-          backgroundColor: "var(--surface)",
+          backgroundColor: "var(--background)",
           borderBottom: "1px solid var(--glass-border)",
         }}
       >
@@ -1078,7 +1206,6 @@ export default function AboutWebflowClient() {
             </p>
           </motion.div>
 
-          {/* Sequential 4-Stage Connected Blueprint Cards */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "2rem", position: "relative" }}>
             {PROTOCOL_STAGES.map((stg, idx) => (
               <motion.div
@@ -1091,7 +1218,7 @@ export default function AboutWebflowClient() {
                 whileHover={{ y: -6, borderColor: "var(--accent)" }}
                 style={{
                   padding: "2.8rem 2.2rem",
-                  backgroundColor: "var(--background)",
+                  backgroundColor: "var(--surface)",
                   border: "1px solid var(--glass-border)",
                   borderTop: "3px solid var(--accent)",
                   transition: "border-color 0.3s ease, transform 0.3s ease",
@@ -1135,7 +1262,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          6. QUESTIONS OF TRUST FAQ ACCORDION (QUIET & SOPHISTICATED)
+          7. QUESTIONS OF TRUST FAQ ACCORDION (QUIET & SOPHISTICATED)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1220,7 +1347,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          7. CALL TO ACTION SECTION
+          8. CALL TO ACTION SECTION
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
