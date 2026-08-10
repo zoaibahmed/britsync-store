@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
-// 1. FEATURED GUILD ARTISANS DATA (ONLY USED IN SECTION 3 - NO DUPLICATION)
+// 1. FEATURED GUILD ARTISANS DATA (USED IN SECTION 3)
 const BRITSYNC_MAKERS = [
   {
     id: "fatima-morocco",
@@ -88,7 +88,38 @@ const BRITSYNC_MAKERS = [
   }
 ];
 
-// 2. CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
+// 2. HERO PARADIGM STAGES
+const HERO_PARADIGM_STAGES = [
+  {
+    id: "payout",
+    tag: "01. MAKER AUTONOMY",
+    title: "100% Desired Price Payout",
+    desc: "Artisans set their own price. Britsync adds a transparent managed markup on the buyer side. The maker receives 0% deductions and 0% commissions via smart contract escrow.",
+    img: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=900",
+    badge: "0% Maker Commissions",
+    accent: "Morocco Loom Guild"
+  },
+  {
+    id: "audit",
+    tag: "02. PHYSICAL AUDIT",
+    title: "Satellite GPS Geofence",
+    desc: "Field inspectors deploy to historical craft valleys, logging exact satellite coordinates, laboratory material tests, and physical guild master signatures.",
+    img: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=900",
+    badge: "GPS Coordinates Verified",
+    accent: "Indus Ajrak Valley"
+  },
+  {
+    id: "passport",
+    tag: "03. DIGITAL PASSPORT",
+    title: "Cryptographic Heritage Ledger",
+    desc: "Every creation carries an unforgeable digital provenance seal with NFC chip verification, locking origin data, natural material composition, and lineage score.",
+    img: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=900",
+    badge: "Immutable Ledger Seal",
+    accent: "Iznik Quartz Kiln"
+  }
+];
+
+// 3. CORE VALUES OF BRITSYNC
 const CORE_VALUES = [
   {
     num: "I",
@@ -122,7 +153,7 @@ const CORE_VALUES = [
   }
 ];
 
-// 3. TRUST FAQ ACCORDION DATA
+// 4. TRUST FAQ ACCORDION DATA
 const TRUST_FAQS = [
   {
     q: "What makes Britsync different from platforms like Etsy or Amazon Handmade?",
@@ -142,7 +173,7 @@ const TRUST_FAQS = [
   }
 ];
 
-// Motion Variants for Staggered Animations with Typed Ease Tuple
+// Motion Variants for Staggered Animations
 const fadeInUpVariants = {
   hidden: { opacity: 0, y: 35 },
   visible: (i: number = 0) => ({
@@ -160,19 +191,20 @@ export default function AboutWebflowClient() {
   const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
   const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  const [activeHeroTab, setActiveHeroTab] = useState<"artisan" | "ecosystem" | "patron">("ecosystem");
+  const [heroStageIdx, setHeroStageIdx] = useState<number>(0);
 
   const activeMaker = BRITSYNC_MAKERS[activeMakerIdx];
+  const currentHeroStage = HERO_PARADIGM_STAGES[heroStageIdx];
 
   return (
     <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden" }}>
       
       {/* ════════════════════════════════════════════════════════════
-          1. HERO SECTION: MANAGED GLOBAL COMMERCE PARADIGM
+          1. LUXURY HERO SECTION: MANAGED GLOBAL COMMERCE PARADIGM
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
-          padding: "10.5rem 2rem 7.5rem",
+          padding: "11rem 2rem 8rem",
           backgroundColor: "var(--background)",
           position: "relative",
           borderBottom: "1px solid var(--glass-border)",
@@ -182,17 +214,17 @@ export default function AboutWebflowClient() {
 
         <div
           style={{
-            maxWidth: "1380px",
+            maxWidth: "1400px",
             margin: "0 auto",
             display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(360px, 1fr))",
+            gridTemplateColumns: "repeat(auto-fit, minmax(380px, 1fr))",
             gap: "5rem",
             alignItems: "center",
             position: "relative",
             zIndex: 10,
           }}
         >
-          {/* Left Column: Manifesto & Brand Vision */}
+          {/* Left Column: Editorial Headline & Manifesto */}
           <div>
             <motion.div
               initial="hidden"
@@ -204,20 +236,23 @@ export default function AboutWebflowClient() {
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.8rem",
-                marginBottom: "1.8rem",
+                marginBottom: "2rem",
+                padding: "0.4rem 1rem",
+                backgroundColor: "var(--surface)",
+                border: "1px solid var(--glass-border)",
               }}
             >
-              <span style={{ width: "32px", height: "1px", backgroundColor: "var(--accent)" }} />
+              <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent)" }} />
               <span
                 style={{
                   color: "var(--accent)",
                   fontSize: "0.68rem",
-                  letterSpacing: "4px",
+                  letterSpacing: "3.5px",
                   textTransform: "uppercase",
                   fontWeight: 700,
                 }}
               >
-                THE MANAGED GLOBAL COMMERCE PLATFORM
+                BRITSYNC • MANAGED COMMERCE THESIS
               </span>
             </motion.div>
 
@@ -228,13 +263,13 @@ export default function AboutWebflowClient() {
               variants={fadeInUpVariants}
               custom={1}
               style={{
-                fontSize: "clamp(2.8rem, 5.2vw, 4.8rem)",
+                fontSize: "clamp(3rem, 5.5vw, 5.2rem)",
                 fontFamily: "var(--font-playfair), Georgia, serif",
                 fontWeight: 300,
-                lineHeight: 1.08,
+                lineHeight: 1.05,
                 color: "var(--text)",
-                marginBottom: "1.8rem",
-                letterSpacing: "-0.025em",
+                marginBottom: "2rem",
+                letterSpacing: "-0.03em",
               }}
             >
               Preserving Human Heritage<br />
@@ -248,14 +283,15 @@ export default function AboutWebflowClient() {
               variants={fadeInUpVariants}
               custom={2}
               style={{
-                fontSize: "1.1rem",
+                fontSize: "1.12rem",
                 lineHeight: 1.85,
                 color: "var(--text-muted)",
-                marginBottom: "2.8rem",
+                marginBottom: "3rem",
                 fontWeight: 300,
+                maxWidth: "600px",
               }}
             >
-              Britsync is the world&apos;s first **Managed Global Commerce Platform**. We remove 100% of digital, financial, and logistical friction for master artisans in remote mountain valleys and historic craft guilds. The maker focuses purely on crafting masterworks — Britsync manages photography, storytelling, GPS geofenced audits, customs clearance, and white-glove UK/EU delivery.
+              Britsync is the world&apos;s first **Managed Global Commerce Platform**. We eliminate 100% of digital, financial, and shipping friction for master artisans in isolated mountain valleys. The maker focuses solely on crafting — Britsync manages photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
             </motion.p>
 
             {/* Action Buttons */}
@@ -265,7 +301,7 @@ export default function AboutWebflowClient() {
               viewport={{ once: true }}
               variants={fadeInUpVariants}
               custom={3}
-              style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", marginBottom: "3rem" }}
+              style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", marginBottom: "3.5rem" }}
             >
               <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
@@ -273,12 +309,12 @@ export default function AboutWebflowClient() {
                   className="btn-accent"
                   style={{
                     textDecoration: "none",
-                    padding: "1.2rem 3rem",
+                    padding: "1.25rem 3.2rem",
                     borderRadius: "0px",
-                    fontSize: "0.75rem",
+                    fontSize: "0.78rem",
                     letterSpacing: "3px",
                     textTransform: "uppercase",
-                    fontWeight: 600,
+                    fontWeight: 700,
                     backgroundColor: "var(--accent)",
                     color: "var(--primary)",
                     border: "1px solid var(--accent)",
@@ -298,183 +334,148 @@ export default function AboutWebflowClient() {
                     backgroundColor: "var(--surface)",
                     border: "1px solid var(--glass-border)",
                     color: "var(--text)",
-                    padding: "1.2rem 3rem",
+                    padding: "1.25rem 3.2rem",
                     borderRadius: "0px",
-                    fontSize: "0.75rem",
+                    fontSize: "0.78rem",
                     letterSpacing: "3px",
                     textTransform: "uppercase",
                     fontWeight: 600,
                     display: "inline-block"
                   }}
                 >
-                  Zero-Fee Maker Thesis
+                  Zero-Fee Maker Model
                 </Link>
               </motion.div>
             </motion.div>
 
-            {/* Core Platform Counters */}
+            {/* Core Metrics Grid */}
             <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
               variants={fadeInUpVariants}
               custom={4}
-              style={{ display: "flex", gap: "2.2rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.8rem" }}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))",
+                gap: "1.8rem",
+                borderTop: "1px solid var(--glass-border)",
+                paddingTop: "2rem"
+              }}
             >
               {[
-                { val: "0%", label: "Maker Commissions or SaaS Fees" },
-                { val: "100%", label: "Desired Price Paid to Artisan" },
-                { val: "45+", label: "Protected Appellation Guilds" },
+                { val: "0%", label: "Maker Commissions" },
+                { val: "100%", label: "Desired Price Paid" },
+                { val: "45+", label: "Appellation Guilds" },
+                { val: "100%", label: "Smart Escrow Safety" },
               ].map((m) => (
                 <div key={m.label}>
-                  <div style={{ fontSize: "1.6rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400 }}>{m.val}</div>
-                  <div style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>{m.label}</div>
+                  <div style={{ fontSize: "1.7rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400 }}>{m.val}</div>
+                  <div style={{ fontSize: "0.64rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>{m.label}</div>
                 </div>
               ))}
             </motion.div>
           </div>
 
-          {/* Right Column: Managed Commerce Ecosystem Interactive Visual Card */}
+          {/* Right Column: Webflow Interactive Managed Commerce Showcase Stage */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: "relative",
               backgroundColor: "var(--surface)",
               border: "1px solid var(--glass-border)",
               borderTop: "4px solid var(--accent)",
-              padding: "2.5rem",
+              padding: "2.8rem",
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            {/* Ecosystem Header Badge */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.8rem" }}>
-              <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "2.5px", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                <span className="glow-dot" /> BRITSYNC COMMERCE ARCHITECTURE
-              </span>
-              <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.3rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
-                MANAGED PARADIGM
+            {/* Top Passport Header Bar */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1rem" }}>
+              <div>
+                <span style={{ fontSize: "0.62rem", letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, display: "block" }}>
+                  BRITSYNC MANAGED ECOSYSTEM
+                </span>
+                <span style={{ fontSize: "0.82rem", fontFamily: "monospace", color: "var(--text)", fontWeight: 600 }}>
+                  PASSPORT: #BR-2026-HERITAGE
+                </span>
+              </div>
+              <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.4rem 0.9rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
+                100% ESCROW PROTECTED
               </span>
             </div>
 
-            {/* Interactive Paradigm Switcher */}
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.8rem", borderBottom: "1px solid var(--glass-border)", paddingBottom: "1rem" }}>
-              {[
-                { id: "ecosystem", label: "01. The Ecosystem Bridge" },
-                { id: "artisan", label: "02. Artisan Autonomy" },
-                { id: "patron", label: "03. Patron Escrow Trust" },
-              ].map((tab) => {
-                const isActive = activeHeroTab === tab.id;
+            {/* Stage Selector Pills */}
+            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.8rem" }}>
+              {HERO_PARADIGM_STAGES.map((stg, i) => {
+                const isActive = i === heroStageIdx;
                 return (
                   <button
-                    key={tab.id}
-                    onClick={() => setActiveHeroTab(tab.id as typeof activeHeroTab)}
+                    key={stg.id}
+                    onClick={() => setHeroStageIdx(i)}
                     style={{
-                      padding: "0.5rem 1rem",
-                      fontSize: "0.68rem",
+                      flex: 1,
+                      padding: "0.6rem 0.4rem",
+                      fontSize: "0.65rem",
                       letterSpacing: "1.5px",
                       textTransform: "uppercase",
                       fontWeight: isActive ? 700 : 400,
                       color: isActive ? "var(--primary)" : "var(--text-muted)",
-                      backgroundColor: isActive ? "var(--accent)" : "transparent",
-                      border: isActive ? "1px solid var(--accent)" : "1px solid transparent",
+                      backgroundColor: isActive ? "var(--accent)" : "var(--background)",
+                      border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
                       cursor: "pointer",
                       transition: "all 0.25s ease",
+                      textAlign: "center"
                     }}
                   >
-                    {tab.label}
+                    {stg.tag}
                   </button>
                 );
               })}
             </div>
 
-            {/* Dynamic Ecosystem Content Stage */}
+            {/* Dynamic Stage Display */}
             <AnimatePresence mode="wait">
-              {activeHeroTab === "ecosystem" && (
-                <motion.div
-                  key="ecosystem"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.35 }}
-                >
-                  <div style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1.8rem", marginBottom: "1.5rem" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
-                      <div>
-                        <div style={{ fontSize: "0.62rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>THE ARTISAN</div>
-                        <div style={{ fontSize: "0.95rem", color: "var(--text)", fontWeight: 500 }}>Focuses 100% on Crafting</div>
-                      </div>
-                      <div style={{ color: "var(--accent)", fontSize: "1.3rem" }}>&rarr;</div>
-                      <div style={{ textAlign: "right" }}>
-                        <div style={{ fontSize: "0.62rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>THE PATRON</div>
-                        <div style={{ fontSize: "0.95rem", color: "var(--text)", fontWeight: 500 }}>Receives Absolute Trust</div>
-                      </div>
-                    </div>
-
-                    <div style={{ borderTop: "1px dashed var(--glass-border)", paddingTop: "1rem", fontSize: "0.82rem", color: "var(--text-muted)", lineHeight: 1.7 }}>
-                      ✦ <strong>Britsync Invisible Engine:</strong> Professional Storytelling • GPS Geofenced Audits • Custom Wooden Crating • Customs Tariffs & VAT • Cryptographic Passports
-                    </div>
+              <motion.div
+                key={currentHeroStage.id}
+                initial={{ opacity: 0, x: 15 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -15 }}
+                transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+              >
+                {/* Visual Image Banner */}
+                <div style={{ position: "relative", height: "230px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid var(--glass-border)" }}>
+                  <img
+                    src={currentHeroStage.img}
+                    alt={currentHeroStage.title}
+                    style={{ width: "100%", height: "100%", objectFit: "cover", filter: "brightness(0.92)" }}
+                  />
+                  <div style={{ position: "absolute", top: "0.8rem", left: "0.8rem", backgroundColor: "var(--accent)", color: "var(--primary)", padding: "0.35rem 0.8rem", fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700 }}>
+                    {currentHeroStage.badge}
                   </div>
-
-                  <p style={{ fontSize: "0.88rem", lineHeight: 1.65, color: "var(--text-muted)", margin: "0 0 1.2rem", fontWeight: 300 }}>
-                    Unlike Shopify or Etsy, Britsync eliminates the technical digital divide. Artisans simply create — we manage the rest.
-                  </p>
-                </motion.div>
-              )}
-
-              {activeHeroTab === "artisan" && (
-                <motion.div
-                  key="artisan"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.35 }}
-                >
-                  <div style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1.8rem", marginBottom: "1.5rem" }}>
-                    <div style={{ fontSize: "0.65rem", letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, marginBottom: "0.6rem" }}>
-                      ZERO FEES & 100% DESIRED PRICE
-                    </div>
-                    <h4 style={{ fontSize: "1.15rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
-                      Empowering Studio Autonomy
-                    </h4>
-                    <p style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
-                      The maker quotes their desired price per creation. Britsync adds a transparent managed markup on the buyer side to cover logistics and escrow, delivering 100% of the desired payout directly to the maker.
-                    </p>
+                  <div style={{ position: "absolute", bottom: "0.8rem", right: "0.8rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.35rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", fontFamily: "monospace" }}>
+                    {currentHeroStage.accent}
                   </div>
-                </motion.div>
-              )}
+                </div>
 
-              {activeHeroTab === "patron" && (
-                <motion.div
-                  key="patron"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.35 }}
-                >
-                  <div style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1.8rem", marginBottom: "1.5rem" }}>
-                    <div style={{ fontSize: "0.65rem", letterSpacing: "2.5px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700, marginBottom: "0.6rem" }}>
-                      SMART ESCROW & PASSPORT VERIFICATION
-                    </div>
-                    <h4 style={{ fontSize: "1.15rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.8rem", fontWeight: 400 }}>
-                      Museum-Grade Patron Guarantee
-                    </h4>
-                    <p style={{ fontSize: "0.85rem", lineHeight: 1.65, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
-                      Every masterpiece carries an immutable Cryptographic Provenance Passport with physical satellite GPS geofencing and chemical laboratory material test receipts.
-                    </p>
-                  </div>
-                </motion.div>
-              )}
+                <h3 style={{ fontSize: "1.45rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.6rem", fontWeight: 400 }}>
+                  {currentHeroStage.title}
+                </h3>
+                <p style={{ fontSize: "0.92rem", lineHeight: 1.7, color: "var(--text-muted)", margin: "0 0 1.8rem", fontWeight: 300 }}>
+                  {currentHeroStage.desc}
+                </p>
+              </motion.div>
             </AnimatePresence>
 
+            {/* Bottom Card Footer */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
               <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                Registry Protocol: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>#BR-2026-MANAGED-COMMERCE</strong>
+                Audited Protocol: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>#BR-MANAGED-V2</strong>
               </span>
               <Link href="/how-we-earn" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
-                Read Founder Bible &rarr;
+                Read Founder Thesis &rarr;
               </Link>
             </div>
           </motion.div>
