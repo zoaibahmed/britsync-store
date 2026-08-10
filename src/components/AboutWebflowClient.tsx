@@ -5,60 +5,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 import { Icons } from "./Icons";
 
-// 1. HERO FEATURED SHOWCASE CRAFTS
-const HERO_SHOWCASE_ITEMS = [
-  {
-    id: "hero-morocco",
-    title: "High-Atlas Berber Loom Tapestry",
-    artisan: "Fatima Ait-Ouahi",
-    role: "7th Gen Guild Matriarch",
-    location: "Aït Bouguemez Valley, Morocco",
-    coordinates: "31.6295° N, 7.9811° W",
-    materials: "100% Organic Wool & Wild Saffron",
-    image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
-    passportId: "#BR-2026-ATL-401",
-    score: "99.8%"
-  },
-  {
-    id: "hero-pakistan",
-    title: "21-Step Ajrak Mineral Indigo Blockprint",
-    artisan: "Aisha & Ghulam Soomro",
-    role: "5th Gen Dye Alchemists",
-    location: "Bhit Shah, Sindh Valley, Pakistan",
-    coordinates: "25.8072° N, 68.4907° E",
-    materials: "Handspun Cotton & Fermented Indigo",
-    image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1200",
-    passportId: "#BR-2026-SND-104",
-    score: "100%"
-  },
-  {
-    id: "hero-turkey",
-    title: "Ottoman High-Silica Quartz Ceramic Vessel",
-    artisan: "Zeynep Kilic",
-    role: "4th Gen Kiln Master",
-    location: "Iznik Atelier, Anatolia, Turkey",
-    coordinates: "40.4286° N, 29.7214° E",
-    materials: "85% Quartz Frit Clay & Cobalt Oxide",
-    image: "https://images.unsplash.com/photo-1611269154421-4e27233ac5c7?auto=format&fit=crop&q=80&w=1200",
-    passportId: "#BR-2026-IZN-302",
-    score: "99.5%"
-  },
-  {
-    id: "hero-india",
-    title: "Saharanpur Relief Teakwood & Tarkashi Inlay",
-    artisan: "Rajesh Kumar",
-    role: "6th Gen Wood Carver",
-    location: "Saharanpur, Uttar Pradesh, India",
-    coordinates: "29.9640° N, 77.5460° E",
-    materials: "Reclaimed Teak & Solid Brass Wire",
-    image: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&q=80&w=1200",
-    passportId: "#BR-2026-SAH-509",
-    score: "99.7%"
-  }
-];
-
-// 2. MASTER ARTISAN CHRONICLES DATA
-const ARTISAN_CHRONICLES = [
+// 1. FEATURED GUILD ARTISANS DATA (AUTHENTIC BRITSYNC MAKERS)
+const BRITSYNC_MAKERS = [
   {
     id: "fatima-morocco",
     num: "01",
@@ -69,37 +17,35 @@ const ARTISAN_CHRONICLES = [
     lineage: "7th Generation Lineage",
     craft: "High-Atlas Heritage Loom Weaving",
     coordinates: "31.6295° N, 7.9811° W",
-    altitude: "1,850m Above Sea Level",
     materials: ["100% Mountain Sheep Wool", "Wild Saffron Dyes", "Crushed Indigo Mineral"],
-    story: "In the secluded high-altitude valleys of the High Atlas, Fatima preserves 200-year-old tribal Berber weaving geometries transmitted purely by memory across seven generations of women weavers.",
+    story: "In the secluded high-altitude valleys of the High Atlas, Fatima leads a collective of 24 women weavers, preserving 200-year-old tribal Berber geometries transmitted orally without written notes.",
     quote: "Our loom carries the memory of seven generations. Each knot is a word spoken in a language that never dies.",
     image: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=800",
     verificationScore: "99.8%",
     status: "GI Appellation Protected",
-    yearsActive: 42,
-    artisansSupported: 24
+    payoutModel: "100% Desired Price Paid via Escrow",
+    britsyncRole: "Manages export logistics, custom wooden crating, and UK customs clearance."
   },
   {
     id: "soomro-pakistan",
     num: "02",
     name: "Aisha & Ghulam Soomro",
-    role: "Master Blockprinters & Dye Alchemists",
+    role: "Master Blockprinters & Indigo Alchemists",
     location: "Bhit Shah, Sindh Valley, Pakistan",
     regionCode: "PAK-SND-104",
     lineage: "5th Generation Guild Keepers",
     craft: "21-Step Natural Dye Ajrak Blockprinting",
     coordinates: "25.8072° N, 68.4907° E",
-    altitude: "34m Above Sea Level",
     materials: ["Handspun Indus Organic Cotton", "Fermented Indigo Pits", "Pomegranate Shell Extract"],
-    story: "Maintaining the sacred 21-step natural vegetable dyeing ritual. Each Indus cotton fabric undergoes weeks of river washing, mud-resist carving, and natural fermented indigo pit immersion.",
+    story: "Maintaining the sacred 21-step natural vegetable dyeing ritual. Each Indus cotton textile undergoes weeks of river washing, mud-resist carving, and natural fermented indigo pit immersion.",
     quote: "Twenty-one stages of mud, river water, sun, and indigo. When you work with nature, fabric acquires a soul.",
     image: "https://images.unsplash.com/photo-1596484552834-6a58f850e0a1?auto=format&fit=crop&q=80&w=1200",
     portrait: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=800",
     verificationScore: "100%",
     status: "Indus Heritage Registry Sealed",
-    yearsActive: 38,
-    artisansSupported: 18
+    payoutModel: "Direct Local Guild Account Escrow",
+    britsyncRole: "Handles professional photography, story copywriting, and European distribution."
   },
   {
     id: "zeynep-turkey",
@@ -111,7 +57,6 @@ const ARTISAN_CHRONICLES = [
     lineage: "4th Generation Kiln Master",
     craft: "Ottoman High-Quartz Silica Ceramics",
     coordinates: "40.4286° N, 29.7214° E",
-    altitude: "120m Above Sea Level",
     materials: ["85% Quartz Frit Clay", "Cobalt Oxide Mineral", "Pine Wood Kiln Fire"],
     story: "Recreating 16th-century Ottoman royal Iznik formulas containing over 85% pure quartz silica, fired in traditional pine wood kilns to achieve crystal-clear radiance.",
     quote: "Quartz is fire frozen into glass. Under 1,200 degrees of wood heat, history is sealed forever.",
@@ -119,8 +64,8 @@ const ARTISAN_CHRONICLES = [
     portrait: "https://images.unsplash.com/photo-1580489944761-15a19d654956?auto=format&fit=crop&q=80&w=800",
     verificationScore: "99.5%",
     status: "Anatolian Guild Certified",
-    yearsActive: 29,
-    artisansSupported: 12
+    payoutModel: "Escrow Released Upon UK Collector Inspection",
+    britsyncRole: "Deploys on-site GPS geofencing and physical material chemical testing."
   },
   {
     id: "rajesh-india",
@@ -139,103 +84,77 @@ const ARTISAN_CHRONICLES = [
     portrait: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800",
     verificationScore: "99.7%",
     status: "Saharanpur Guild Sealed",
-    yearsActive: 35,
-    artisansSupported: 16
-  },
-  {
-    id: "mateo-peru",
-    num: "05",
-    name: "Mateo Quispe",
-    role: "Andean Master Wool Spinner & Weaver",
-    location: "Sacred Valley, Cusco, Peru",
-    regionCode: "PER-CUS-208",
-    lineage: "8th Generation Incan Lineage",
-    craft: "Alpaca Wool Tapestries",
-    coordinates: "13.5319° S, 71.9675° W",
-    altitude: "3,800m Above Sea Level",
-    materials: ["Royal Baby Alpaca Fleece", "Sun-Dried Cochineal", "Volcanic Mineral Fixative"],
-    story: "Living at 3,800m elevation in the Peruvian Andes, Mateo preserves pre-Columbian backstrap loom weaving dyed with cochineal insects and high-altitude flora.",
-    quote: "In the high Andes, our looms align with the stars. Every warp strand links Earth to the mountain spirits.",
-    image: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80&w=1200",
-    portrait: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800",
-    verificationScore: "100%",
-    status: "Incan Lineage Certified",
-    yearsActive: 45,
-    artisansSupported: 30
+    payoutModel: "100% Desired Price Guaranteed",
+    britsyncRole: "Manages white-glove insured airfreight logistics directly from workshop."
   }
 ];
 
-// 3. TRUST MANIFESTO PILLARS
-const MANIFESTO_PILLARS = [
+// 2. CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
+const CORE_VALUES = [
   {
-    id: "pillar-01",
     num: "I",
-    title: "Cryptographic Provenance Passports",
-    subtitle: "Digital Immutability",
-    description: "Every masterwork is paired with a non-fungible cryptographic passport logging exact GPS studio coordinates, raw material testing receipts, inspector signatures, and ledger hashes.",
-    detail: "Collectable items are engraved with tamper-proof micro serial numbers linked directly to the decentralised Britsync provenance registry."
+    title: "Quality over Quantity",
+    desc: "We curate limited-run and one-of-a-kind masterpieces. We strictly reject industrial mass production and factory assembly lines."
   },
   {
-    id: "pillar-02",
     num: "II",
-    title: "Geographic Indication (GI) Protection",
-    subtitle: "Appellation Rights",
-    description: "We enforce legal regional appellation boundaries to prevent synthetic mass-market counterfeits from diluting authentic heritage craft lineages.",
-    detail: "Only studios within certified physical GI coordinates (such as High Atlas Berber looms or Iznik high-silica kilns) can receive official registry accreditation."
+    title: "Story over Product",
+    desc: "A product is a physical artifact; its story is its soul. We preserve and sell generational lineage, ancient technique, and dedicated human time."
   },
   {
-    id: "pillar-03",
     num: "III",
-    title: "Direct-to-Artisan Escrow Protocol",
-    subtitle: "Zero Middleman Exploitation",
-    description: "Patron funds remain secured in automated smart contract escrow until physical delivery is verified, releasing 95% of purchase value directly to the master creator.",
-    detail: "Middleman trading cartels often extract 80%+ of value. Britsync completely rewrites this model to give creators full economic autonomy."
+    title: "Trust over Price",
+    desc: "Our patrons buy absolute trust. We enforce physical geofenced studio audits, inspector signatures, and cryptographic provenance passports."
   },
   {
-    id: "pillar-04",
     num: "IV",
-    title: "Independent Studio & Material Audits",
-    subtitle: "In-Person Field Inspections",
-    description: "Regional field inspectors physically visit each studio, verifying 100% natural organic dyes, zero synthetic fiber blends, and fair living wage compliance.",
-    detail: "Every batch of raw wool, clay frit, indigo, and teakwood undergoes chemical and physical purity testing before cataloging."
+    title: "People over Technology",
+    desc: "Technology is an invisible enabler for our artisans. We design interfaces requiring zero digital friction, handling 100% of tech and logistics."
+  },
+  {
+    num: "V",
+    title: "Authenticity over Scale",
+    desc: "We scale by onboarding new verified artisan regions and guilds, never by diluting our rigorous physical audit standards."
+  },
+  {
+    num: "VI",
+    title: "Partnerships over Fast Sales",
+    desc: "We build lifelong relationships with master creators, supporting their ateliers, families, and local mountain communities."
   }
 ];
 
-// 4. TRUST FAQ ACCORDION DATA
+// 3. TRUST FAQ ACCORDION DATA
 const TRUST_FAQS = [
   {
-    q: "How does Britsync protect master artisans from middleman exploitation?",
-    a: "Traditional craft commerce involves up to 5 tiers of brokers, exporters, and wholesalers who take up to 80% of profits. Britsync operates a managed direct-to-artisan bridge: 95% of every transaction goes straight into the master artisan's studio account upon verified delivery."
+    q: "What makes Britsync different from platforms like Etsy or Amazon Handmade?",
+    a: "Etsy and Amazon require master creators to act as web developers, SEO copywriters, English customer service reps, and international shipping managers — creating an insurmountable barrier for isolated artisans. Britsync is a Managed Commerce Platform: the maker focuses solely on crafting their masterwork, while Britsync manages 100% of photography, storytelling, GPS audits, customs clearance, and global shipping."
+  },
+  {
+    q: "How does Britsync ensure artisans receive fair payouts with zero fees?",
+    a: "We charge ZERO fees or commissions to the maker. The artisan states their desired price. Britsync adds a transparent managed markup on the buyer side to cover logistics, insurance, and audit operations. Upon verified delivery, 100% of the maker's desired price is released automatically via smart escrow."
   },
   {
     q: "What is a Cryptographic Heritage Passport?",
-    a: "It is an unalterable digital authenticity seal issued for every masterpiece. It includes satellite GPS geofence coordinates of the studio, laboratory material purity reports, artisan signatures, and an immutable ledger block hash."
+    a: "It is a digital authenticity seal issued for every registered piece. It logs the studio's exact satellite GPS geofence coordinates, laboratory material purity reports (e.g. 100% natural wool, 85%+ quartz clay), field inspector signatures, and an immutable ledger block hash."
   },
   {
-    q: "How are Geographic Indication (GI) appellations enforced?",
-    a: "Geographic Indication is a legal IP standard that protects products possessing specific qualities tied to their geographical origin. Britsync establishes satellite geofencing around certified historical valleys to guarantee that only authentic regional studios receive GI badges."
-  },
-  {
-    q: "What happens if a masterpiece is damaged during global shipping?",
-    a: "Britsync provides full white-glove international insurance and climate-controlled transport. In the rare event of transit damage, patron funds remain protected in smart contract escrow and full refunds or studio remakes are guaranteed."
+    q: "How are Geographic Indication (GI) appellations protected?",
+    a: "Geographic Indication is a legal standard protecting goods possessing qualities specific to their geographical origin. Britsync enforces physical satellite geofencing around certified historical valleys to guarantee that factory counterfeit knock-offs cannot receive accreditation."
   }
 ];
 
 export default function AboutWebflowClient() {
-  const [heroCraftIdx, setHeroCraftIdx] = useState<number>(0);
-  const [activeArtisanIdx, setActiveArtisanIdx] = useState<number>(0);
-  const [selectedAuditArtisan, setSelectedAuditArtisan] = useState<typeof ARTISAN_CHRONICLES[0] | null>(null);
+  const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
+  const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  const [activeManifestoPillar, setActiveManifestoPillar] = useState<string>("pillar-01");
 
-  const currentHeroCraft = HERO_SHOWCASE_ITEMS[heroCraftIdx];
-  const activeArtisan = ARTISAN_CHRONICLES[activeArtisanIdx];
+  const activeMaker = BRITSYNC_MAKERS[activeMakerIdx];
 
   return (
     <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden" }}>
       
       {/* ════════════════════════════════════════════════════════════
-          1. ULTRA-LUXURY 2-COLUMN HERO WITH INTERACTIVE CRAFT STAGE
+          1. HERO SECTION: THE MANAGED COMMERCE THESIS
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -259,7 +178,7 @@ export default function AboutWebflowClient() {
             zIndex: 10,
           }}
         >
-          {/* Left Editorial Column */}
+          {/* Left Column: Manifesto & Thesis */}
           <div>
             <motion.div
               initial={{ opacity: 0, y: 15 }}
@@ -282,7 +201,7 @@ export default function AboutWebflowClient() {
                   fontWeight: 700,
                 }}
               >
-                SOVEREIGN REGISTRY FOR HERITAGE CRAFT
+                THE MANAGED GLOBAL COMMERCE PARADIGM
               </span>
             </motion.div>
 
@@ -300,8 +219,8 @@ export default function AboutWebflowClient() {
                 letterSpacing: "-0.025em",
               }}
             >
-              Custodians of Living<br />
-              <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Generational Masterwork</span>
+              Re-Empowering the World&apos;s<br />
+              <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Master Craft Creators</span>
             </motion.h1>
 
             <motion.p
@@ -316,7 +235,7 @@ export default function AboutWebflowClient() {
                 fontWeight: 300,
               }}
             >
-              Britsync is a global curation platform and digital provenance registry. We bridge secluded mountain ateliers and historic craft guilds directly with international collectors — protecting ancient lineages through cryptographic passports, legal Geographic Indication (GI) protection, and direct artisan escrow.
+              Britsync is the world&apos;s first **Managed Global Commerce Platform**. We remove 100% of digital, financial, and logistical friction for master artisans in remote mountain valleys and historic craft guilds. The maker focuses purely on crafting masterworks — Britsync manages photography, storytelling, GPS geofenced audits, customs clearance, and white-glove UK/EU delivery.
             </motion.p>
 
             {/* Action Buttons */}
@@ -347,7 +266,7 @@ export default function AboutWebflowClient() {
               </Link>
 
               <Link
-                href="/gi-certified"
+                href="/how-we-earn"
                 style={{
                   textDecoration: "none",
                   backgroundColor: "var(--surface)",
@@ -361,16 +280,16 @@ export default function AboutWebflowClient() {
                   fontWeight: 600,
                 }}
               >
-                GI Appellations Guide
+                Zero-Fee Maker Thesis
               </Link>
             </motion.div>
 
-            {/* Quick Metrics */}
+            {/* Quick Core Metrics */}
             <div style={{ display: "flex", gap: "2rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.8rem" }}>
               {[
-                { val: "100%", label: "Hand-Audited Ateliers" },
-                { val: "45+", label: "Protected Appellations" },
-                { val: "£1.25M+", label: "Direct Patron Payouts" },
+                { val: "0%", label: "Maker Commissions or SaaS Fees" },
+                { val: "100%", label: "Desired Price Paid to Artisan" },
+                { val: "45+", label: "Protected Appellation Guilds" },
               ].map((m) => (
                 <div key={m.label}>
                   <div style={{ fontSize: "1.6rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--accent)", fontWeight: 400 }}>{m.val}</div>
@@ -380,7 +299,7 @@ export default function AboutWebflowClient() {
             </div>
           </div>
 
-          {/* Right Column: 3-Layer Interactive Showcase Stage */}
+          {/* Right Column: Managed Commerce Paradigm Showcase Card */}
           <motion.div
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -390,93 +309,73 @@ export default function AboutWebflowClient() {
               backgroundColor: "var(--surface)",
               border: "1px solid var(--glass-border)",
               borderTop: "4px solid var(--accent)",
-              padding: "2rem",
+              padding: "2.5rem",
               boxShadow: "var(--shadow-lg)",
             }}
           >
-            {/* Interactive Craft Switcher Tabs */}
-            <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-              {HERO_SHOWCASE_ITEMS.map((item, idx) => {
-                const isActive = idx === heroCraftIdx;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setHeroCraftIdx(idx)}
-                    style={{
-                      padding: "0.45rem 0.9rem",
-                      fontSize: "0.65rem",
-                      letterSpacing: "1.5px",
-                      textTransform: "uppercase",
-                      fontWeight: isActive ? 700 : 400,
-                      color: isActive ? "var(--primary)" : "var(--text)",
-                      backgroundColor: isActive ? "var(--accent)" : "var(--background)",
-                      border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
-                      cursor: "pointer",
-                      transition: "all 0.25s ease",
-                    }}
-                  >
-                    0{idx + 1}. {item.location.split(",")[0]}
-                  </button>
-                );
-              })}
+            {/* Top Card Badge */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
+              <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "2.5px", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
+                <span className="glow-dot" /> BRITSYNC MANAGED ECOSYSTEM
+              </span>
+              <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.3rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
+                100% ESCROW PROTECTED
+              </span>
             </div>
 
-            {/* Dynamic Card Display */}
-            <AnimatePresence mode="wait">
-              <motion.div
-                key={currentHeroCraft.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.4 }}
-              >
-                {/* Top Badge Info */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
-                  <span style={{ fontSize: "0.68rem", color: "var(--accent)", letterSpacing: "2px", textTransform: "uppercase", fontWeight: 700, display: "flex", alignItems: "center", gap: "0.4rem" }}>
-                    <span className="glow-dot" /> PROVENANCE PASSPORT {currentHeroCraft.passportId}
-                  </span>
-                  <span style={{ fontSize: "0.65rem", backgroundColor: "rgba(212,175,55,0.12)", color: "var(--accent)", padding: "0.3rem 0.8rem", border: "1px solid rgba(212,175,55,0.3)", fontWeight: 700 }}>
-                    {currentHeroCraft.score} VERIFIED
-                  </span>
+            {/* Visual Diagram Block */}
+            <div style={{ backgroundColor: "var(--background)", border: "1px solid var(--glass-border)", padding: "1.5rem", marginBottom: "1.8rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1rem" }}>
+                <div>
+                  <div style={{ fontSize: "0.62rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>THE MASTER ARTISAN</div>
+                  <div style={{ fontSize: "0.9rem", color: "var(--text)", fontWeight: 500 }}>Focuses 100% on Crafting</div>
                 </div>
-
-                {/* Showcase Image Container */}
-                <div style={{ position: "relative", height: "290px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid var(--glass-border)" }}>
-                  <img
-                    src={currentHeroCraft.image}
-                    alt={currentHeroCraft.title}
-                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                  />
-                  <div style={{ position: "absolute", bottom: "1rem", left: "1rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.4rem 1rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", letterSpacing: "1.5px", fontFamily: "monospace" }}>
-                    GPS: {currentHeroCraft.coordinates}
-                  </div>
+                <div style={{ color: "var(--accent)", fontSize: "1.2rem" }}>&rarr;</div>
+                <div style={{ textAlign: "right" }}>
+                  <div style={{ fontSize: "0.62rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>THE PATRON</div>
+                  <div style={{ fontSize: "0.9rem", color: "var(--text)", fontWeight: 500 }}>Receives Verified Trust</div>
                 </div>
+              </div>
 
-                {/* Title & Craft Metadata */}
-                <h3 style={{ fontSize: "1.4rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.4rem", fontWeight: 400 }}>
-                  {currentHeroCraft.title}
-                </h3>
-                <p style={{ fontSize: "0.88rem", lineHeight: 1.6, color: "var(--text-muted)", margin: "0 0 1.5rem", fontWeight: 300 }}>
-                  Crafted by {currentHeroCraft.artisan} ({currentHeroCraft.role}) in {currentHeroCraft.location}. Materials: {currentHeroCraft.materials}.
-                </p>
+              <div style={{ borderTop: "1px dashed var(--glass-border)", paddingTop: "1rem", fontSize: "0.78rem", color: "var(--text-muted)", lineHeight: 1.6 }}>
+                ✦ <strong>Britsync Handles:</strong> GPS Field Audits • Custom Crating • Tariffs & VAT • Cryptographic Passports • Multi-Currency Escrow
+              </div>
+            </div>
 
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-                    Ledger Status: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>AUTHENTICATED</strong>
-                  </span>
-                  <Link href="/collections" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
-                    Inspect Masterpiece &rarr;
-                  </Link>
-                </div>
-              </motion.div>
-            </AnimatePresence>
+            {/* Featured Hero Masterpiece Showcase */}
+            <div style={{ position: "relative", height: "240px", overflow: "hidden", marginBottom: "1.5rem", border: "1px solid var(--glass-border)" }}>
+              <img
+                src="https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1000"
+                alt="Fatima Ait-Ouahi Weaving"
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+              <div style={{ position: "absolute", bottom: "0.8rem", left: "0.8rem", backgroundColor: "rgba(10,10,12,0.85)", backdropFilter: "blur(8px)", padding: "0.4rem 0.9rem", border: "1px solid rgba(212,175,55,0.3)", color: "#FAF9F6", fontSize: "0.68rem", letterSpacing: "1.5px", fontFamily: "monospace" }}>
+                GPS: 31.6295° N, 7.9811° W • High Atlas Morocco
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: "1.35rem", fontFamily: "var(--font-playfair), Georgia, serif", color: "var(--text)", margin: "0 0 0.4rem", fontWeight: 400 }}>
+              High-Atlas Berber Loom Tapestry
+            </h3>
+            <p style={{ fontSize: "0.88rem", lineHeight: 1.6, color: "var(--text-muted)", margin: "0 0 1.5rem", fontWeight: 300 }}>
+              Crafted by 7th Generation Guild Matriarch Fatima Ait-Ouahi. 100% desired price paid directly to her studio upon UK patron delivery.
+            </p>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid var(--glass-border)", paddingTop: "1.2rem" }}>
+              <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
+                Cryptographic Passport: <strong style={{ color: "var(--accent)", fontFamily: "monospace" }}>#BR-ATL-401</strong>
+              </span>
+              <Link href="/collections" style={{ fontSize: "0.72rem", color: "var(--accent)", letterSpacing: "1.5px", textTransform: "uppercase", fontWeight: 700, textDecoration: "none" }}>
+                Inspect Creation &rarr;
+              </Link>
+            </div>
           </motion.div>
 
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          2. THE FOUR COLUMNS OF TRUST ARCHITECTURE
+          2. THE SIX CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -499,7 +398,7 @@ export default function AboutWebflowClient() {
                 marginBottom: "0.8rem",
               }}
             >
-              OUR FOUR FOUNDATIONAL COLUMNS
+              OUR SIX CORE PLATFORM PRINCIPLES
             </span>
             <h2
               style={{
@@ -510,82 +409,61 @@ export default function AboutWebflowClient() {
                 margin: 0,
               }}
             >
-              The Architecture of Provenance
+              The Britsync Values
             </h2>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: "2.2rem" }}>
-            {MANIFESTO_PILLARS.map((pillar) => {
-              const isSelected = activeManifestoPillar === pillar.id;
-              return (
-                <div
-                  key={pillar.id}
-                  onClick={() => setActiveManifestoPillar(pillar.id)}
-                  style={{
-                    padding: "3.2rem 2.4rem",
-                    backgroundColor: isSelected ? "var(--surface-muted)" : "var(--background)",
-                    border: isSelected ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
-                    borderTop: "3px solid var(--accent)",
-                    cursor: "pointer",
-                    transition: "all 0.3s ease",
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "space-between",
-                    minHeight: "310px",
-                  }}
-                >
-                  <div>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
-                      <span
-                        style={{
-                          fontFamily: "var(--font-playfair), Georgia, serif",
-                          fontSize: "1.8rem",
-                          color: "var(--accent)",
-                          fontWeight: 300,
-                        }}
-                      >
-                        {pillar.num}.
-                      </span>
-                      <span style={{ fontSize: "0.62rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--accent)", fontWeight: 700 }}>
-                        {pillar.subtitle}
-                      </span>
-                    </div>
-
-                    <h3
-                      style={{
-                        fontFamily: "var(--font-playfair), Georgia, serif",
-                        fontSize: "1.35rem",
-                        fontWeight: 400,
-                        color: "var(--text)",
-                        marginBottom: "1rem",
-                        lineHeight: 1.3,
-                      }}
-                    >
-                      {pillar.title}
-                    </h3>
-                    <p style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
-                      {pillar.description}
-                    </p>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.2rem" }}>
+            {CORE_VALUES.map((val) => (
+              <div
+                key={val.num}
+                style={{
+                  padding: "3rem 2.4rem",
+                  backgroundColor: "var(--background)",
+                  border: "1px solid var(--glass-border)",
+                  borderTop: "3px solid var(--accent)",
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  minHeight: "260px",
+                }}
+              >
+                <div>
+                  <div
+                    style={{
+                      fontFamily: "var(--font-playfair), Georgia, serif",
+                      fontSize: "1.8rem",
+                      color: "var(--accent)",
+                      marginBottom: "1rem",
+                      fontWeight: 300,
+                    }}
+                  >
+                    {val.num}.
                   </div>
-
-                  {isSelected && (
-                    <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      style={{ marginTop: "1.4rem", paddingTop: "1rem", borderTop: "1px solid var(--glass-border)", fontSize: "0.82rem", color: "var(--accent)" }}
-                    >
-                      ✦ {pillar.detail}
-                    </motion.div>
-                  )}
+                  <h3
+                    style={{
+                      fontFamily: "var(--font-playfair), Georgia, serif",
+                      fontSize: "1.35rem",
+                      fontWeight: 400,
+                      color: "var(--text)",
+                      marginBottom: "1rem",
+                      lineHeight: 1.3,
+                    }}
+                  >
+                    {val.title}
+                  </h3>
+                  <p style={{ fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
+                    {val.desc}
+                  </p>
                 </div>
-              );
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          3. MASTER ARTISAN CHRONICLES (INTERACTIVE VISUAL STAGE)
+          3. MEET OUR LIVING GUILD ARTISANS (AUTHENTIC MAKERS SHOWCASE)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -609,7 +487,7 @@ export default function AboutWebflowClient() {
                   fontWeight: 700,
                 }}
               >
-                LIVING GUILD CHRONICLES
+                LIVING GUILD MAKERS
               </span>
             </div>
 
@@ -637,12 +515,12 @@ export default function AboutWebflowClient() {
 
               {/* Selector Tabs */}
               <div style={{ display: "flex", gap: "0.6rem", flexWrap: "wrap" }}>
-                {ARTISAN_CHRONICLES.map((artisan, idx) => {
-                  const isActive = idx === activeArtisanIdx;
+                {BRITSYNC_MAKERS.map((maker, idx) => {
+                  const isActive = idx === activeMakerIdx;
                   return (
                     <button
-                      key={artisan.id}
-                      onClick={() => setActiveArtisanIdx(idx)}
+                      key={maker.id}
+                      onClick={() => setActiveMakerIdx(idx)}
                       style={{
                         padding: "0.65rem 1.4rem",
                         fontSize: "0.72rem",
@@ -656,7 +534,7 @@ export default function AboutWebflowClient() {
                         transition: "all 0.3s ease",
                       }}
                     >
-                      {artisan.num}. {artisan.name.split(" ")[0]}
+                      {maker.num}. {maker.name.split(" ")[0]}
                     </button>
                   );
                 })}
@@ -667,7 +545,7 @@ export default function AboutWebflowClient() {
           {/* Interactive Feature Display Stage */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeArtisan.id}
+              key={activeMaker.id}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -683,11 +561,11 @@ export default function AboutWebflowClient() {
                 boxShadow: "var(--shadow-lg)"
               }}
             >
-              {/* Left Column: Portrait */}
+              {/* Left Column: Studio Portrait */}
               <div style={{ position: "relative", height: "500px", border: "1px solid var(--glass-border)" }}>
                 <img
-                  src={activeArtisan.image}
-                  alt={activeArtisan.name}
+                  src={activeMaker.image}
+                  alt={activeMaker.name}
                   style={{
                     width: "100%",
                     height: "100%",
@@ -712,7 +590,7 @@ export default function AboutWebflowClient() {
                     fontWeight: 600,
                   }}
                 >
-                  GPS: {activeArtisan.coordinates}
+                  GPS: {activeMaker.coordinates}
                 </div>
 
                 {/* Lineage Badge */}
@@ -730,7 +608,7 @@ export default function AboutWebflowClient() {
                     fontWeight: 700,
                   }}
                 >
-                  {activeArtisan.lineage}
+                  {activeMaker.lineage}
                 </div>
 
                 {/* Quote Overlay */}
@@ -758,7 +636,7 @@ export default function AboutWebflowClient() {
                       fontWeight: 300,
                     }}
                   >
-                    &ldquo;{activeArtisan.quote}&rdquo;
+                    &ldquo;{activeMaker.quote}&rdquo;
                   </p>
                 </div>
               </div>
@@ -775,7 +653,7 @@ export default function AboutWebflowClient() {
                       fontWeight: 700,
                     }}
                   >
-                    {activeArtisan.status} • {activeArtisan.verificationScore} VERIFIED
+                    {activeMaker.status} • {activeMaker.verificationScore} VERIFIED
                   </span>
                 </div>
 
@@ -789,7 +667,7 @@ export default function AboutWebflowClient() {
                     color: "var(--text)",
                   }}
                 >
-                  {activeArtisan.name}
+                  {activeMaker.name}
                 </h3>
 
                 <span
@@ -801,10 +679,10 @@ export default function AboutWebflowClient() {
                     fontWeight: 400,
                   }}
                 >
-                  {activeArtisan.role} &bull; {activeArtisan.location}
+                  {activeMaker.role} &bull; {activeMaker.location}
                 </span>
 
-                <div style={{ marginBottom: "2rem" }}>
+                <div style={{ marginBottom: "1.8rem" }}>
                   <span
                     style={{
                       fontSize: "0.65rem",
@@ -816,10 +694,10 @@ export default function AboutWebflowClient() {
                       marginBottom: "0.6rem",
                     }}
                   >
-                    HERITAGE CRAFT TECHNIQUE
+                    BRITSYNC MANAGED SUPPORT
                   </span>
-                  <p style={{ fontSize: "1.05rem", color: "var(--text)", margin: 0, fontWeight: 300 }}>
-                    {activeArtisan.craft}
+                  <p style={{ fontSize: "0.95rem", lineHeight: 1.7, color: "var(--text)", margin: 0, fontWeight: 300 }}>
+                    {activeMaker.britsyncRole}
                   </p>
                 </div>
 
@@ -838,7 +716,7 @@ export default function AboutWebflowClient() {
                     AUDITED NATURAL MATERIALS
                   </span>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: "0.6rem" }}>
-                    {activeArtisan.materials.map((mat) => (
+                    {activeMaker.materials.map((mat) => (
                       <span
                         key={mat}
                         style={{
@@ -857,12 +735,12 @@ export default function AboutWebflowClient() {
                 </div>
 
                 <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "var(--text-muted)", marginBottom: "2.5rem", fontWeight: 300 }}>
-                  {activeArtisan.story}
+                  {activeMaker.story}
                 </p>
 
                 <div style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", alignItems: "center" }}>
                   <button
-                    onClick={() => setSelectedAuditArtisan(activeArtisan)}
+                    onClick={() => setSelectedAuditMaker(activeMaker)}
                     style={{
                       padding: "1.15rem 2.5rem",
                       backgroundColor: "var(--accent)",
@@ -903,7 +781,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          4. PROVENANCE VERIFICATION PROTOCOL (4 STAGES)
+          4. PROVENANCE VERIFICATION BLUEPRINT (4 STAGES)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -994,91 +872,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          5. ETHICAL ARTISAN COMMITMENT & IMPACT METRICS
-          ════════════════════════════════════════════════════════════ */}
-      <section style={{ padding: "8.5rem 2rem", backgroundColor: "var(--background)", borderBottom: "1px solid var(--glass-border)" }}>
-        <div style={{ maxWidth: "1250px", margin: "0 auto" }}>
-          
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "4.5rem", alignItems: "center" }}>
-            <div>
-              <span
-                style={{
-                  color: "var(--accent)",
-                  fontSize: "0.7rem",
-                  letterSpacing: "4px",
-                  textTransform: "uppercase",
-                  fontWeight: 700,
-                  display: "block",
-                  marginBottom: "0.8rem",
-                }}
-              >
-                DIRECT PATRONAGE PACT
-              </span>
-              <h2
-                style={{
-                  fontSize: "clamp(2.2rem, 3.8vw, 3.2rem)",
-                  fontFamily: "var(--font-playfair), Georgia, serif",
-                  fontWeight: 300,
-                  color: "var(--text)",
-                  marginBottom: "1.5rem",
-                  lineHeight: 1.15,
-                }}
-              >
-                Protecting Master Creators from Exploitation
-              </h2>
-              <p style={{ fontSize: "1rem", lineHeight: 1.85, color: "var(--text-muted)", marginBottom: "1.5rem", fontWeight: 300 }}>
-                Traditional artisan trade is plagued by multi-tiered middleman networks that extract up to 80% of value while underpaying the actual creator. Britsync completely rewrites this model.
-              </p>
-              <p style={{ fontSize: "1rem", lineHeight: 1.85, color: "var(--text-muted)", marginBottom: "2rem", fontWeight: 300 }}>
-                Our managed infrastructure provides end-to-end white-glove international shipping, multi-currency escrow processing, and legal appellation protection — so master artisans receive their full desired price directly upon delivery.
-              </p>
-
-              <div style={{ display: "flex", gap: "1.8rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.8rem" }}>
-                <div>
-                  <div style={{ fontSize: "2.2rem", fontFamily: "var(--font-playfair), serif", color: "var(--accent)", fontWeight: 400 }}>95%</div>
-                  <div style={{ fontSize: "0.68rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>Direct Escrow Payout</div>
-                </div>
-                <div style={{ width: "1px", backgroundColor: "var(--glass-border)" }} />
-                <div>
-                  <div style={{ fontSize: "2.2rem", fontFamily: "var(--font-playfair), serif", color: "var(--accent)", fontWeight: 400 }}>0%</div>
-                  <div style={{ fontSize: "0.68rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>Middleman Markup</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Impact Metric Cards */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
-              {[
-                { val: "100%", label: "Hand-Audited Ateliers" },
-                { val: "45+", label: "Protected Appellations" },
-                { val: "£1.25M+", label: "Direct Patron Payouts" },
-                { val: "15,000+", label: "Issued Passports" },
-              ].map((m) => (
-                <div
-                  key={m.label}
-                  style={{
-                    padding: "2.4rem 1.8rem",
-                    backgroundColor: "var(--surface)",
-                    border: "1px solid var(--glass-border)",
-                    borderLeft: "3px solid var(--accent)",
-                  }}
-                >
-                  <div style={{ fontSize: "2.4rem", fontFamily: "var(--font-playfair), serif", color: "var(--accent)", fontWeight: 400, marginBottom: "0.4rem" }}>
-                    {m.val}
-                  </div>
-                  <div style={{ fontSize: "0.72rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", fontWeight: 600 }}>
-                    {m.label}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-        </div>
-      </section>
-
-      {/* ════════════════════════════════════════════════════════════
-          6. TRUST FAQ ACCORDION
+          5. TRUST FAQ ACCORDION
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1104,7 +898,7 @@ export default function AboutWebflowClient() {
               FREQUENTLY ASKED QUESTIONS
             </span>
             <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)" }}>
-              Trust & Curation Governance
+              Managed Commerce Governance
             </h2>
           </div>
 
@@ -1148,7 +942,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          7. CALL TO ACTION SECTION
+          6. CALL TO ACTION SECTION
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -1240,12 +1034,12 @@ export default function AboutWebflowClient() {
 
       {/* STUDIO AUDIT MODAL DRAWER */}
       <AnimatePresence>
-        {selectedAuditArtisan && (
+        {selectedAuditMaker && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            onClick={() => setSelectedAuditArtisan(null)}
+            onClick={() => setSelectedAuditMaker(null)}
             style={{
               position: "fixed",
               inset: 0,
@@ -1276,7 +1070,7 @@ export default function AboutWebflowClient() {
               }}
             >
               <button
-                onClick={() => setSelectedAuditArtisan(null)}
+                onClick={() => setSelectedAuditMaker(null)}
                 style={{
                   position: "absolute",
                   top: "2rem",
@@ -1316,11 +1110,11 @@ export default function AboutWebflowClient() {
                   color: "var(--text)",
                 }}
               >
-                {selectedAuditArtisan.name}
+                {selectedAuditMaker.name}
               </h2>
 
               <p style={{ fontSize: "0.88rem", color: "var(--text-muted)", marginBottom: "2rem" }}>
-                {selectedAuditArtisan.role} &bull; {selectedAuditArtisan.location}
+                {selectedAuditMaker.role} &bull; {selectedAuditMaker.location}
               </p>
 
               <div
@@ -1332,8 +1126,8 @@ export default function AboutWebflowClient() {
                 }}
               >
                 <img
-                  src={selectedAuditArtisan.portrait}
-                  alt={selectedAuditArtisan.name}
+                  src={selectedAuditMaker.portrait}
+                  alt={selectedAuditMaker.name}
                   style={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               </div>
@@ -1343,7 +1137,7 @@ export default function AboutWebflowClient() {
                   Technique & Heritage Protocol
                 </h4>
                 <p style={{ fontSize: "0.95rem", lineHeight: 1.8, color: "var(--text)", fontWeight: 300 }}>
-                  {selectedAuditArtisan.craft}
+                  {selectedAuditMaker.craft}
                 </p>
               </div>
 
@@ -1361,19 +1155,19 @@ export default function AboutWebflowClient() {
                 <div style={{ display: "flex", flexDirection: "column", gap: "0.85rem", fontFamily: "monospace", fontSize: "0.82rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ opacity: 0.6 }}>GPS STAMP:</span>
-                    <span style={{ color: "var(--accent)" }}>{selectedAuditArtisan.coordinates}</span>
+                    <span style={{ color: "var(--accent)" }}>{selectedAuditMaker.coordinates}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ opacity: 0.6 }}>LINEAGE SCORE:</span>
-                    <span style={{ color: "#10B981" }}>{selectedAuditArtisan.verificationScore} AUDITED</span>
+                    <span style={{ color: "#10B981" }}>{selectedAuditMaker.verificationScore} AUDITED</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
                     <span style={{ opacity: 0.6 }}>GUILD CERTIFICATION:</span>
-                    <span style={{ color: "var(--text)" }}>{selectedAuditArtisan.status}</span>
+                    <span style={{ color: "var(--text)" }}>{selectedAuditMaker.status}</span>
                   </div>
                   <div style={{ display: "flex", justifyContent: "space-between" }}>
-                    <span style={{ opacity: 0.6 }}>ALTITUDE:</span>
-                    <span style={{ color: "var(--text-muted)" }}>{selectedAuditArtisan.altitude}</span>
+                    <span style={{ opacity: 0.6 }}>MAKER PAYOUT:</span>
+                    <span style={{ color: "var(--accent)" }}>{selectedAuditMaker.payoutModel}</span>
                   </div>
                 </div>
               </div>
@@ -1381,7 +1175,7 @@ export default function AboutWebflowClient() {
               <div style={{ marginTop: "auto", paddingTop: "1.5rem" }}>
                 <Link
                   href="/collections"
-                  onClick={() => setSelectedAuditArtisan(null)}
+                  onClick={() => setSelectedAuditMaker(null)}
                   style={{
                     display: "block",
                     textAlign: "center",
