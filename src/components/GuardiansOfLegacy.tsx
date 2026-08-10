@@ -30,7 +30,7 @@ const GUARDIANS: GuardianArtisan[] = [
     id: "fatima-morocco",
     name: "Fatima Ait-Ouahi",
     title: "Master Weaver & Guild Matriarch",
-    generation: "7th Generation Lineage",
+    generation: "7th Gen Lineage",
     location: "Ait Bouguemez Valley, High Atlas, Morocco",
     regionCode: "MAR-ATL-401",
     coordinates: "31.6295° N, 7.9811° W",
@@ -49,7 +49,7 @@ const GUARDIANS: GuardianArtisan[] = [
     id: "aisha-pakistan",
     name: "Aisha & Ghulam Soomro",
     title: "Master Blockprinters & Indigo Alchemists",
-    generation: "5th Generation Guild Keepers",
+    generation: "5th Gen Guild Keepers",
     location: "Bhit Shah, Sindh Valley, Pakistan",
     regionCode: "PAK-SND-104",
     coordinates: "25.8072° N, 68.4907° E",
@@ -68,7 +68,7 @@ const GUARDIANS: GuardianArtisan[] = [
     id: "zeynep-turkey",
     name: "Zeynep Kilic",
     title: "Master Ceramicist & Quartz Glazer",
-    generation: "4th Generation Master Guild",
+    generation: "4th Gen Master Guild",
     location: "Iznik Atelier, Anatolia, Turkey",
     regionCode: "TUR-IZN-302",
     coordinates: "40.4286° N, 29.7214° E",
@@ -83,6 +83,44 @@ const GUARDIANS: GuardianArtisan[] = [
     materialsUsed: ["85% Quartz Frit Clay", "Cobalt Oxide Mineral", "Pine Wood Kiln Fire"],
     atelierQuote: "Quartz is fire frozen in stone. When glazes reach 1,200 degrees, history is sealed forever under glass.",
   },
+  {
+    id: "rajesh-india",
+    name: "Rajesh Kumar",
+    title: "Master Teak Carver & Brass Inlayer",
+    generation: "6th Gen Wood Carver",
+    location: "Saharanpur, Uttar Pradesh, India",
+    regionCode: "IND-SAH-509",
+    coordinates: "29.9640° N, 77.5460° E",
+    craft: "Teakwood Relief & Brass Tarkashi",
+    image: "https://images.unsplash.com/photo-1538688525198-9b88f6f53126?auto=format&fit=crop&q=80&w=1200",
+    portrait: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=800",
+    story: "Hand-carving reclaimed seasoned teak with brass wire Tarkashi inlay without power tools.",
+    biography: "Rajesh represents six generations of Saharanpur woodcraft royalty. Using handmade chisels and brass wire inlay techniques, he crafts furniture pieces that take up to 90 days of solitary manual carving.",
+    signatureTechnique: "Hand-Chiseled High Relief with Flush Brass Wire Hammering",
+    verificationScore: 99.7,
+    yearsPreserving: 35,
+    materialsUsed: ["Reclaimed Seasoned Teak", "Pure Brass Sheet Wire", "Organic Beeswax Polish"],
+    atelierQuote: "The chisel speaks only when the mind is still. Wood remembers every stroke for centuries.",
+  },
+  {
+    id: "mateo-peru",
+    name: "Mateo Quispe",
+    title: "Andean Master Wool Spinner & Weaver",
+    generation: "8th Gen Incan Lineage",
+    location: "Sacred Valley, Cusco, Peru",
+    regionCode: "PER-CUS-208",
+    coordinates: "13.5319° S, 71.9675° W",
+    craft: "Alpaca Wool Tapestries",
+    image: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80&w=1200",
+    portrait: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=800",
+    story: "Spinning ultra-fine Royal Alpaca fleece dyed with cochineal insects and high-altitude flora.",
+    biography: "Living at 3,800m elevation in the Peruvian Andes, Mateo preserves pre-Columbian backstrap loom weaving. His dyes are harvested from cochineal, Qolle flowers, and volcanic minerals found only in the high valley.",
+    signatureTechnique: "Double-Faced Backstrap Loom Tapestry with Cochineal Crimson Dye",
+    verificationScore: 100,
+    yearsPreserving: 45,
+    materialsUsed: ["Royal Baby Alpaca Fleece", "Sun-Dried Cochineal", "Volcanic Mineral Fixative"],
+    atelierQuote: "In the high Andes, our looms align with the stars. Every warp strand links Earth to the mountain spirits.",
+  }
 ];
 
 export default function GuardiansOfLegacy() {
@@ -116,7 +154,7 @@ export default function GuardiansOfLegacy() {
         }}
       />
 
-      <div style={{ maxWidth: "1400px", margin: "0 auto", position: "relative", zIndex: 1 }}>
+      <div style={{ maxWidth: "1350px", margin: "0 auto", position: "relative", zIndex: 1 }}>
         {/* Section Header */}
         <div style={{ marginBottom: "4rem" }}>
           <motion.div
@@ -136,7 +174,7 @@ export default function GuardiansOfLegacy() {
                 fontWeight: 700,
               }}
             >
-              Living Guild Stage — Heritage Guardians
+              LIVING GUILD STAGE — HERITAGE GUARDIANS
             </span>
           </motion.div>
 
@@ -161,6 +199,7 @@ export default function GuardiansOfLegacy() {
                 lineHeight: 1.1,
                 margin: 0,
                 letterSpacing: "-0.02em",
+                color: "var(--text)"
               }}
             >
               Guardians of the Legacy
@@ -175,17 +214,18 @@ export default function GuardiansOfLegacy() {
                     key={g.id}
                     onClick={() => setActiveIndex(idx)}
                     style={{
-                      padding: "0.5rem 1.2rem",
+                      padding: "0.6rem 1.3rem",
                       borderRadius: "30px",
                       fontSize: "0.72rem",
                       letterSpacing: "1px",
                       textTransform: "uppercase",
-                      fontWeight: isActive ? 600 : 400,
-                      color: isActive ? "var(--background)" : "var(--text)",
-                      backgroundColor: isActive ? "var(--accent)" : "rgba(10,10,12,0.04)",
+                      fontWeight: isActive ? 700 : 500,
+                      color: isActive ? "var(--primary)" : "var(--text)",
+                      backgroundColor: isActive ? "var(--accent)" : "var(--surface)",
                       border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
                       cursor: "pointer",
-                      transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+                      transition: "all 0.3s ease",
+                      boxShadow: isActive ? "var(--shadow-md)" : "none"
                     }}
                   >
                     0{idx + 1}. {g.name.split(" ")[0]}
@@ -196,32 +236,31 @@ export default function GuardiansOfLegacy() {
           </div>
         </div>
 
-        {/* ═════════════════════════════════════════
-            EDITORIAL STAGE (NO CARDS)
-        ═════════════════════════════════════════ */}
+        {/* EDITORIAL STAGE */}
         <AnimatePresence mode="wait">
           <motion.div
             key={activeArtisan.id}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
-            className="guardians-stage-grid"
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))",
-              gap: "2.5rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))",
+              gap: "3.5rem",
               alignItems: "center",
               minHeight: "560px",
             }}
           >
-            {/* Left Column: Huge Portrait Stage */}
+            {/* Left Column: Portrait Showcase */}
             <div
               style={{
                 position: "relative",
                 height: "520px",
                 borderRadius: "20px",
                 overflow: "hidden",
+                border: "1px solid var(--glass-border)",
+                boxShadow: "var(--shadow-lg)"
               }}
             >
               <img
@@ -231,7 +270,7 @@ export default function GuardiansOfLegacy() {
                   width: "100%",
                   height: "100%",
                   objectFit: "cover",
-                  filter: "brightness(0.92) contrast(1.05)",
+                  filter: "brightness(0.9) contrast(1.05)",
                 }}
               />
 
@@ -240,7 +279,7 @@ export default function GuardiansOfLegacy() {
                 style={{
                   position: "absolute",
                   inset: 0,
-                  backgroundColor: "rgba(10, 10, 12, 0.45)",
+                  backgroundColor: "rgba(10, 10, 12, 0.35)",
                 }}
               />
 
@@ -250,7 +289,7 @@ export default function GuardiansOfLegacy() {
                   position: "absolute",
                   top: "1.5rem",
                   right: "1.5rem",
-                  backgroundColor: "rgba(10,10,12,0.78)",
+                  backgroundColor: "rgba(10,10,12,0.85)",
                   backdropFilter: "blur(12px)",
                   border: "1px solid rgba(212,175,55,0.4)",
                   padding: "0.5rem 1rem",
@@ -275,12 +314,10 @@ export default function GuardiansOfLegacy() {
                   position: "absolute",
                   top: "1.5rem",
                   left: "1.5rem",
-                  backgroundColor: "rgba(212,175,55,0.15)",
-                  backdropFilter: "blur(12px)",
-                  border: "1px solid var(--accent)",
+                  backgroundColor: "var(--accent)",
                   padding: "0.5rem 1.1rem",
                   borderRadius: "30px",
-                  color: "var(--accent)",
+                  color: "var(--primary)",
                   fontSize: "0.68rem",
                   letterSpacing: "2px",
                   textTransform: "uppercase",
@@ -297,6 +334,11 @@ export default function GuardiansOfLegacy() {
                   bottom: "2rem",
                   left: "2rem",
                   right: "2rem",
+                  backgroundColor: "rgba(10,10,12,0.82)",
+                  backdropFilter: "blur(12px)",
+                  padding: "1.5rem 1.8rem",
+                  borderRadius: "14px",
+                  border: "1px solid rgba(212,175,55,0.25)",
                   color: "#FFFFFF",
                 }}
               >
@@ -304,14 +346,14 @@ export default function GuardiansOfLegacy() {
                   style={{
                     fontFamily: "var(--font-playfair), Georgia, serif",
                     fontStyle: "italic",
-                    fontSize: "1.15rem",
+                    fontSize: "1.05rem",
                     lineHeight: 1.6,
                     color: "rgba(255,255,255,0.92)",
-                    marginBottom: "0.8rem",
+                    marginBottom: "0.6rem",
                     fontWeight: 300,
                   }}
                 >
-                  "{activeArtisan.atelierQuote}"
+                  &ldquo;{activeArtisan.atelierQuote}&rdquo;
                 </p>
                 <span
                   style={{
@@ -322,25 +364,23 @@ export default function GuardiansOfLegacy() {
                     fontWeight: 600,
                   }}
                 >
-                  — {activeArtisan.name}, {activeArtisan.yearsPreserving} Years at Atelier
+                  — {activeArtisan.name}, {activeArtisan.yearsPreserving} Years Preserving Craft
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Editorial Details (Columns 7 to 12) */}
+            {/* Right Column: Editorial Details */}
             <div
               style={{
-                gridColumn: "span 6",
                 display: "flex",
                 flexDirection: "column",
-                paddingLeft: "1rem",
               }}
             >
               {/* Region Code & Verification */}
-              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: "1.2rem", flexWrap: "wrap" }}>
                 <span
                   style={{
-                    fontSize: "0.65rem",
+                    fontSize: "0.68rem",
                     letterSpacing: "3px",
                     textTransform: "uppercase",
                     color: "var(--accent)",
@@ -353,21 +393,21 @@ export default function GuardiansOfLegacy() {
                 <span
                   style={{
                     fontSize: "0.65rem",
-                    backgroundColor: "rgba(212,175,55,0.08)",
+                    backgroundColor: "rgba(212,175,55,0.1)",
                     border: "1px solid rgba(212,175,55,0.3)",
                     color: "var(--accent)",
-                    padding: "0.25rem 0.7rem",
+                    padding: "0.3rem 0.8rem",
                     borderRadius: "20px",
                     fontWeight: 600,
                     display: "inline-flex",
                     alignItems: "center",
-                    gap: "0.3rem",
+                    gap: "0.4rem",
                   }}
                 >
                   <span
                     style={{
-                      width: "5px",
-                      height: "5px",
+                      width: "6px",
+                      height: "6px",
                       borderRadius: "50%",
                       backgroundColor: "var(--accent)",
                       boxShadow: "0 0 8px var(--accent)",
@@ -380,12 +420,13 @@ export default function GuardiansOfLegacy() {
               {/* Master Name */}
               <h3
                 style={{
-                  fontSize: "clamp(2rem, 3.2vw, 3rem)",
+                  fontSize: "clamp(2.2rem, 3.5vw, 3.2rem)",
                   fontFamily: "var(--font-playfair), Georgia, serif",
                   fontWeight: 300,
                   lineHeight: 1.15,
                   marginBottom: "0.5rem",
                   letterSpacing: "-0.015em",
+                  color: "var(--text)"
                 }}
               >
                 {activeArtisan.name}
@@ -393,7 +434,7 @@ export default function GuardiansOfLegacy() {
 
               <span
                 style={{
-                  fontSize: "0.85rem",
+                  fontSize: "0.9rem",
                   color: "var(--text-muted)",
                   marginBottom: "1.8rem",
                   fontWeight: 400,
@@ -411,7 +452,7 @@ export default function GuardiansOfLegacy() {
                   color: "var(--text)",
                   marginBottom: "2.2rem",
                   fontWeight: 300,
-                  opacity: 0.88,
+                  opacity: 0.9,
                 }}
               >
                 {activeArtisan.biography}
@@ -421,7 +462,7 @@ export default function GuardiansOfLegacy() {
               <div style={{ marginBottom: "2.5rem" }}>
                 <span
                   style={{
-                    fontSize: "0.62rem",
+                    fontSize: "0.65rem",
                     letterSpacing: "2.5px",
                     textTransform: "uppercase",
                     color: "var(--accent)",
@@ -437,13 +478,13 @@ export default function GuardiansOfLegacy() {
                     <span
                       key={mat}
                       style={{
-                        fontSize: "0.72rem",
-                        backgroundColor: "rgba(10,10,12,0.04)",
+                        fontSize: "0.75rem",
+                        backgroundColor: "var(--surface)",
                         border: "1px solid var(--glass-border)",
-                        padding: "0.4rem 0.9rem",
+                        padding: "0.45rem 1rem",
                         borderRadius: "30px",
                         color: "var(--text)",
-                        fontWeight: 400,
+                        fontWeight: 500,
                       }}
                     >
                       ✦ {mat}
@@ -453,22 +494,22 @@ export default function GuardiansOfLegacy() {
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+              <div style={{ display: "flex", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
                 <button
                   onClick={() => setShowDrawer(true)}
                   style={{
-                    padding: "1rem 2rem",
+                    padding: "1.1rem 2.2rem",
                     borderRadius: "50px",
                     backgroundColor: "var(--accent)",
-                    color: "#000000",
+                    color: "var(--primary)",
                     border: "none",
                     fontSize: "0.75rem",
                     letterSpacing: "2px",
                     textTransform: "uppercase",
                     fontWeight: 700,
                     cursor: "pointer",
-                    boxShadow: "0 10px 25px rgba(212,175,55,0.25)",
-                    transition: "transform 0.3s ease, box-shadow 0.3s ease",
+                    boxShadow: "var(--shadow-md)",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   Inspect Cryptographic Lineage Audit &rarr;
@@ -477,15 +518,15 @@ export default function GuardiansOfLegacy() {
                 <Link
                   href="/stories"
                   style={{
-                    padding: "1rem 1.8rem",
+                    padding: "1.1rem 2rem",
                     borderRadius: "50px",
                     border: "1px solid var(--glass-border)",
-                    backgroundColor: "transparent",
+                    backgroundColor: "var(--surface)",
                     color: "var(--text)",
                     fontSize: "0.75rem",
                     letterSpacing: "1.5px",
                     textTransform: "uppercase",
-                    fontWeight: 500,
+                    fontWeight: 600,
                     textDecoration: "none",
                   }}
                 >
@@ -501,8 +542,8 @@ export default function GuardiansOfLegacy() {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(3, 1fr)",
-              gap: "2rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+              gap: "1.5rem",
             }}
           >
             {GUARDIANS.map((g, idx) => {
@@ -513,11 +554,11 @@ export default function GuardiansOfLegacy() {
                   onClick={() => setActiveIndex(idx)}
                   style={{
                     cursor: "pointer",
-                    padding: "1.2rem",
-                    borderRadius: "12px",
-                    backgroundColor: isActive ? "rgba(212,175,55,0.06)" : "transparent",
-                    border: isActive ? "1px solid rgba(212,175,55,0.3)" : "1px solid transparent",
-                    transition: "all 0.4s ease",
+                    padding: "1.4rem",
+                    borderRadius: "16px",
+                    backgroundColor: isActive ? "var(--surface)" : "transparent",
+                    border: isActive ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
+                    transition: "all 0.3s ease",
                   }}
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
@@ -532,20 +573,20 @@ export default function GuardiansOfLegacy() {
                     >
                       0{idx + 1}. {g.generation}
                     </span>
-                    <span style={{ fontSize: "0.65rem", opacity: 0.5 }}>{g.regionCode}</span>
+                    <span style={{ fontSize: "0.65rem", opacity: 0.5, color: "var(--text)" }}>{g.regionCode}</span>
                   </div>
                   <h4
                     style={{
                       fontSize: "1.05rem",
                       fontFamily: "var(--font-playfair), Georgia, serif",
                       margin: "0 0 0.3rem",
-                      fontWeight: isActive ? 400 : 300,
-                      color: isActive ? "var(--text)" : "var(--text-muted)",
+                      fontWeight: isActive ? 500 : 300,
+                      color: "var(--text)",
                     }}
                   >
                     {g.name}
                   </h4>
-                  <span style={{ fontSize: "0.75rem", opacity: 0.6, display: "block" }}>{g.craft}</span>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-muted)", display: "block" }}>{g.craft}</span>
                 </div>
               );
             })}
@@ -553,9 +594,7 @@ export default function GuardiansOfLegacy() {
         </div>
       </div>
 
-      {/* ═════════════════════════════════════════
-          FULL AUDIT DRAWER MODAL
-      ═════════════════════════════════════════ */}
+      {/* FULL AUDIT DRAWER MODAL */}
       <AnimatePresence>
         {showDrawer && (
           <motion.div
@@ -566,7 +605,7 @@ export default function GuardiansOfLegacy() {
             style={{
               position: "fixed",
               inset: 0,
-              backgroundColor: "rgba(0,0,0,0.85)",
+              backgroundColor: "rgba(10,10,12,0.85)",
               backdropFilter: "blur(12px)",
               zIndex: 9999,
               display: "flex",
@@ -577,18 +616,19 @@ export default function GuardiansOfLegacy() {
               initial={{ x: "100%" }}
               animate={{ x: 0 }}
               exit={{ x: "100%" }}
-              transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+              transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
               onClick={(e) => e.stopPropagation()}
               style={{
                 width: "min(680px, 92vw)",
                 height: "100%",
-                backgroundColor: "var(--primary)",
-                color: "#FFFFFF",
+                backgroundColor: "#0A0A0C",
+                color: "#FAF9F6",
                 overflowY: "auto",
                 padding: "3.5rem 3rem",
                 display: "flex",
                 flexDirection: "column",
                 position: "relative",
+                borderLeft: "1px solid rgba(212,175,55,0.3)"
               }}
             >
               <button
@@ -601,8 +641,8 @@ export default function GuardiansOfLegacy() {
                   height: "40px",
                   borderRadius: "50%",
                   backgroundColor: "rgba(255,255,255,0.06)",
-                  border: "1px solid rgba(255,255,255,0.15)",
-                  color: "#FFFFFF",
+                  border: "1px solid rgba(212,175,55,0.3)",
+                  color: "#FAF9F6",
                   cursor: "pointer",
                   fontSize: "1.2rem",
                 }}
@@ -612,7 +652,7 @@ export default function GuardiansOfLegacy() {
 
               <span
                 style={{
-                  fontSize: "0.62rem",
+                  fontSize: "0.65rem",
                   letterSpacing: "4px",
                   textTransform: "uppercase",
                   color: "var(--accent)",
@@ -629,12 +669,13 @@ export default function GuardiansOfLegacy() {
                   fontFamily: "var(--font-playfair), Georgia, serif",
                   fontWeight: 300,
                   marginBottom: "0.5rem",
+                  color: "#FAF9F6"
                 }}
               >
                 {activeArtisan.name}
               </h2>
 
-              <p style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.6)", marginBottom: "2rem" }}>
+              <p style={{ fontSize: "0.85rem", color: "rgba(250,249,246,0.6)", marginBottom: "2rem" }}>
                 {activeArtisan.title} • {activeArtisan.location}
               </p>
 
@@ -645,6 +686,7 @@ export default function GuardiansOfLegacy() {
                   borderRadius: "14px",
                   overflow: "hidden",
                   marginBottom: "2.5rem",
+                  border: "1px solid rgba(212,175,55,0.2)"
                 }}
               >
                 <img
@@ -655,12 +697,32 @@ export default function GuardiansOfLegacy() {
               </div>
 
               <div style={{ marginBottom: "2rem" }}>
-                <h4 style={{ fontSize: "0.7rem", letterSpacing: "3px", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "1rem" }}>
+                <h4 style={{ fontSize: "0.7rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", marginBottom: "1rem" }}>
                   Technique & Heritage Protocol
                 </h4>
-                <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "rgba(255,255,255,0.85)", fontWeight: 300 }}>
+                <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "rgba(250,249,246,0.85)", fontWeight: 300 }}>
                   {activeArtisan.signatureTechnique}
                 </p>
+              </div>
+
+              <div style={{ marginBottom: "2.5rem", backgroundColor: "rgba(255,255,255,0.03)", padding: "1.5rem", borderRadius: "12px", border: "1px solid rgba(212,175,55,0.2)" }}>
+                <h4 style={{ fontSize: "0.7rem", letterSpacing: "3px", textTransform: "uppercase", color: "var(--accent)", marginBottom: "1rem" }}>
+                  Cryptographic Ledger Status
+                </h4>
+                <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem", fontFamily: "monospace", fontSize: "0.82rem" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ opacity: 0.6 }}>REGIONAL CODE:</span>
+                    <span style={{ color: "var(--accent)" }}>{activeArtisan.regionCode}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ opacity: 0.6 }}>GPS STAMP:</span>
+                    <span style={{ color: "#FAF9F6" }}>{activeArtisan.coordinates}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <span style={{ opacity: 0.6 }}>LINEAGE VERIFICATION:</span>
+                    <span style={{ color: "#10B981" }}>{activeArtisan.verificationScore}% AUDITED</span>
+                  </div>
+                </div>
               </div>
 
               <div style={{ marginTop: "auto", paddingTop: "1.5rem" }}>
@@ -670,7 +732,7 @@ export default function GuardiansOfLegacy() {
                   style={{
                     display: "block",
                     textAlign: "center",
-                    padding: "1rem",
+                    padding: "1.1rem",
                     borderRadius: "50px",
                     backgroundColor: "var(--accent)",
                     color: "#000000",
