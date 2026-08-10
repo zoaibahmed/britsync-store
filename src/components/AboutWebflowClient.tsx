@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
-import { Icons } from "./Icons";
 
 // 1. FEATURED GUILD ARTISANS DATA (ONLY USED IN SECTION 3 - NO DUPLICATION)
 const BRITSYNC_MAKERS = [
@@ -143,6 +142,20 @@ const TRUST_FAQS = [
   }
 ];
 
+// Motion Variants for Staggered Animations with Typed Ease Tuple
+const fadeInUpVariants = {
+  hidden: { opacity: 0, y: 35 },
+  visible: (i: number = 0) => ({
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.7,
+      delay: i * 0.12,
+      ease: [0.16, 1, 0.3, 1] as [number, number, number, number]
+    }
+  })
+};
+
 export default function AboutWebflowClient() {
   const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
   const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
@@ -155,11 +168,11 @@ export default function AboutWebflowClient() {
     <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden" }}>
       
       {/* ════════════════════════════════════════════════════════════
-          1. HERO SECTION: THE MANAGED COMMERCE THESIS & ECOSYSTEM
+          1. HERO SECTION: MANAGED GLOBAL COMMERCE PARADIGM
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
-          padding: "10rem 2rem 7.5rem",
+          padding: "10.5rem 2rem 7.5rem",
           backgroundColor: "var(--background)",
           position: "relative",
           borderBottom: "1px solid var(--glass-border)",
@@ -182,9 +195,11 @@ export default function AboutWebflowClient() {
           {/* Left Column: Manifesto & Brand Vision */}
           <div>
             <motion.div
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUpVariants}
+              custom={0}
               style={{
                 display: "inline-flex",
                 alignItems: "center",
@@ -207,9 +222,11 @@ export default function AboutWebflowClient() {
             </motion.div>
 
             <motion.h1
-              initial={{ opacity: 0, y: 22 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.1 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUpVariants}
+              custom={1}
               style={{
                 fontSize: "clamp(2.8rem, 5.2vw, 4.8rem)",
                 fontFamily: "var(--font-playfair), Georgia, serif",
@@ -225,9 +242,11 @@ export default function AboutWebflowClient() {
             </motion.h1>
 
             <motion.p
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.7, delay: 0.2 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUpVariants}
+              custom={2}
               style={{
                 fontSize: "1.1rem",
                 lineHeight: 1.85,
@@ -241,52 +260,67 @@ export default function AboutWebflowClient() {
 
             {/* Action Buttons */}
             <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: 0.3 }}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUpVariants}
+              custom={3}
               style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", marginBottom: "3rem" }}
             >
-              <Link
-                href="/collections"
-                className="btn-accent"
-                style={{
-                  textDecoration: "none",
-                  padding: "1.2rem 3rem",
-                  borderRadius: "0px",
-                  fontSize: "0.75rem",
-                  letterSpacing: "3px",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                  backgroundColor: "var(--accent)",
-                  color: "var(--primary)",
-                  border: "1px solid var(--accent)",
-                  boxShadow: "var(--shadow-md)",
-                }}
-              >
-                Explore Registered Masterpieces &rarr;
-              </Link>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/collections"
+                  className="btn-accent"
+                  style={{
+                    textDecoration: "none",
+                    padding: "1.2rem 3rem",
+                    borderRadius: "0px",
+                    fontSize: "0.75rem",
+                    letterSpacing: "3px",
+                    textTransform: "uppercase",
+                    fontWeight: 600,
+                    backgroundColor: "var(--accent)",
+                    color: "var(--primary)",
+                    border: "1px solid var(--accent)",
+                    boxShadow: "var(--shadow-md)",
+                    display: "inline-block"
+                  }}
+                >
+                  Explore Registered Masterpieces &rarr;
+                </Link>
+              </motion.div>
 
-              <Link
-                href="/how-we-earn"
-                style={{
-                  textDecoration: "none",
-                  backgroundColor: "var(--surface)",
-                  border: "1px solid var(--glass-border)",
-                  color: "var(--text)",
-                  padding: "1.2rem 3rem",
-                  borderRadius: "0px",
-                  fontSize: "0.75rem",
-                  letterSpacing: "3px",
-                  textTransform: "uppercase",
-                  fontWeight: 600,
-                }}
-              >
-                Zero-Fee Maker Thesis
-              </Link>
+              <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                <Link
+                  href="/how-we-earn"
+                  style={{
+                    textDecoration: "none",
+                    backgroundColor: "var(--surface)",
+                    border: "1px solid var(--glass-border)",
+                    color: "var(--text)",
+                    padding: "1.2rem 3rem",
+                    borderRadius: "0px",
+                    fontSize: "0.75rem",
+                    letterSpacing: "3px",
+                    textTransform: "uppercase",
+                    fontWeight: 600,
+                    display: "inline-block"
+                  }}
+                >
+                  Zero-Fee Maker Thesis
+                </Link>
+              </motion.div>
             </motion.div>
 
             {/* Core Platform Counters */}
-            <div style={{ display: "flex", gap: "2.2rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.8rem" }}>
+            <motion.div
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              variants={fadeInUpVariants}
+              custom={4}
+              style={{ display: "flex", gap: "2.2rem", borderTop: "1px solid var(--glass-border)", paddingTop: "1.8rem" }}
+            >
               {[
                 { val: "0%", label: "Maker Commissions or SaaS Fees" },
                 { val: "100%", label: "Desired Price Paid to Artisan" },
@@ -297,14 +331,15 @@ export default function AboutWebflowClient() {
                   <div style={{ fontSize: "0.65rem", letterSpacing: "2px", textTransform: "uppercase", color: "var(--text-muted)", marginTop: "0.2rem" }}>{m.label}</div>
                 </div>
               ))}
-            </div>
+            </motion.div>
           </div>
 
           {/* Right Column: Managed Commerce Ecosystem Interactive Visual Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.85, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             style={{
               position: "relative",
               backgroundColor: "var(--surface)",
@@ -459,7 +494,13 @@ export default function AboutWebflowClient() {
       >
         <div style={{ maxWidth: "1320px", margin: "0 auto" }}>
           
-          <div style={{ textAlign: "center", marginBottom: "5.5rem" }}>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeInUpVariants}
+            style={{ textAlign: "center", marginBottom: "5.5rem" }}
+          >
             <span
               style={{
                 color: "var(--accent)",
@@ -484,12 +525,18 @@ export default function AboutWebflowClient() {
             >
               The Britsync Values
             </h2>
-          </div>
+          </motion.div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.2rem" }}>
-            {CORE_VALUES.map((val) => (
-              <div
+            {CORE_VALUES.map((val, idx) => (
+              <motion.div
                 key={val.num}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-60px" }}
+                variants={fadeInUpVariants}
+                custom={idx}
+                whileHover={{ y: -6, borderColor: "var(--accent)" }}
                 style={{
                   padding: "3rem 2.4rem",
                   backgroundColor: "var(--background)",
@@ -499,6 +546,7 @@ export default function AboutWebflowClient() {
                   flexDirection: "column",
                   justifyContent: "space-between",
                   minHeight: "260px",
+                  transition: "border-color 0.3s ease, transform 0.3s ease"
                 }}
               >
                 <div>
@@ -529,7 +577,7 @@ export default function AboutWebflowClient() {
                     {val.desc}
                   </p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -548,7 +596,13 @@ export default function AboutWebflowClient() {
         <div style={{ maxWidth: "1350px", margin: "0 auto" }}>
           
           {/* Section Header */}
-          <div style={{ marginBottom: "4.5rem" }}>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeInUpVariants}
+            style={{ marginBottom: "4.5rem" }}
+          >
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", marginBottom: "0.8rem" }}>
               <span style={{ width: "28px", height: "1px", backgroundColor: "var(--accent)" }} />
               <span
@@ -613,13 +667,13 @@ export default function AboutWebflowClient() {
                 })}
               </div>
             </div>
-          </div>
+          </motion.div>
 
           {/* Interactive Feature Display Stage */}
           <AnimatePresence mode="wait">
             <motion.div
               key={activeMaker.id}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
               transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
@@ -812,7 +866,9 @@ export default function AboutWebflowClient() {
                 </p>
 
                 <div style={{ display: "flex", gap: "1.2rem", flexWrap: "wrap", alignItems: "center" }}>
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
                     onClick={() => setSelectedAuditMaker(activeMaker)}
                     style={{
                       padding: "1.15rem 2.5rem",
@@ -827,7 +883,7 @@ export default function AboutWebflowClient() {
                     }}
                   >
                     Inspect Studio Provenance Audit &rarr;
-                  </button>
+                  </motion.button>
 
                   <Link
                     href="/makers"
@@ -865,7 +921,13 @@ export default function AboutWebflowClient() {
       >
         <div style={{ maxWidth: "1280px", margin: "0 auto" }}>
           
-          <div style={{ textAlign: "center", marginBottom: "5.5rem" }}>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeInUpVariants}
+            style={{ textAlign: "center", marginBottom: "5.5rem" }}
+          >
             <span
               style={{
                 color: "var(--accent)",
@@ -885,7 +947,7 @@ export default function AboutWebflowClient() {
             <p style={{ maxWidth: "620px", margin: "1rem auto 0", opacity: 0.72, fontSize: "0.95rem", lineHeight: 1.8, color: "var(--text-muted)", fontWeight: 300 }}>
               Four independent audit checkpoints executed before any creation receives the Britsync Provenance Seal.
             </p>
-          </div>
+          </motion.div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "2rem" }}>
             {[
@@ -909,14 +971,21 @@ export default function AboutWebflowClient() {
                 title: "Cryptographic Ledger Block",
                 detail: "Minting a unique serial hash paired with an encrypted NFC passport stored permanently on the Britsync ledger.",
               },
-            ].map((stg) => (
-              <div
+            ].map((stg, idx) => (
+              <motion.div
                 key={stg.step}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-60px" }}
+                variants={fadeInUpVariants}
+                custom={idx}
+                whileHover={{ y: -6, borderColor: "var(--accent)" }}
                 style={{
                   padding: "2.8rem 2.2rem",
                   backgroundColor: "var(--background)",
                   border: "1px solid var(--glass-border)",
                   borderTop: "3px solid var(--accent)",
+                  transition: "border-color 0.3s ease, transform 0.3s ease"
                 }}
               >
                 <span
@@ -938,7 +1007,7 @@ export default function AboutWebflowClient() {
                 <p style={{ fontSize: "0.9rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
                   {stg.detail}
                 </p>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
@@ -956,7 +1025,13 @@ export default function AboutWebflowClient() {
       >
         <div style={{ maxWidth: "980px", margin: "0 auto" }}>
           
-          <div style={{ textAlign: "center", marginBottom: "4.5rem" }}>
+          <motion.div
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, margin: "-60px" }}
+            variants={fadeInUpVariants}
+            style={{ textAlign: "center", marginBottom: "4.5rem" }}
+          >
             <span
               style={{
                 color: "var(--accent)",
@@ -973,14 +1048,19 @@ export default function AboutWebflowClient() {
             <h2 style={{ fontSize: "clamp(2.4rem, 4vw, 3.4rem)", fontFamily: "var(--font-playfair), Georgia, serif", fontWeight: 300, color: "var(--text)" }}>
               Managed Commerce Governance
             </h2>
-          </div>
+          </motion.div>
 
           <div style={{ display: "flex", flexDirection: "column", gap: "1.2rem" }}>
             {TRUST_FAQS.map((faq, idx) => {
               const isOpen = openFaqIdx === idx;
               return (
-                <div
+                <motion.div
                   key={faq.q}
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true, margin: "-40px" }}
+                  variants={fadeInUpVariants}
+                  custom={idx}
                   onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
                   style={{
                     backgroundColor: "var(--background)",
@@ -1006,7 +1086,7 @@ export default function AboutWebflowClient() {
                       {faq.a}
                     </motion.p>
                   )}
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -1025,7 +1105,13 @@ export default function AboutWebflowClient() {
           position: "relative",
         }}
       >
-        <div style={{ maxWidth: "860px", margin: "0 auto", position: "relative", zIndex: 10 }}>
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          variants={fadeInUpVariants}
+          style={{ maxWidth: "860px", margin: "0 auto", position: "relative", zIndex: 10 }}
+        >
           <span
             style={{
               color: "var(--accent)",
@@ -1065,44 +1151,51 @@ export default function AboutWebflowClient() {
           </p>
 
           <div style={{ display: "flex", gap: "1.4rem", justifyContent: "center", flexWrap: "wrap" }}>
-            <Link
-              href="/collections"
-              className="btn-accent"
-              style={{
-                textDecoration: "none",
-                padding: "1.25rem 3.4rem",
-                borderRadius: "0px",
-                fontSize: "0.78rem",
-                letterSpacing: "3px",
-                textTransform: "uppercase",
-                fontWeight: 700,
-                backgroundColor: "var(--accent)",
-                color: "var(--primary)",
-                border: "1px solid var(--accent)",
-                boxShadow: "var(--shadow-md)",
-              }}
-            >
-              Explore Registered Masterpieces &rarr;
-            </Link>
-            <Link
-              href="/become-a-maker"
-              style={{
-                textDecoration: "none",
-                backgroundColor: "var(--surface)",
-                border: "1px solid var(--glass-border)",
-                color: "var(--text)",
-                padding: "1.25rem 3.4rem",
-                borderRadius: "0px",
-                fontSize: "0.78rem",
-                letterSpacing: "3px",
-                textTransform: "uppercase",
-                fontWeight: 600,
-              }}
-            >
-              Apply for Guild Curation
-            </Link>
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                href="/collections"
+                className="btn-accent"
+                style={{
+                  textDecoration: "none",
+                  padding: "1.25rem 3.4rem",
+                  borderRadius: "0px",
+                  fontSize: "0.78rem",
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  fontWeight: 700,
+                  backgroundColor: "var(--accent)",
+                  color: "var(--primary)",
+                  border: "1px solid var(--accent)",
+                  boxShadow: "var(--shadow-md)",
+                  display: "inline-block"
+                }}
+              >
+                Explore Registered Masterpieces &rarr;
+              </Link>
+            </motion.div>
+
+            <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                href="/become-a-maker"
+                style={{
+                  textDecoration: "none",
+                  backgroundColor: "var(--surface)",
+                  border: "1px solid var(--glass-border)",
+                  color: "var(--text)",
+                  padding: "1.25rem 3.4rem",
+                  borderRadius: "0px",
+                  fontSize: "0.78rem",
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  fontWeight: 600,
+                  display: "inline-block"
+                }}
+              >
+                Apply for Guild Curation
+              </Link>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </section>
 
       {/* STUDIO AUDIT MODAL DRAWER */}
