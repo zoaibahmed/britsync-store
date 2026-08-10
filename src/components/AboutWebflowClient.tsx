@@ -88,7 +88,7 @@ const BRITSYNC_MAKERS = [
   }
 ];
 
-// 2. MANAGED COMMERCE PARADIGM STAGES (SIMPLIFIED & HIGH-TRUST LANGUAGE)
+// 2. MANAGED COMMERCE PARADIGM STAGES (SECTION 2)
 const MANAGED_STAGES = [
   {
     id: "payout",
@@ -143,37 +143,37 @@ const MANAGED_STAGES = [
   }
 ];
 
-// 3. CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
+// 3. CORE VALUES OF BRITSYNC (PERFECT ELEVATED COPY - NO OVERLAP)
 const CORE_VALUES = [
   {
     num: "I",
     title: "Quality over Quantity",
-    desc: "We curate limited-run and one-of-a-kind masterpieces. We strictly reject industrial mass production and factory assembly lines."
+    desc: "We curate limited-run and one-of-a-kind works made by identifiable artisans. Every piece has a maker, a place, and a reason to exist."
   },
   {
     num: "II",
     title: "Story over Product",
-    desc: "A product is a physical artifact; its story is its soul. We preserve and sell generational lineage, ancient technique, and dedicated human time."
+    desc: "A piece is more than a physical object. We preserve the lineage, technique, place, and human time behind every work."
   },
   {
     num: "III",
     title: "Trust over Price",
-    desc: "Our patrons buy absolute trust. We enforce physical geofenced studio audits, inspector signatures, and cryptographic provenance passports."
+    desc: "Our patrons aren't simply buying an object. They're investing in verified provenance, maker integrity, and a story they can trust."
   },
   {
     num: "IV",
     title: "People over Technology",
-    desc: "Technology is an invisible enabler for our artisans. We design interfaces requiring zero digital friction, handling 100% of tech and logistics."
+    desc: "Technology stays in the background. We handle the digital infrastructure, payments, logistics, and verification so our artisans can focus on their craft."
   },
   {
     num: "V",
     title: "Authenticity over Scale",
-    desc: "We scale by onboarding new verified artisan regions and guilds, never by diluting our rigorous physical audit standards."
+    desc: "We will never grow by lowering our standards. Every new artisan, region, and guild must meet the same rigorous physical verification process."
   },
   {
     num: "VI",
     title: "Partnerships over Fast Sales",
-    desc: "We build lifelong relationships with master creators, supporting their ateliers, families, and local mountain communities."
+    desc: "We build long-term relationships with master creators, supporting their ateliers, families, and the communities that keep their craft alive."
   }
 ];
 
@@ -215,7 +215,7 @@ export default function AboutWebflowClient() {
   const [activeMakerIdx, setActiveMakerIdx] = useState<number>(0);
   const [selectedAuditMaker, setSelectedAuditMaker] = useState<typeof BRITSYNC_MAKERS[0] | null>(null);
   const [openFaqIdx, setOpenFaqIdx] = useState<number | null>(0);
-  const [activeStageIdx, setActiveStageIdx] = useState<number>(1); // Default to Stage 02 - Physical Verification
+  const [activeStageIdx, setActiveStageIdx] = useState<number>(1);
 
   const activeMaker = BRITSYNC_MAKERS[activeMakerIdx];
   const currentStage = MANAGED_STAGES[activeStageIdx];
@@ -565,7 +565,7 @@ export default function AboutWebflowClient() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════
-          3. THE SIX CORE VALUES OF BRITSYNC (FOUNDER BIBLE)
+          3. THE SIX CORE VALUES OF BRITSYNC (UNDERSTATED LUXURY RESTRAINT)
           ════════════════════════════════════════════════════════════ */}
       <section
         style={{
@@ -609,6 +609,7 @@ export default function AboutWebflowClient() {
             </h2>
           </motion.div>
 
+          {/* Clean Restrained 6-Card Grid: Subtle 2-3px Micro-Hover */}
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(320px, 1fr))", gap: "2.2rem" }}>
             {CORE_VALUES.map((val, idx) => (
               <motion.div
@@ -618,7 +619,7 @@ export default function AboutWebflowClient() {
                 viewport={{ once: true, margin: "-60px" }}
                 variants={fadeInUpVariants}
                 custom={idx}
-                whileHover={{ y: -6, borderColor: "var(--accent)" }}
+                whileHover={{ y: -3 }}
                 style={{
                   padding: "3rem 2.4rem",
                   backgroundColor: "var(--background)",
@@ -649,13 +650,13 @@ export default function AboutWebflowClient() {
                       fontSize: "1.35rem",
                       fontWeight: 400,
                       color: "var(--text)",
-                      marginBottom: "1rem",
+                      marginBottom: "1.2rem",
                       lineHeight: 1.3,
                     }}
                   >
                     {val.title}
                   </h3>
-                  <p style={{ fontSize: "0.92rem", lineHeight: 1.8, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
+                  <p style={{ fontSize: "0.95rem", lineHeight: 1.85, color: "var(--text-muted)", margin: 0, fontWeight: 300 }}>
                     {val.desc}
                   </p>
                 </div>
