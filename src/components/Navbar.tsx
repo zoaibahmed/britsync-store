@@ -180,42 +180,26 @@ export default function Navbar() {
           textDecoration: 'none',
           zIndex: 1001,
         }}>
-          <div style={{ position: 'relative' }}>
-            <img 
-              src="/logo.png" 
-              alt="Britsync Logo" 
-              style={{ 
-                height: '38px', 
-                width: '38px', 
-                borderRadius: '50%',
-                objectFit: 'cover',
-                border: '1px solid var(--accent)',
-                boxShadow: '0 4px 12px rgba(212,175,55,0.3)',
-              }}
-            />
-          </div>
-          <div style={{ display: 'flex', flexDirection: 'column' }}>
-            <span style={{
-              color: 'var(--text)',
-              fontSize: '1.35rem',
-              fontWeight: '400',
-              letterSpacing: '4px',
-              fontFamily: 'var(--font-playfair), Georgia, serif',
-              lineHeight: 1.05
-            }}>
-              BRITSYNC
-            </span>
-            <span style={{
-              color: 'var(--accent)',
-              fontSize: '0.55rem',
-              letterSpacing: '2.5px',
-              textTransform: 'uppercase',
-              fontWeight: 700,
-              marginTop: '0.15rem'
-            }}>
-              MANAGED COMMERCE
-            </span>
-          </div>
+          <img 
+            src="/logo.png" 
+            alt="Britsync Logo" 
+            style={{ 
+              height: '34px', 
+              width: '34px', 
+              objectFit: 'contain',
+              transition: 'transform 0.3s ease'
+            }}
+          />
+          <span style={{
+            color: 'var(--text)',
+            fontSize: '1.25rem',
+            fontWeight: '400',
+            letterSpacing: '4px',
+            fontFamily: 'var(--font-playfair), Georgia, serif',
+            lineHeight: 1
+          }}>
+            BRITSYNC
+          </span>
         </Link>
 
         {/* Desktop Links */}
