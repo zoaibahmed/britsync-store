@@ -344,24 +344,49 @@ export default function AboutWebflowClient() {
             <span style={{ fontStyle: "italic", color: "var(--accent)" }}>Through Managed Commerce</span>
           </motion.h1>
 
-          <motion.p
+          <motion.div
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUpVariants}
             custom={1}
             style={{
-              fontSize: "1.18rem",
-              lineHeight: 1.9,
-              color: "var(--text-muted)",
-              marginBottom: "3.2rem",
-              fontWeight: 300,
-              maxWidth: "840px",
-              margin: "0 auto 3.2rem"
+              maxWidth: "880px",
+              margin: "0 auto 3.5rem",
+              padding: "2.4rem 2.8rem",
+              backgroundColor: "var(--background)",
+              border: "1px solid var(--glass-border)",
+              borderLeft: "4px solid var(--accent)",
+              textAlign: "left",
+              boxShadow: "var(--shadow-sm)",
             }}
           >
-            Britsync is a sanctuary for authentic craft. Traditional marketplaces force master artisans to spend hours managing digital storefronts, search algorithms, and international shipping. Britsync removes all non-creative friction — master creators focus purely on their art, while we handle studio verification, storytelling, customs clearance, and insured global delivery.
-          </motion.p>
+            <span
+              style={{
+                fontFamily: "var(--font-playfair), Georgia, serif",
+                fontStyle: "italic",
+                color: "var(--accent)",
+                fontSize: "1.4rem",
+                display: "block",
+                marginBottom: "0.9rem",
+                fontWeight: 400,
+                lineHeight: 1.3,
+              }}
+            >
+              &ldquo;Britsync is a sanctuary for authentic craft.&rdquo;
+            </span>
+            <p
+              style={{
+                fontSize: "1.08rem",
+                lineHeight: 1.9,
+                color: "var(--text-muted)",
+                margin: 0,
+                fontWeight: 300,
+              }}
+            >
+              Traditional marketplaces force master artisans to spend hours managing digital storefronts, search algorithms, and international shipping. Britsync removes all non-creative friction — master creators focus purely on their art, while we handle studio verification, storytelling, customs clearance, and insured global delivery.
+            </p>
+          </motion.div>
 
           <motion.div
             initial="hidden"
