@@ -211,15 +211,26 @@ export default function SafeguardsOriginExperience() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  /* ── Draw canvas frame ─────────────────── */
+  const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
+
+  /* ── Draw canvas frame with Last-Frame Protection ─────────── */
   const drawFrame = useCallback((frameIdx: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
     const pCache = getProvenanceCacheMap();
-    const img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl);
-    if (!img) return;
+    let img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl);
+    
+    // Last-Frame Protection: Never clear canvas or draw blank frame on slow VPS network
+    if (img) {
+      lastDrawnImgRef.current = img;
+    } else if (lastDrawnImgRef.current) {
+      img = lastDrawnImgRef.current;
+    } else {
+      return;
+    }
+
     const W = canvas.width;
     const H = canvas.height;
     const imgRatio = img.naturalWidth / img.naturalHeight;

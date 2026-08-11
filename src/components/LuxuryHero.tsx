@@ -107,15 +107,25 @@ export default function LuxuryHero() {
     return () => window.removeEventListener("resize", updateDimensions);
   }, []);
 
-  /* ── draw one frame at high quality ─────────────────────────────────── */
+  const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
+
+  /* ── draw one frame at high quality with Last-Frame Protection ───────── */
   const drawFrame = useCallback((frameVal: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
     const hCache = getHeroCacheMap();
-    const img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl);
-    if (!img) return;
+    let img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl);
+    
+    // Last-Frame Protection: Never clear canvas or draw blank frame on slow VPS network
+    if (img) {
+      lastDrawnImgRef.current = img;
+    } else if (lastDrawnImgRef.current) {
+      img = lastDrawnImgRef.current;
+    } else {
+      return;
+    }
 
     let cw = canvasDimensions.current.w;
     let ch = canvasDimensions.current.h;
@@ -149,16 +159,16 @@ export default function LuxuryHero() {
     ctx.drawImage(img, dx, dy, dw, dh);
   }, []);
 
-  /* ── advance / rewind frames ─────────────────────────────────────────── */
+  /* ── advance / rewind frames smoothly ───────────────────────────────── */
   const moveFrames = useCallback((delta: number) => {
-    // Balanced scroll delta up to 5 frames per scroll tick
-    const clampedDelta = Math.sign(delta) * Math.min(5, Math.abs(delta));
+    // Controlled smooth scroll delta (max 1.5 frames per wheel tick for luxurious pacing)
+    const clampedDelta = Math.sign(delta) * Math.min(1.5, Math.abs(delta));
     const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + clampedDelta));
     if (next === targetFrameRef.current) return;
     targetFrameRef.current = next;
   }, []);
 
-  // RAF loop for smooth 60fps frame transition in LuxuryHero (zero React re-render lag)
+  // RAF loop for smooth 60fps frame transition with smooth lerp physics (zero React re-render lag)
   useEffect(() => {
     let animId: number;
     const tick = () => {
@@ -166,8 +176,8 @@ export default function LuxuryHero() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Balanced 60fps tracking lerp at 0.18 speed
-        frameRef.current += diff * 0.18;
+        // Fluid tracking lerp at 0.08 speed for smooth, non-jerky animation
+        frameRef.current += diff * 0.08;
         drawFrame(frameRef.current);
         
         const nextInt = Math.round(frameRef.current);
