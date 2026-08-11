@@ -218,14 +218,21 @@ class ParallelPreloader {
       this.addToQueue(getProvenanceFrameUrl(i), pCache, i, true);
     }
 
-    for (let i = 0; i < initialCategoryCount; i++)
+    // Category Gallery keyframe interleaving (every 10th frame first across all 2400 frames)
+    for (let i = 0; i < CATEGORY_TOTAL; i += 10) {
       this.addToQueue(getCategoryFrameUrl(i), cCache, i, true);
+    }
+    for (let i = 5; i < CATEGORY_TOTAL; i += 10) {
+      this.addToQueue(getCategoryFrameUrl(i), cCache, i, true);
+    }
+
     for (let i = 0; i < initialGlobeCount; i++)
       this.addToQueue(getGlobeFrameUrl(i), gCache, i, true);
 
     setTimeout(() => {
-      for (let i = initialCategoryCount; i < CATEGORY_TOTAL; i++)
-        this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
+      for (let i = 0; i < CATEGORY_TOTAL; i++) {
+        if (i % 5 !== 0) this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
+      }
       for (let i = initialGlobeCount; i < GLOBE_TOTAL; i++)
         this.addToQueue(getGlobeFrameUrl(i), gCache, i, false);
     }, 200);

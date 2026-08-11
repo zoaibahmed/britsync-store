@@ -113,16 +113,31 @@ export default function CategoryGalleryJourney() {
     }
   }, []);
 
-  // Render a frame onto canvas with aspect-fit / cover
+  const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
+
+  // Render a frame onto canvas with aspect-fit / cover & Bilinear Alpha Crossfade Blending
   const renderFrameOnCanvas = useCallback((frameVal: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
-    const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(getCategoryCacheMap(), frameIdx, getCategoryFrameUrl);
-    if (!img) return;
+    const floorIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.floor(frameVal)));
+    const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
+    const alphaFrac = frameVal - floorIdx;
+
+    const cCache = getCategoryCacheMap();
+    let imgA = getFrameWithFallback(cCache, floorIdx, getCategoryFrameUrl);
+    let imgB = getFrameWithFallback(cCache, ceilIdx, getCategoryFrameUrl);
+
+    // Last-Frame Protection: Never clear canvas or show blank screen on slow VPS network
+    if (imgA) {
+      lastDrawnImgRef.current = imgA;
+    } else if (lastDrawnImgRef.current) {
+      imgA = lastDrawnImgRef.current;
+    } else {
+      return;
+    }
 
     // Use cached width/height
     let cw = canvasDimensions.current.w;
@@ -142,10 +157,8 @@ export default function CategoryGalleryJourney() {
       canvas.height = displayHeight;
     }
 
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-    const imgWidth = img.naturalWidth || 960;
-    const imgHeight = img.naturalHeight || 540;
+    const imgWidth = imgA.naturalWidth || 960;
+    const imgHeight = imgA.naturalHeight || 540;
     const imgRatio = imgWidth / imgHeight;
     const canvasRatio = canvas.width / canvas.height;
 
@@ -162,10 +175,19 @@ export default function CategoryGalleryJourney() {
       offsetX = (canvas.width - drawWidth) / 2;
     }
 
-    ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+    // Base frame render
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(imgA, offsetX, offsetY, drawWidth, drawHeight);
+
+    // Cross-fade blend with next frame if available for 60 FPS smooth video feel
+    if (imgB && imgB !== imgA && alphaFrac > 0.05) {
+      ctx.globalAlpha = alphaFrac;
+      ctx.drawImage(imgB, offsetX, offsetY, drawWidth, drawHeight);
+      ctx.globalAlpha = 1.0;
+    }
   }, []);
 
-  // RAF loop for smooth 60fps frame scrubbing
+  // RAF loop for smooth 60fps frame scrubbing with gentle lerp physics
   useEffect(() => {
     let animId: number;
 
@@ -174,8 +196,8 @@ export default function CategoryGalleryJourney() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Smooth 60fps exponential tracking lerp at 0.15 speed
-        currentFrameRef.current += diff * 0.15;
+        // Smooth 60fps exponential tracking lerp at 0.06 speed for slow, luxurious pacing
+        currentFrameRef.current += diff * 0.06;
         renderFrameOnCanvas(currentFrameRef.current);
       } else if (currentFrameRef.current !== targetFrameRef.current) {
         currentFrameRef.current = targetFrameRef.current;
