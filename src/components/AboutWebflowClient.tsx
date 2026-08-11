@@ -324,41 +324,12 @@ export default function AboutWebflowClient() {
 
         <div style={{ maxWidth: "1240px", margin: "0 auto", position: "relative", zIndex: 10, textAlign: "center" }}>
           
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={fadeInUpVariants}
-            custom={0}
-            style={{ display: "inline-block", marginBottom: "2rem" }}
-          >
-            <span
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.8rem",
-                padding: "0.55rem 1.5rem",
-                backgroundColor: "var(--background)",
-                border: "1px solid var(--accent)",
-                color: "var(--accent)",
-                fontSize: "0.7rem",
-                letterSpacing: "4px",
-                textTransform: "uppercase",
-                fontWeight: 700,
-                boxShadow: "var(--shadow-sm)",
-              }}
-            >
-              <span style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--accent)" }} />
-              BRITSYNC • THE MANAGED GLOBAL COMMERCE PLATFORM
-            </span>
-          </motion.div>
-
           <motion.h1
             initial="hidden"
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUpVariants}
-            custom={1}
+            custom={0}
             style={{
               fontSize: "clamp(3.2rem, 6.2vw, 5.8rem)",
               fontFamily: "var(--font-playfair), Georgia, serif",
@@ -378,18 +349,18 @@ export default function AboutWebflowClient() {
             whileInView="visible"
             viewport={{ once: true }}
             variants={fadeInUpVariants}
-            custom={2}
+            custom={1}
             style={{
               fontSize: "1.18rem",
               lineHeight: 1.9,
               color: "var(--text-muted)",
               marginBottom: "3.2rem",
               fontWeight: 300,
-              maxWidth: "860px",
+              maxWidth: "840px",
               margin: "0 auto 3.2rem"
             }}
           >
-            Britsync is the world&apos;s first **Managed Global Commerce Platform**. Traditional marketplaces assume isolated master creators in mountain valleys are digital marketers, SEO copywriters, and international shipping agents. Britsync abstracts 100% of non-creative friction: the maker focuses purely on crafting masterworks — we manage photography, storytelling, GPS geofenced audits, customs clearance, and global white-glove delivery.
+            Britsync is a sanctuary for authentic craft. Traditional marketplaces force master artisans to spend hours managing digital storefronts, search algorithms, and international shipping. Britsync removes all non-creative friction — master creators focus purely on their art, while we handle studio verification, storytelling, customs clearance, and insured global delivery.
           </motion.p>
 
           <motion.div

@@ -148,12 +148,12 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-accent {
-  background-color: var(--accent);
-  color: var(--primary);
+  background-color: var(--accent) !important;
+  color: #0A0A0C !important;
   padding: 1.1rem 2.8rem;
   border-radius: 0px;
   border: 1px solid var(--accent);
-  font-weight: 500;
+  font-weight: 700 !important;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   font-size: 0.75rem;
@@ -162,13 +162,21 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-accent:hover {
-  background-color: transparent;
-  color: var(--accent);
+  background-color: #0A0A0C !important;
+  color: #D4AF37 !important;
+  border-color: #D4AF37 !important;
   box-shadow: var(--shadow-md);
 }
 
 .btn-accent:active {
   transform: scale(0.98);
+}
+
+/* Ensure all gold accent buttons have high contrast dark obsidian text */
+button.btn-accent,
+a.btn-accent {
+  color: #0A0A0C !important;
+  font-weight: 700 !important;
 }
 
 .card {
