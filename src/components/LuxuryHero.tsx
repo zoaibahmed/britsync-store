@@ -109,20 +109,24 @@ export default function LuxuryHero() {
 
   const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
 
-  /* ── draw one frame at high quality with Last-Frame Protection ───────── */
+  /* ── draw one frame with Bilinear Alpha Crossfade Blending ─────────────── */
   const drawFrame = useCallback((frameVal: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
+    const floorIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.floor(frameVal)));
+    const ceilIdx  = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
+    const alphaFrac = frameVal - floorIdx;
+
     const hCache = getHeroCacheMap();
-    let img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl);
+    let imgA = getFrameWithFallback(hCache, floorIdx, getHeroFrameUrl);
+    let imgB = getFrameWithFallback(hCache, ceilIdx, getHeroFrameUrl);
     
     // Last-Frame Protection: Never clear canvas or draw blank frame on slow VPS network
-    if (img) {
-      lastDrawnImgRef.current = img;
+    if (imgA) {
+      lastDrawnImgRef.current = imgA;
     } else if (lastDrawnImgRef.current) {
-      img = lastDrawnImgRef.current;
+      imgA = lastDrawnImgRef.current;
     } else {
       return;
     }
@@ -147,8 +151,8 @@ export default function LuxuryHero() {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
 
-    const iw = img.naturalWidth  || 1920;
-    const ih = img.naturalHeight || 1080;
+    const iw = imgA.naturalWidth  || 1920;
+    const ih = imgA.naturalHeight || 1080;
 
     const scale = Math.max(pw / iw, ph / ih);
     const dw = iw * scale;
@@ -156,7 +160,16 @@ export default function LuxuryHero() {
     const dx = (pw - dw) / 2;
     const dy = Math.max((ph - dh) / 2, -0.035 * dh);
 
-    ctx.drawImage(img, dx, dy, dw, dh);
+    // Base frame render
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(imgA, dx, dy, dw, dh);
+
+    // Cross-fade blend with next frame if available for 60 FPS smooth video feel
+    if (imgB && imgB !== imgA && alphaFrac > 0.05) {
+      ctx.globalAlpha = alphaFrac;
+      ctx.drawImage(imgB, dx, dy, dw, dh);
+      ctx.globalAlpha = 1.0;
+    }
   }, []);
 
   /* ── advance / rewind frames smoothly ───────────────────────────────── */

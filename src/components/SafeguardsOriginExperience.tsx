@@ -213,27 +213,32 @@ export default function SafeguardsOriginExperience() {
 
   const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
 
-  /* ── Draw canvas frame with Last-Frame Protection ─────────── */
-  const drawFrame = useCallback((frameIdx: number) => {
+  /* ── Draw canvas frame with Bilinear Alpha Crossfade Blending ── */
+  const drawFrame = useCallback((frameVal: number) => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
     const pCache = getProvenanceCacheMap();
-    let img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl);
-    
-    // Last-Frame Protection: Never clear canvas or draw blank frame on slow VPS network
-    if (img) {
-      lastDrawnImgRef.current = img;
+
+    const floorIdx = Math.floor(frameVal);
+    const ceilIdx = Math.min(TOTAL_FRAMES - 1, floorIdx + 1);
+    const alphaFrac = frameVal - floorIdx;
+
+    let imgA = getFrameWithFallback(pCache, floorIdx, getProvenanceFrameUrl);
+    let imgB = getFrameWithFallback(pCache, ceilIdx, getProvenanceFrameUrl);
+
+    if (imgA) {
+      lastDrawnImgRef.current = imgA;
     } else if (lastDrawnImgRef.current) {
-      img = lastDrawnImgRef.current;
+      imgA = lastDrawnImgRef.current;
     } else {
       return;
     }
 
     const W = canvas.width;
     const H = canvas.height;
-    const imgRatio = img.naturalWidth / img.naturalHeight;
+    const imgRatio = (imgA.naturalWidth || 1920) / (imgA.naturalHeight || 1080);
     const canvasRatio = W / H;
     let drawW = W, drawH = H, ox = 0, oy = 0;
     if (canvasRatio > imgRatio) {
@@ -243,7 +248,17 @@ export default function SafeguardsOriginExperience() {
       drawW = H * imgRatio;
       ox = (W - drawW) / 2;
     }
-    ctx.drawImage(img, ox, oy, drawW, drawH);
+
+    // Base frame render
+    ctx.globalAlpha = 1.0;
+    ctx.drawImage(imgA, ox, oy, drawW, drawH);
+
+    // Cross-fade blend with next frame if available for 60 FPS smooth video feel
+    if (imgB && imgB !== imgA && alphaFrac > 0.05) {
+      ctx.globalAlpha = alphaFrac;
+      ctx.drawImage(imgB, ox, oy, drawW, drawH);
+      ctx.globalAlpha = 1.0;
+    }
   }, []);
 
   /* ── RAF lerp loop ────────────────────────

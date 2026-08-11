@@ -179,9 +179,9 @@ class ParallelPreloader {
     if (this.isStarted || typeof window === "undefined") return;
     this.isStarted = true;
 
-    const initialHeroCount       = HERO_TOTAL; // 100% of ALL 912 Hero frames (Earth Asia + Africa) preloaded at start!
-    const initialCategoryCount   = 800; // 800 Category frames preloaded at start for Section 2!
-    const initialProvenanceCount = 100;
+    const initialHeroCount       = HERO_TOTAL;
+    const initialCategoryCount   = 600;
+    const initialProvenanceCount = PROVENANCE_TOTAL;
     const initialGlobeCount      = 40;
 
     const totalInitial =
@@ -192,20 +192,40 @@ class ParallelPreloader {
 
     this.setInitialLoadTarget(totalInitial);
 
-    for (let i = 0; i < initialHeroCount; i++)
+    // ── INTERLEAVED KEYFRAME PRELOADING ──────────────────────────────────────
+    // Pass 1: Priority load keyframes spaced every 4th frame (0, 4, 8, 12...)
+    // This populates the entire timeline from start to finish within 1 second on VPS!
+    for (let i = 0; i < HERO_TOTAL; i += 4) {
       this.addToQueue(getHeroFrameUrl(i), hCache, i, true);
+    }
+    // Pass 2: Secondary keyframes (2, 6, 10, 14...)
+    for (let i = 2; i < HERO_TOTAL; i += 4) {
+      this.addToQueue(getHeroFrameUrl(i), hCache, i, true);
+    }
+    // Pass 3: Intermediate frames (1, 3, 5, 7...)
+    for (let i = 1; i < HERO_TOTAL; i += 2) {
+      this.addToQueue(getHeroFrameUrl(i), hCache, i, true);
+    }
+
+    // Provenance keyframe interleaving (every 3rd frame first)
+    for (let i = 0; i < PROVENANCE_TOTAL; i += 3) {
+      this.addToQueue(getProvenanceFrameUrl(i), pCache, i, true);
+    }
+    for (let i = 1; i < PROVENANCE_TOTAL; i += 3) {
+      this.addToQueue(getProvenanceFrameUrl(i), pCache, i, true);
+    }
+    for (let i = 2; i < PROVENANCE_TOTAL; i += 3) {
+      this.addToQueue(getProvenanceFrameUrl(i), pCache, i, true);
+    }
+
     for (let i = 0; i < initialCategoryCount; i++)
       this.addToQueue(getCategoryFrameUrl(i), cCache, i, true);
-    for (let i = 0; i < initialProvenanceCount; i++)
-      this.addToQueue(getProvenanceFrameUrl(i), pCache, i, true);
     for (let i = 0; i < initialGlobeCount; i++)
       this.addToQueue(getGlobeFrameUrl(i), gCache, i, true);
 
     setTimeout(() => {
       for (let i = initialCategoryCount; i < CATEGORY_TOTAL; i++)
         this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
-      for (let i = initialProvenanceCount; i < PROVENANCE_TOTAL; i++)
-        this.addToQueue(getProvenanceFrameUrl(i), pCache, i, false);
       for (let i = initialGlobeCount; i < GLOBE_TOTAL; i++)
         this.addToQueue(getGlobeFrameUrl(i), gCache, i, false);
     }, 200);
