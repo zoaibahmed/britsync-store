@@ -118,7 +118,7 @@ export default function ArtisanGlobeJourney() {
     if (!ctx) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(getGlobeCacheMap(), frameIdx, getGlobeFrameUrl, "/hero-artisan.jpg");
+    const img = getFrameWithFallback(getGlobeCacheMap(), frameIdx, getGlobeFrameUrl);
     if (!img) return;
 
     // Use cached width/height

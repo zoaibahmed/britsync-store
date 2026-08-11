@@ -14,10 +14,10 @@ import {
    CONFIG
 ───────────────────────────────────────────────────────────────────────── */
 const ASIA_COUNT = 480;
-const AFRICA_COUNT = 480;  // 480 africa_*.webp files in /public/storyboard-frames/
-const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 960
-const DELTA_PER_FRAME    = 12;     // px of scroll needed to advance one frame
-const CONTENT_THRESHOLD  = 720;    // frame index at which content starts appearing (scaled for 960 total)
+const AFRICA_COUNT = 432;  // Ends cleanly at africa_0432.webp
+const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 912
+const DELTA_PER_FRAME    = 10;     // px of scroll needed to advance one frame (balanced normal scroll speed)
+const CONTENT_THRESHOLD  = 660;    // frame index at which content starts appearing (scaled for 912 total)
 
 /* Deterministic particles */
 const PARTICLES = [
@@ -114,7 +114,7 @@ export default function LuxuryHero() {
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
     const hCache = getHeroCacheMap();
-    const img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl, "/hero-artisan.jpg");
+    const img = getFrameWithFallback(hCache, frameIdx, getHeroFrameUrl);
     if (!img) return;
 
     let cw = canvasDimensions.current.w;
@@ -134,13 +134,8 @@ export default function LuxuryHero() {
       canvas.height = ph;
     }
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
-    ctx.imageSmoothingEnabled = true;
-    ctx.imageSmoothingQuality = "high";
-
-    ctx.fillStyle = "#0C0B07";
-    ctx.fillRect(0, 0, pw, ph);
 
     const iw = img.naturalWidth  || 1920;
     const ih = img.naturalHeight || 1080;
@@ -156,14 +151,14 @@ export default function LuxuryHero() {
 
   /* ── advance / rewind frames ─────────────────────────────────────────── */
   const moveFrames = useCallback((delta: number) => {
-    // Clamp delta to prevent huge scroll ticks
-    const clampedDelta = Math.sign(delta) * Math.min(2, Math.abs(delta));
+    // Balanced scroll delta up to 5 frames per scroll tick
+    const clampedDelta = Math.sign(delta) * Math.min(5, Math.abs(delta));
     const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + clampedDelta));
     if (next === targetFrameRef.current) return;
     targetFrameRef.current = next;
   }, []);
 
-  // RAF loop for smooth frame transition in LuxuryHero
+  // RAF loop for smooth 60fps frame transition in LuxuryHero (zero React re-render lag)
   useEffect(() => {
     let animId: number;
     const tick = () => {
@@ -171,14 +166,13 @@ export default function LuxuryHero() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Majestic lerp at 0.08 speed and cap max frame step per tick to 2 frames
-        const step = diff * 0.08;
-        const clampedStep = Math.sign(step) * Math.min(2, Math.abs(step));
-        frameRef.current += clampedStep;
+        // Balanced 60fps tracking lerp at 0.18 speed
+        frameRef.current += diff * 0.18;
         drawFrame(frameRef.current);
         
         const nextInt = Math.round(frameRef.current);
-        if (Math.abs(nextInt - lastStateFrameRef.current) >= 2 || nextInt >= CONTENT_THRESHOLD || nextInt === 0 || nextInt === TOTAL_FRAMES - 1) {
+        // Only update React state on key thresholds to eliminate component re-render overhead
+        if (Math.abs(nextInt - lastStateFrameRef.current) >= 25 || nextInt >= CONTENT_THRESHOLD || nextInt === 0 || nextInt === TOTAL_FRAMES - 1) {
           lastStateFrameRef.current = nextInt;
           setFrameIdx(nextInt);
         }

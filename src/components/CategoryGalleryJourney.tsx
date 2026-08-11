@@ -98,6 +98,19 @@ export default function CategoryGalleryJourney() {
   useEffect(() => {
     startGlobalFramePreload();
     setIsLoaded(true);
+
+    // Keyframe prefetcher across all 2400 frames of Section 2
+    if (typeof window !== "undefined") {
+      const cCache = getCategoryCacheMap();
+      for (let i = 0; i < TOTAL_FRAMES; i += 10) {
+        if (!cCache.has(i)) {
+          const img = new Image();
+          img.decoding = "async";
+          img.src = getCategoryFrameUrl(i);
+          img.onload = () => cCache.set(i, img);
+        }
+      }
+    }
   }, []);
 
   // Render a frame onto canvas with aspect-fit / cover
@@ -108,7 +121,7 @@ export default function CategoryGalleryJourney() {
     if (!ctx) return;
 
     const frameIdx = Math.max(0, Math.min(TOTAL_FRAMES - 1, Math.round(frameVal)));
-    const img = getFrameWithFallback(getCategoryCacheMap(), frameIdx, getCategoryFrameUrl, "/bg1.jpg");
+    const img = getFrameWithFallback(getCategoryCacheMap(), frameIdx, getCategoryFrameUrl);
     if (!img) return;
 
     // Use cached width/height
@@ -152,7 +165,7 @@ export default function CategoryGalleryJourney() {
     ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
   }, []);
 
-  // RAF loop for responsive 60fps frame scrubbing
+  // RAF loop for smooth 60fps frame scrubbing
   useEffect(() => {
     let animId: number;
 
@@ -161,10 +174,8 @@ export default function CategoryGalleryJourney() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Majestic lerp at 0.08 speed and cap max frame step per tick to 2 frames
-        const step = diff * 0.08;
-        const clampedStep = Math.sign(step) * Math.min(2, Math.abs(step));
-        currentFrameRef.current += clampedStep;
+        // Smooth 60fps exponential tracking lerp at 0.15 speed
+        currentFrameRef.current += diff * 0.15;
         renderFrameOnCanvas(currentFrameRef.current);
       } else if (currentFrameRef.current !== targetFrameRef.current) {
         currentFrameRef.current = targetFrameRef.current;
@@ -255,7 +266,7 @@ export default function CategoryGalleryJourney() {
       ref={containerRef}
       style={{
         position: "relative",
-        height: "2400vh",
+        height: "1400vh",
         backgroundColor: "var(--background)",
         color: "var(--text)",
         transition: "background-color 0.4s ease, color 0.4s ease",

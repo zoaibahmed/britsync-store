@@ -104,9 +104,10 @@ const getRandom = (arr) => arr[Math.floor(Math.random() * arr.length)];
 const formatUrl = (id) => `${id}?auto=format&fit=crop&q=80&w=800`;
 
 async function main() {
-  console.log('Seeding Version 3 database for MySQL XAMPP environment...');
+  console.log('Seeding Version 3 database for PostgreSQL environment...');
 
   // Disable FK constraints for clean, fast table truncates
+  await prisma.$executeRawUnsafe("SET session_replication_role = 'replica';").catch(() => {});
   await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 0;').catch(() => {});
 
   const tables = [
@@ -133,13 +134,14 @@ async function main() {
 
   for (const t of tables) {
     try {
-      await prisma.$executeRawUnsafe(`DELETE FROM \`${t}\`;`);
+      await prisma.$executeRawUnsafe(`DELETE FROM "${t}";`);
     } catch (e) {
       // Table might not exist or already be empty
     }
   }
 
   await prisma.$executeRawUnsafe('SET FOREIGN_KEY_CHECKS = 1;').catch(() => {});
+  await prisma.$executeRawUnsafe("SET session_replication_role = 'origin';").catch(() => {});
 
   // 1. Seed Lookups
   await prisma.userRoleLookup.createMany({

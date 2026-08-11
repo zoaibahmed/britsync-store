@@ -121,38 +121,26 @@ export default function SafeguardsOriginExperience() {
   // showEntryScreen: true while user has not scrolled into the section yet
   const [showEntryScreen, setShowEntryScreen] = useState(true);
 
-  /* ── Trigger global preload + local fallback ── */
+  /* ── Trigger global preload + immediate keyframe fetch ── */
   useEffect(() => {
-    // Ensure global preload is running (no-op if already started)
     startGlobalFramePreload();
 
-    // Also kick off a local fallback in case global cache is cold
     let cancelled = false;
-    async function localFallback() {
-      // Wait briefly for global preload to get the first 30 frames
-      await new Promise((r) => setTimeout(r, 200));
+    async function preloadProvenanceKeyframes() {
       const pCache = getProvenanceCacheMap();
-      if (!cancelled && pCache.size < 20) {
-        // Global preload hasn't run yet — do it ourselves
-        const essential: number[] = [];
-        for (let i = 0; i < 30; i++) essential.push(i);
-        STAGES.forEach((s) => essential.push(Math.floor((s.minFrame + s.maxFrame) / 2)));
-        await Promise.allSettled(
-          essential.map((idx) =>
-            preloader.addToQueue(getProvenanceFrameUrl(idx), pCache, idx, true)
-          )
-        );
-      }
+      const essential: number[] = [];
+      for (let i = 0; i < 40; i++) essential.push(i);
+      STAGES.forEach((s) => essential.push(Math.floor((s.minFrame + s.maxFrame) / 2)));
+      
+      await Promise.allSettled(
+        essential.map((idx) =>
+          preloader.addToQueue(getProvenanceFrameUrl(idx), pCache, idx, true)
+        )
+      );
       if (!cancelled) setIsLoaded(true);
     }
 
-    // If global already has frames, mark loaded immediately
-    const pCache = getProvenanceCacheMap();
-    if (pCache.size >= 20) {
-      setIsLoaded(true);
-    } else {
-      localFallback();
-    }
+    preloadProvenanceKeyframes();
 
     return () => { cancelled = true; };
   }, []);
@@ -230,7 +218,7 @@ export default function SafeguardsOriginExperience() {
     const ctx = canvas.getContext("2d", { alpha: false });
     if (!ctx) return;
     const pCache = getProvenanceCacheMap();
-    const img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl, "/bg2.jpg");
+    const img = getFrameWithFallback(pCache, frameIdx, getProvenanceFrameUrl);
     if (!img) return;
     const W = canvas.width;
     const H = canvas.height;

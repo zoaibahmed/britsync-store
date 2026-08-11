@@ -14,8 +14,8 @@
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 const ASIA_COUNT       = 480;
-const AFRICA_COUNT     = 480; // 480 africa_*.webp files in /public/storyboard-frames/
-const HERO_TOTAL       = ASIA_COUNT + AFRICA_COUNT; // 960
+const AFRICA_COUNT     = 432; // Ends cleanly at africa_0432.webp (excludes 0433..0489)
+const HERO_TOTAL       = ASIA_COUNT + AFRICA_COUNT; // 912 frames total for Hero
 const PROVENANCE_TOTAL = 360;
 const GLOBE_TOTAL      = 130;
 const CATEGORY_TOTAL   = 2400;
@@ -179,9 +179,9 @@ class ParallelPreloader {
     if (this.isStarted || typeof window === "undefined") return;
     this.isStarted = true;
 
-    const initialHeroCount       = Math.floor(HERO_TOTAL * 0.25); // 240
-    const initialCategoryCount   = 100;
-    const initialProvenanceCount = 40;
+    const initialHeroCount       = HERO_TOTAL; // 100% of ALL 912 Hero frames (Earth Asia + Africa) preloaded at start!
+    const initialCategoryCount   = 800; // 800 Category frames preloaded at start for Section 2!
+    const initialProvenanceCount = 100;
     const initialGlobeCount      = 40;
 
     const totalInitial =
@@ -202,8 +202,6 @@ class ParallelPreloader {
       this.addToQueue(getGlobeFrameUrl(i), gCache, i, true);
 
     setTimeout(() => {
-      for (let i = initialHeroCount; i < HERO_TOTAL; i++)
-        this.addToQueue(getHeroFrameUrl(i), hCache, i, false);
       for (let i = initialCategoryCount; i < CATEGORY_TOTAL; i++)
         this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
       for (let i = initialProvenanceCount; i < PROVENANCE_TOTAL; i++)
@@ -283,19 +281,25 @@ export function getFrameWithFallback(
   cache: Map<number, HTMLImageElement>,
   index: number,
   getUrlFn: (i: number) => string,
-  fallbackUrl: string = "/hero-artisan.jpg"
+  fallbackUrl: string = ""
 ): HTMLImageElement | null {
   // 1. Direct hit
   const cached = cache.get(index);
   if (cached && cached.complete && cached.naturalWidth > 0) return cached;
 
-  // 2. Search adjacent frames (+/- 15)
-  for (let delta = 1; delta <= 15; delta++) {
-    const prev = cache.get(index - delta);
-    if (prev && prev.complete && prev.naturalWidth > 0) return prev;
-    const next = cache.get(index + delta);
-    if (next && next.complete && next.naturalWidth > 0) return next;
-  }
+  // 2. Search full cache range for NEAREST loaded frame in RAM
+  let nearestFrame: HTMLImageElement | null = null;
+  let minDist = Infinity;
+
+  cache.forEach((img, fIdx) => {
+    if (img && img.complete && img.naturalWidth > 0) {
+      const dist = Math.abs(fIdx - index);
+      if (dist < minDist) {
+        minDist = dist;
+        nearestFrame = img;
+      }
+    }
+  });
 
   // 3. On-demand load trigger
   if (typeof window !== "undefined") {
@@ -308,11 +312,13 @@ export function getFrameWithFallback(
     };
   }
 
-  // 4. Return frame 0 or static fallback
-  const firstFrame = cache.get(0);
-  if (firstFrame && firstFrame.complete && firstFrame.naturalWidth > 0) return firstFrame;
+  if (nearestFrame) return nearestFrame;
 
-  return getFallbackImage(fallbackUrl);
+  // 4. Return static fallback ONLY if explicitly requested
+  if (fallbackUrl) {
+    return getFallbackImage(fallbackUrl);
+  }
+  return null;
 }
 
 // ─── Exported singleton preloader ─────────────────────────────────────────────
@@ -321,6 +327,21 @@ export const preloader: ParallelPreloader = (() => {
   const s = getWindowState();
   return s!.preloader;
 })();
+
+export const PRELOADER_QUARTER_FRAMES = 1852; // 912 Hero frames + 800 Category + 100 Provenance + 40 Globe
+
+export function onGlobalPreloadProgress(cb: (loaded: number, total: number) => void) {
+  if (typeof window === "undefined") return () => {};
+  const s = getWindowState();
+  if (s && s.preloader) {
+    return s.preloader.registerProgressListener((pct: number) => {
+      const loaded = Math.round((pct / 100) * PRELOADER_QUARTER_FRAMES);
+      cb(loaded, PRELOADER_QUARTER_FRAMES);
+    });
+  }
+  cb(PRELOADER_QUARTER_FRAMES, PRELOADER_QUARTER_FRAMES);
+  return () => {};
+}
 
 // ─── Public start function ────────────────────────────────────────────────────
 export function startGlobalFramePreload() {

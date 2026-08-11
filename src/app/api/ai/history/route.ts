@@ -31,7 +31,7 @@ export async function GET(request: Request) {
 
     // Fetch history
     const rows = await prisma.$queryRawUnsafe<any[]>(
-      `SELECT id, role, content, createdAt FROM "ChatMessage" WHERE "userId" = ? AND "mode" = ? ORDER BY "createdAt" ASC`,
+      `SELECT id, role, content, createdAt FROM "ChatMessage" WHERE "userId" = $1 AND "mode" = $2 ORDER BY "createdAt" ASC`,
       session.userId,
       mode
     );
@@ -67,7 +67,7 @@ export async function POST(request: Request) {
 
     // Delete old logs for this user/mode
     await prisma.$executeRawUnsafe(
-      `DELETE FROM "ChatMessage" WHERE "userId" = ? AND "mode" = ?`,
+      `DELETE FROM "ChatMessage" WHERE "userId" = $1 AND "mode" = $2`,
       session.userId,
       mode
     );
@@ -78,7 +78,7 @@ export async function POST(request: Request) {
       const msgId = msg.id || `msg-${Date.now()}-${Math.random()}`;
       const timeStr = msg.timestamp ? new Date(msg.timestamp).toISOString() : new Date().toISOString();
       await prisma.$executeRawUnsafe(
-        `INSERT INTO "ChatMessage" (id, userId, role, content, mode, createdAt) VALUES (?, ?, ?, ?, ?, ?)`,
+        `INSERT INTO "ChatMessage" ("id", "userId", "role", "content", "mode", "createdAt") VALUES ($1, $2, $3, $4, $5, $6)`,
         msgId,
         session.userId,
         msg.role,
