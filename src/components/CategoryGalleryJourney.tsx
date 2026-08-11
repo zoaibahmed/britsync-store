@@ -196,8 +196,8 @@ export default function CategoryGalleryJourney() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Smooth 60fps exponential tracking lerp at 0.06 speed for slow, luxurious pacing
-        currentFrameRef.current += diff * 0.06;
+        // Smooth 60fps exponential tracking lerp at 0.035 speed for slow, luxurious pacing
+        currentFrameRef.current += diff * 0.035;
         renderFrameOnCanvas(currentFrameRef.current);
       } else if (currentFrameRef.current !== targetFrameRef.current) {
         currentFrameRef.current = targetFrameRef.current;
@@ -288,7 +288,7 @@ export default function CategoryGalleryJourney() {
       ref={containerRef}
       style={{
         position: "relative",
-        height: "1400vh",
+        height: "2400vh",
         backgroundColor: "var(--background)",
         color: "var(--text)",
         transition: "background-color 0.4s ease, color 0.4s ease",
