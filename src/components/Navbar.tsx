@@ -263,7 +263,7 @@ export default function Navbar() {
                 top: '-4px',
                 right: '-4px',
                 backgroundColor: activeGold,
-                color: 'var(--primary)',
+                color: '#0A0A0C',
                 borderRadius: '50%',
                 width: '14px',
                 height: '14px',
@@ -286,7 +286,7 @@ export default function Navbar() {
                 top: '-4px',
                 right: '-4px',
                 backgroundColor: activeGold,
-                color: 'var(--primary)',
+                color: '#0A0A0C',
                 borderRadius: '50%',
                 width: '14px',
                 height: '14px',
@@ -307,24 +307,29 @@ export default function Navbar() {
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
           <Link href="/become-a-maker" style={{
-            color: 'var(--primary)',
+            color: '#0A0A0C',
             backgroundColor: 'var(--accent)',
             textDecoration: 'none',
             fontSize: '0.68rem',
             textTransform: 'uppercase',
             letterSpacing: '2.5px',
-            fontWeight: '700',
+            fontWeight: 700,
             padding: '0.65rem 1.4rem',
+            border: '1px solid var(--accent)',
             boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
-            e.currentTarget.style.opacity = '0.9';
+            e.currentTarget.style.backgroundColor = '#0A0A0C';
+            e.currentTarget.style.color = '#D4AF37';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.opacity = '1';
+            e.currentTarget.style.backgroundColor = 'var(--accent)';
+            e.currentTarget.style.color = '#0A0A0C';
           }}
-          >Apply to Registry</Link>
+          >
+            Apply to Registry
+          </Link>
         </div>
 
         {/* Mobile menu toggle */}

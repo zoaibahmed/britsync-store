@@ -384,7 +384,7 @@ export default function AboutWebflowClient() {
                   textTransform: "uppercase",
                   fontWeight: 700,
                   backgroundColor: "var(--accent)",
-                  color: "var(--primary)",
+                  color: "#0A0A0C",
                   border: "1px solid var(--accent)",
                   boxShadow: "var(--shadow-md)",
                   display: "inline-block"
@@ -1387,7 +1387,7 @@ export default function AboutWebflowClient() {
                   textTransform: "uppercase",
                   fontWeight: 700,
                   backgroundColor: "var(--accent)",
-                  color: "var(--primary)",
+                  color: "#0A0A0C",
                   border: "1px solid var(--accent)",
                   boxShadow: "var(--shadow-md)",
                   display: "inline-block"
