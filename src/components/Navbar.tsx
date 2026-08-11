@@ -184,10 +184,11 @@ export default function Navbar() {
             src="/logo.png" 
             alt="Britsync Logo" 
             style={{ 
-              height: '34px', 
-              width: '34px', 
+              height: '40px', 
+              width: 'auto', 
               objectFit: 'contain',
-              transition: 'transform 0.3s ease'
+              transition: 'transform 0.3s ease',
+              filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.25))'
             }}
           />
           <span style={{
