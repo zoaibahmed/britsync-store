@@ -184,23 +184,36 @@ export default function Navbar() {
             src="/logo.png" 
             alt="Britsync Logo" 
             style={{ 
-              height: '40px', 
+              height: '44px', 
               width: 'auto', 
               objectFit: 'contain',
               transition: 'transform 0.3s ease',
-              filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.25))'
+              filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))'
             }}
           />
-          <span style={{
-            color: 'var(--text)',
-            fontSize: '1.25rem',
-            fontWeight: '400',
-            letterSpacing: '4px',
-            fontFamily: 'var(--font-playfair), Georgia, serif',
-            lineHeight: 1
-          }}>
-            BRITSYNC
-          </span>
+          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+            <span style={{
+              color: 'var(--text)',
+              fontSize: '1.3rem',
+              fontWeight: '400',
+              letterSpacing: '5px',
+              fontFamily: 'var(--font-playfair), Georgia, serif',
+              lineHeight: 1.05,
+              textTransform: 'uppercase'
+            }}>
+              BRITSYNC
+            </span>
+            <span style={{
+              color: 'var(--accent)',
+              fontSize: '0.52rem',
+              letterSpacing: '3px',
+              textTransform: 'uppercase',
+              fontWeight: 700,
+              marginTop: '0.15rem'
+            }}>
+              MANAGED COMMERCE
+            </span>
+          </div>
         </Link>
 
         {/* Desktop Links */}
