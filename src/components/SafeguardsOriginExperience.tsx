@@ -14,7 +14,7 @@ import {
    CONSTANTS
 ───────────────────────────────────────────── */
 const TOTAL_FRAMES = 360;
-const SCROLL_HEIGHT_VH = 380; // Responsive scroll runway for smooth cinematic scrubbing
+const SCROLL_HEIGHT_VH = 650; // Expanded luxurious scroll runway for slow, buttery smooth cinematic scrubbing
 
 // First 8% of the runway is the "entry zone" — frame stays at 0,
 // a cinematic intro screen is shown. Frames only start after this.
@@ -297,7 +297,7 @@ export default function SafeguardsOriginExperience() {
       }
 
       if (isLoaded && !inEntryZoneRef.current) {
-        drawFrame(frameIdx);
+        drawFrame(currentFrameRef.current);
       } else if (inEntryZoneRef.current) {
         // Keep canvas pure black during entry screen
         const canvas = canvasRef.current;
