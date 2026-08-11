@@ -136,8 +136,6 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Collections', path: '/collections' },
-    { name: 'Origins', path: '/countries' },
-    { name: 'Transparency', path: '/how-we-earn' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
