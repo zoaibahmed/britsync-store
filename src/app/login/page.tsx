@@ -229,6 +229,20 @@ export default function LoginPage() {
     }
   };
 
+  const handleForgotSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateEmail(email)) {
+      setErrorMsg('Please enter a valid email address.');
+      return;
+    }
+    setLoading(true);
+    setTimeout(() => {
+      setLoading(false);
+      setSuccessMsg(`A secure password reset link has been dispatched to ${email}.`);
+      setEmail('');
+    }, 1500);
+  };
+
   const graphicSteps = [
     {
       title: "95% Patron Direct Escrow",
