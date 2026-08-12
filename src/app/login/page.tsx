@@ -49,6 +49,31 @@ export default function LoginPage() {
     }
   ];
 
+  // Auto-detect phase from URL search params
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      const roleParam = params.get('role');
+
+      if (roleParam === 'maker' || roleParam === 'buyer') {
+        setRole(roleParam as 'maker' | 'buyer');
+      } else {
+        setRole('maker');
+      }
+
+      if (tabParam === 'register') {
+        setPhase('register');
+      } else if (tabParam === 'login') {
+        setPhase('login');
+      } else if (tabParam) {
+        setPhase('login');
+      } else {
+        setPhase('login'); // Default directly to login form so user sees input fields immediately
+      }
+    }
+  }, []);
+
   // Rotate carousel
   useEffect(() => {
     const timer = setInterval(() => {
@@ -344,7 +369,51 @@ export default function LoginPage() {
       }}>
         <div style={{ width: '100%', maxWidth: '480px' }}>
           
-          {/* PHASE 1: ROLE SELECTION */}
+          {/* TOP TAB SWITCHER (SIGN IN / CREATE ACCOUNT) */}
+          {(phase === 'login' || phase === 'register' || phase === 'selection') && (
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', marginBottom: '2.5rem' }}>
+              <button
+                onClick={() => { setErrorMsg(''); setPhase('login'); if (!role) setRole('maker'); }}
+                style={{
+                  flex: 1,
+                  padding: '0.85rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderBottom: phase === 'login' ? '3px solid var(--accent)' : '3px solid transparent',
+                  color: phase === 'login' ? 'var(--accent)' : 'var(--text)',
+                  opacity: phase === 'login' ? 1 : 0.6,
+                  fontWeight: phase === 'login' ? 700 : 400,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.5px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Sign In
+              </button>
+              <button
+                onClick={() => { setErrorMsg(''); setPhase('register'); if (!role) setRole('maker'); }}
+                style={{
+                  flex: 1,
+                  padding: '0.85rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  borderBottom: phase === 'register' ? '3px solid var(--accent)' : '3px solid transparent',
+                  color: phase === 'register' ? 'var(--accent)' : 'var(--text)',
+                  opacity: phase === 'register' ? 1 : 0.6,
+                  fontWeight: phase === 'register' ? 700 : 400,
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  textTransform: 'uppercase',
+                  letterSpacing: '1.5px',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                Create Account
+              </button>
+            </div>
+          )}
           {phase === 'selection' && (
             <div style={{ animation: 'slideUp 0.5s ease' }}>
               <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
