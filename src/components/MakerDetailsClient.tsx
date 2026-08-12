@@ -835,17 +835,17 @@ export default function MakerDetailsClient({
         {/* ═══════════════════════════════════════════════ */}
         {/* SCENE 7 — TRANSPARENCY MANIFESTO               */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0D1A14", padding: "14vh 5vw", position: "relative", overflow: "hidden" }}>
+        <div style={{ background: "var(--surface)", borderTop: "1px solid var(--glass-border)", borderBottom: "1px solid var(--glass-border)", padding: "12vh 5vw", position: "relative", overflow: "hidden" }}>
           {/* Ghost background word */}
           <div style={{
             position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)",
             fontSize: "clamp(6rem,18vw,22rem)", fontFamily: "var(--font-cormorant,Georgia,serif)",
-            fontWeight: 300, color: "rgba(201,168,76,0.03)", whiteSpace: "nowrap",
+            fontWeight: 300, color: "var(--text)", opacity: 0.04, whiteSpace: "nowrap",
             pointerEvents: "none", userSelect: "none", lineHeight: 1,
           }}>PATRON</div>
 
           <div style={{ maxWidth: "1200px", margin: "0 auto", position: "relative" }}>
-            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "9vh" }}>
+            <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.25 }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "7vh" }}>
               <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Patron Direct Transparency</span>
               <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,7rem)", fontWeight: 300, lineHeight: 1, marginBottom: "1.8rem" }}>
                 <span className="mp-gold">95%</span> flows directly<br />
@@ -856,7 +856,7 @@ export default function MakerDetailsClient({
               </p>
             </motion.div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: "1px", background: "rgba(201,168,76,0.1)" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: "1.5rem" }}>
               {[
                 { icon: "🏠", label: "Studio", value: maker.businessName },
                 { icon: "📍", label: "Origin", value: maker.country },
@@ -866,7 +866,7 @@ export default function MakerDetailsClient({
                 <motion.div key={i}
                   initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
                   variants={i % 2 === 0 ? fadeLeft : fadeRight}
-                  style={{ background: "#0D1A14", padding: "2.5rem 1.8rem", textAlign: "center" }}
+                  style={{ background: "var(--background)", border: "1px solid var(--glass-border)", padding: "2.5rem 1.8rem", textAlign: "center" }}
                 >
                   <div style={{ fontSize: "2rem", marginBottom: "1rem" }}>{item.icon}</div>
                   <span className="mp-label" style={{ display: "block", textAlign: "center" }}>{item.label}</span>
@@ -880,7 +880,7 @@ export default function MakerDetailsClient({
         {/* ═══════════════════════════════════════════════ */}
         {/* SCENE 8 — HERITAGE TIMELINE                    */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0E0E0E", padding: "12vh 5vw" }}>
+        <div style={{ background: "var(--background)", padding: "12vh 5vw" }}>
           <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "8vh" }}>
               <span className="mp-label">Lineage & Milestones</span>
@@ -897,7 +897,7 @@ export default function MakerDetailsClient({
                 { year: "2023", title: "Britsync Registry", desc: "Passed geofence & ethics audit. Grade A+ certified on first review." },
                 { year: "Present", title: "Elite Atelier Status", desc: "Global provenance passports. Patron direct escrow. Heritage elite tier." },
               ].map((item, i) => {
-                const isOdd = i % 2 === 0; // 0,2 = odd items; 1,3 = even items
+                const isOdd = i % 2 === 0;
                 return (
                   <div key={i} className="mp-timeline-item" data-odd={String(isOdd)}>
                     {/* Column A: right-side content for odd rows, empty for even rows */}
@@ -943,7 +943,7 @@ export default function MakerDetailsClient({
         {/* ═══════════════════════════════════════════════ */}
         {/* SCENE 9 — VISUAL ARCHIVE (gallery)             */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+        <div style={{ background: "var(--surface)", borderTop: "1px solid var(--glass-border)", padding: "10vh 5vw" }}>
           <div style={{ maxWidth: "1400px", margin: "0 auto" }}>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp}
               style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "2rem", marginBottom: "4vh" }}
@@ -967,9 +967,9 @@ export default function MakerDetailsClient({
                     style={{
                       padding: "0.55rem 1.4rem", borderRadius: "40px", cursor: "pointer",
                       fontSize: "0.6rem", fontWeight: 700, letterSpacing: "2px",
-                      textTransform: "uppercase", border: "none",
-                      background: activeTab === tab.id ? "#C9A84C" : "rgba(255,255,255,0.07)",
-                      color: activeTab === tab.id ? "#0E0E0E" : "rgba(245,240,232,0.5)",
+                      textTransform: "uppercase", border: "1px solid var(--glass-border)",
+                      background: activeTab === tab.id ? "var(--accent)" : "var(--background)",
+                      color: activeTab === tab.id ? "#0A0A0C" : "var(--text)",
                       transition: "all 0.25s",
                     }}
                   >
@@ -1000,10 +1000,11 @@ export default function MakerDetailsClient({
                         cursor: "pointer", overflow: "hidden", borderRadius: "2px",
                         aspectRatio: isHero ? "16/9" : isSide ? "3/4" : "4/3",
                         position: "relative",
+                        border: "1px solid var(--glass-border)",
                       }}
                     >
                       <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.6s" }} />
-                      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.35)" }} />
+                      <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)" }} />
                       <div style={{ position: "absolute", bottom: "0.8rem", left: "1rem" }}>
                         <span className="mp-sans mp-gold" style={{ fontSize: "0.55rem", fontWeight: 700, letterSpacing: "2px", textTransform: "uppercase" }}>
                           🔍 #{i + 1}
@@ -1018,9 +1019,9 @@ export default function MakerDetailsClient({
         </div>
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* SCENE 10 — CERTIFICATIONS (ALL DARK)           */}
+        {/* SCENE 10 — CERTIFICATIONS                      */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0E0E0E", padding: "10vh 5vw" }}>
+        <div style={{ background: "var(--background)", padding: "10vh 5vw" }}>
           <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "6vh" }}>
               <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Provenance Registry</span>
@@ -1031,7 +1032,7 @@ export default function MakerDetailsClient({
 
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1.5rem" }}>
               <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeLeft}
-                style={{ background: "#141414", border: "1px solid rgba(201,168,76,0.12)", borderRadius: "2px", padding: "3rem" }}
+                style={{ background: "var(--surface)", border: "1px solid var(--glass-border)", borderRadius: "2px", padding: "3rem" }}
               >
                 <h3 className="mp-serif mp-cream" style={{ fontSize: "1.6rem", fontWeight: 400, marginBottom: "2rem" }}>Audit History</h3>
                 {[
@@ -1039,7 +1040,7 @@ export default function MakerDetailsClient({
                   { date: "Oct 2024", score: "97/100", status: "Annual Renewal" },
                   { date: "Sep 2023", score: "94/100", status: "Initial Approved" },
                 ].map((r, i) => (
-                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "1.2rem", marginBottom: "1.2rem", borderBottom: i < 2 ? "1px solid rgba(255,255,255,0.05)" : "none" }}>
+                  <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", paddingBottom: "1.2rem", marginBottom: "1.2rem", borderBottom: i < 2 ? "1px solid var(--glass-border)" : "none" }}>
                     <div>
                       <div className="mp-sans mp-cream" style={{ fontWeight: 600, fontSize: "0.92rem" }}>{r.date}</div>
                       <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem", marginTop: "0.15rem" }}>{r.status}</div>
@@ -1050,7 +1051,7 @@ export default function MakerDetailsClient({
               </motion.div>
 
               <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeRight}
-                style={{ background: "#141414", border: "1px solid rgba(201,168,76,0.12)", borderRadius: "2px", padding: "3rem" }}
+                style={{ background: "var(--surface)", border: "1px solid var(--glass-border)", borderRadius: "2px", padding: "3rem" }}
               >
                 <h3 className="mp-serif mp-cream" style={{ fontSize: "1.6rem", fontWeight: 400, marginBottom: "2rem" }}>Active Compliance</h3>
                 <div className="mp-sans mp-muted" style={{ display: "flex", flexDirection: "column", gap: "1rem", fontSize: "0.9rem", lineHeight: 1.7 }}>
@@ -1068,9 +1069,9 @@ export default function MakerDetailsClient({
         </div>
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* SCENE 11 — PATRON REVIEWS (ALL DARK)           */}
+        {/* SCENE 11 — PATRON REVIEWS                      */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+        <div style={{ background: "var(--surface)", borderTop: "1px solid var(--glass-border)", borderBottom: "1px solid var(--glass-border)", padding: "10vh 5vw" }}>
           <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ textAlign: "center", marginBottom: "6vh" }}>
               <span className="mp-label" style={{ display: "block", textAlign: "center" }}>Patron Voices</span>
@@ -1082,7 +1083,7 @@ export default function MakerDetailsClient({
             <div style={{ display: "grid", gridTemplateColumns: "200px 1fr", gap: "4rem", alignItems: "start" }}>
               <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeScale} style={{ textAlign: "center" }}>
                 <div className="mp-serif mp-gold" style={{ fontSize: "clamp(4rem,8vw,7rem)", fontWeight: 300, lineHeight: 1 }}>4.9</div>
-                <div style={{ color: "#C9A84C", fontSize: "1.1rem", margin: "0.4rem 0" }}>⭐⭐⭐⭐⭐</div>
+                <div style={{ color: "#D4AF37", fontSize: "1.1rem", margin: "0.4rem 0" }}>⭐⭐⭐⭐⭐</div>
                 <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem" }}>48 Verified</div>
               </motion.div>
 
@@ -1095,16 +1096,16 @@ export default function MakerDetailsClient({
                   <motion.div key={i}
                     initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}
                     variants={i % 2 === 0 ? fadeLeft : fadeRight}
-                    style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", padding: "1.8rem 2.2rem" }}
+                    style={{ background: "var(--background)", border: "1px solid var(--glass-border)", borderRadius: "2px", padding: "1.8rem 2.2rem" }}
                   >
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.7rem" }}>
                       <strong className="mp-sans mp-cream" style={{ fontSize: "0.92rem" }}>{r.name}</strong>
-                      <span style={{ color: "#C9A84C" }}>⭐⭐⭐⭐⭐</span>
+                      <span style={{ color: "#D4AF37" }}>⭐⭐⭐⭐⭐</span>
                     </div>
                     <p className="mp-serif mp-muted" style={{ fontSize: "1.1rem", lineHeight: 1.75, fontStyle: "italic", marginBottom: "0.6rem" }}>
                       "{r.text}"
                     </p>
-                    <span className="mp-sans" style={{ fontSize: "0.7rem", color: "rgba(245,240,232,0.25)" }}>Verified Patron · {r.date}</span>
+                    <span className="mp-sans mp-muted" style={{ fontSize: "0.7rem", opacity: 0.5 }}>Verified Patron · {r.date}</span>
                   </motion.div>
                 ))}
               </div>
@@ -1113,9 +1114,9 @@ export default function MakerDetailsClient({
         </div>
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* SCENE 12 — ORIGIN MAP (ALL DARK)              */}
+        {/* SCENE 12 — ORIGIN MAP                           */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0E0E0E", padding: "10vh 5vw" }}>
+        <div style={{ background: "var(--background)", padding: "10vh 5vw" }}>
           <div style={{ maxWidth: "1400px", margin: "0 auto", display: "grid", gridTemplateColumns: "1fr 1.3fr", gap: "5vw", alignItems: "center" }}>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={fadeLeft}>
               <span className="mp-label">Geographic Provenance</span>
@@ -1132,10 +1133,10 @@ export default function MakerDetailsClient({
               </div>
             </motion.div>
             <motion.div initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }} variants={fadeRight}
-              style={{ borderRadius: "2px", overflow: "hidden", boxShadow: "0 30px 60px rgba(0,0,0,0.5)", position: "relative", aspectRatio: "4/3" }}
+              style={{ borderRadius: "2px", overflow: "hidden", border: "1px solid var(--glass-border)", boxShadow: "var(--shadow-md)", position: "relative", aspectRatio: "4/3" }}
             >
               <img src="https://images.unsplash.com/photo-1524661135-423995f22d0b?auto=format&fit=crop&q=80&w=1000" alt="Map" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.4)" }} />
+              <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.2)" }} />
               <div style={{ position: "absolute", bottom: "2rem", left: "2rem" }}>
                 <span className="mp-label">📍 Verified Atelier</span>
                 <div className="mp-serif mp-cream" style={{ fontSize: "1.8rem", fontWeight: 300 }}>{maker.businessName}</div>
@@ -1145,10 +1146,10 @@ export default function MakerDetailsClient({
         </div>
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* SCENE 13 — RELATED STORIES (ALL DARK)         */}
+        {/* SCENE 13 — RELATED STORIES                      */}
         {/* ═══════════════════════════════════════════════ */}
         {storiesList.length > 0 && (
-          <div style={{ background: "#0A0A0A", padding: "10vh 5vw" }}>
+          <div style={{ background: "var(--surface)", borderTop: "1px solid var(--glass-border)", padding: "10vh 5vw" }}>
             <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
               <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "5vh" }}>
                 <span className="mp-label">Artisan Chronicles</span>
@@ -1163,7 +1164,7 @@ export default function MakerDetailsClient({
                       initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
                       variants={i % 2 === 0 ? fadeLeft : fadeRight}
                       whileHover={{ y: -5 }}
-                      style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}
+                      style={{ background: "var(--background)", border: "1px solid var(--glass-border)", borderRadius: "2px", overflow: "hidden" }}
                     >
                       <div style={{ height: "220px", overflow: "hidden" }}>
                         <img src={story.heroImage} alt={story.title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s" }} />
