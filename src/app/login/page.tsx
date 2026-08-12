@@ -25,7 +25,29 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [activeGraphicStep, setActiveGraphicStep] = useState(0);
+  const [carouselIndex, setCarouselIndex] = useState(0);
+
+  // High-fashion vertical portrait artisan imagery (9:16 aspect ratio)
+  const portraitShowcases = [
+    {
+      url: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80&w=1200",
+      title: "Generational Master Ateliers",
+      subtitle: "HUMAN PROVENANCE & GEOFENCED CRAFT",
+      desc: "Direct support of master artisan families preserving century-old handcraft techniques in verified local workshops."
+    },
+    {
+      url: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
+      title: "95% Patron Direct Escrow",
+      subtitle: "ZERO MIDDLEMEN MARGIN EXPLOITATION",
+      desc: "Every transaction routes 95% of gross sales directly to the master artisan's verified local bank or digital wallet."
+    },
+    {
+      url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=1200",
+      title: "Cryptographic Provenance Passports",
+      subtitle: "GI REGIONAL APPELLATION PROTECTED",
+      desc: "Physical NFC passports log exact village coordinates, labor audit grades, and master craftsman signatures."
+    }
+  ];
 
   // Auto-detect phase from URL search params
   useEffect(() => {
@@ -50,11 +72,11 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cycle animated graphic steps
+  // Cycle animated showcase images
   useEffect(() => {
     const timer = setInterval(() => {
-      setActiveGraphicStep(prev => (prev + 1) % 3);
-    }, 4500);
+      setCarouselIndex(prev => (prev + 1) % portraitShowcases.length);
+    }, 6500);
     return () => clearInterval(timer);
   }, []);
 
@@ -243,24 +265,6 @@ export default function LoginPage() {
     }, 1500);
   };
 
-  const graphicSteps = [
-    {
-      title: "95% Patron Direct Escrow",
-      badge: "MANAGED COMMERCE ESCROW",
-      desc: "Direct financial routing ensures 95% of gross sales transit directly to the master artisan's local bank account."
-    },
-    {
-      title: "Geofenced Inspector Audits",
-      badge: "PHYSICAL PROVENANCE VERIFICATION",
-      desc: "Every atelier undergoes physical on-site auditing by regional inspectors to verify labor ethics & authentic raw materials."
-    },
-    {
-      title: "Cryptographic Provenance Ledger",
-      badge: "IMMUTABLE GUILD REGISTRY",
-      desc: "Every creation is issued a unique digital & physical NFC passport logging exact village coordinates and audit certificates."
-    }
-  ];
-
   return (
     <main style={{
       display: 'grid',
@@ -274,31 +278,27 @@ export default function LoginPage() {
     }} className="no-print animate-fade-in">
       
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* LEFT SPLIT SCREEN — ANIMATED GEOMETRIC LUXURY ART (NO PHOTOS)     */}
+      {/* LEFT SPLIT SCREEN — HIGH FASHION 9:16 PORTRAIT ARTISAN SHOWCASE */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        backgroundColor: '#0A0A0C',
+        backgroundImage: `url(${portraitShowcases[carouselIndex].url})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center 20%',
         color: '#FAF9F6',
         padding: '3rem 4vw',
         borderRight: '1px solid var(--glass-border)',
+        transition: 'background-image 1s ease-in-out',
         overflow: 'hidden'
       }}>
-        {/* Subtle Hairline Grid Pattern Background */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 1px)',
-          backgroundSize: '28px 28px',
-          opacity: 0.8,
-          pointerEvents: 'none'
-        }} />
+        {/* Dark Luxury Overlay */}
+        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(10, 10, 12, 0.76)', zIndex: 1, pointerEvents: 'none' }} />
 
         {/* Outer Hairline Gold Border Frame */}
-        <div style={{ position: 'absolute', inset: '1.5rem', border: '1px solid rgba(212,175,55,0.2)', pointerEvents: 'none', zIndex: 2 }} />
+        <div style={{ position: 'absolute', inset: '1.5rem', border: '1px solid rgba(212,175,55,0.25)', pointerEvents: 'none', zIndex: 2 }} />
 
         {/* TOP BRAND HEADER */}
         <div style={{ zIndex: 10, position: 'relative' }}>
@@ -311,84 +311,38 @@ export default function LoginPage() {
           </Link>
         </div>
 
-        {/* CENTER — ANIMATED VECTOR GEOMETRY SHOWCASE */}
+        {/* CENTER — DYNAMIC ARTISAN STORY SHOWCASE */}
         <div style={{ zIndex: 10, position: 'relative', margin: 'auto 0', width: '100%', maxWidth: '520px' }}>
-          {/* Animated Vector Gold Guild Emblem */}
-          <div style={{ position: 'relative', width: '130px', height: '130px', margin: '0 auto 2rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            {/* Outer Spinning Ring */}
-            <motion.div
-              animate={{ rotate: 360 }}
-              transition={{ repeat: Infinity, duration: 25, ease: "linear" }}
-              style={{
-                position: 'absolute',
-                inset: 0,
-                borderRadius: '50%',
-                border: '1px dashed rgba(212, 175, 55, 0.4)'
-              }}
-            />
-            {/* Inner Counter-Spinning Octagon */}
-            <motion.div
-              animate={{ rotate: -360 }}
-              transition={{ repeat: Infinity, duration: 35, ease: "linear" }}
-              style={{
-                position: 'absolute',
-                inset: '14px',
-                borderRadius: '50%',
-                border: '1px solid rgba(212, 175, 55, 0.25)'
-              }}
-            />
-            {/* Center Pulsing Shield Emblem */}
-            <motion.div
-              animate={{ scale: [1, 1.06, 1], opacity: [0.85, 1, 0.85] }}
-              transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
-              style={{
-                width: '60px',
-                height: '60px',
-                backgroundColor: '#0A0A0C',
-                border: '1px solid #D4AF37',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.6rem',
-                boxShadow: '0 0 24px rgba(212, 175, 55, 0.2)'
-              }}
-            >
-              🛡️
-            </motion.div>
-          </div>
-
-          {/* Dynamic Animated Text Info */}
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeGraphicStep}
-              initial={{ opacity: 0, y: 12 }}
+              key={carouselIndex}
+              initial={{ opacity: 0, y: 14 }}
               animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -12 }}
-              transition={{ duration: 0.35 }}
-              style={{ textAlign: 'center' }}
+              exit={{ opacity: 0, y: -14 }}
+              transition={{ duration: 0.4 }}
             >
               <span style={{ color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2.5px', fontSize: '0.68rem', display: 'block', marginBottom: '0.6rem' }}>
-                {graphicSteps[activeGraphicStep].badge}
+                {portraitShowcases[carouselIndex].subtitle}
               </span>
-              <h1 style={{ fontSize: 'clamp(1.8rem, 2.5vw, 2.8rem)', lineHeight: 1.2, marginBottom: '1rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: '#FAF9F6' }}>
-                {graphicSteps[activeGraphicStep].title}
+              <h1 style={{ fontSize: 'clamp(1.8rem, 2.6vw, 3rem)', lineHeight: 1.2, marginBottom: '1rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: '#FAF9F6' }}>
+                {portraitShowcases[carouselIndex].title}
               </h1>
-              <p style={{ fontSize: '0.92rem', lineHeight: 1.75, opacity: 0.8, fontWeight: 300, maxWidth: '440px', margin: '0 auto' }}>
-                {graphicSteps[activeGraphicStep].desc}
+              <p style={{ fontSize: '0.92rem', lineHeight: 1.75, opacity: 0.88, fontWeight: 300, maxWidth: '440px' }}>
+                {portraitShowcases[carouselIndex].desc}
               </p>
             </motion.div>
           </AnimatePresence>
 
-          {/* Step Bars */}
-          <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center', marginTop: '2rem' }}>
-            {graphicSteps.map((_, i) => (
+          {/* Carousel Step Indicators */}
+          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '2rem' }}>
+            {portraitShowcases.map((_, i) => (
               <div 
                 key={i} 
-                onClick={() => setActiveGraphicStep(i)}
+                onClick={() => setCarouselIndex(i)}
                 style={{ 
-                  width: i === activeGraphicStep ? '36px' : '12px', 
+                  width: i === carouselIndex ? '36px' : '12px', 
                   height: '3px', 
-                  backgroundColor: i === activeGraphicStep ? '#D4AF37' : 'rgba(255,255,255,0.2)',
+                  backgroundColor: i === carouselIndex ? '#D4AF37' : 'rgba(255,255,255,0.25)',
                   cursor: 'pointer',
                   transition: 'all 0.3s ease' 
                 }} 
@@ -398,7 +352,7 @@ export default function LoginPage() {
         </div>
 
         {/* BOTTOM STATS FOOTER GRID */}
-        <div style={{ zIndex: 10, position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '1.4rem', textAlign: 'center' }}>
+        <div style={{ zIndex: 10, position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '1.4rem', textAlign: 'center' }}>
           <div>
             <span style={{ color: '#D4AF37', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>95%</span>
             <span style={{ fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>Artisan Payout</span>
