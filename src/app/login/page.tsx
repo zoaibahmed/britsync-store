@@ -257,7 +257,7 @@ export default function LoginPage() {
       position: 'relative'
     }} className="no-print animate-fade-in auth-page-container">
 
-      {/* FLOATING SMART BACK BUTTON — REDIRECTS TO PREVIOUS PAGE (OR HOME) */}
+      {/* FLOATING SMART BACK BUTTON — OVERLAYS THE GALLERY ENVIRONMENT */}
       <button
         onClick={handleBackNavigation}
         style={{
@@ -286,74 +286,31 @@ export default function LoginPage() {
       </button>
       
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* LEFT SPLIT SCREEN — EDITORIAL ARTWORK PANEL & CONTROLLED STAGE   */}
+      {/* LEFT PANEL — FULL-HEIGHT & FULL-WIDTH CINEMATIC GALLERY ARTWORK  */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         position: 'relative',
         height: '100vh',
+        width: '100%',
         backgroundColor: '#080705',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         borderRight: '1px solid var(--glass-border)',
-        overflow: 'hidden',
-        padding: '3vh 3vw'
+        overflow: 'hidden'
       }}>
-        {/* Subtle Ambient Radial Gold Glow */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(212, 175, 55, 0.12) 0%, transparent 70%)',
-          pointerEvents: 'none'
-        }} />
-
-        {/* Micro-Grid Pattern */}
-        <div style={{
-          position: 'absolute',
-          inset: 0,
-          backgroundImage: 'radial-gradient(rgba(212, 175, 55, 0.08) 1px, transparent 1px)',
-          backgroundSize: '32px 32px',
-          opacity: 0.6,
-          pointerEvents: 'none'
-        }} />
-
-        {/* CONTROLLED INNER ARTWORK STAGE (MUSEUM DISPLAY POSTER FRAME) */}
-        <div 
+        <img 
+          src={bgArtworkUrl} 
+          alt="Britsync Global Guild Registry Gallery Artwork"
           style={{
-            position: 'relative',
-            maxHeight: 'min(88vh, 820px)',
-            maxWidth: 'min(90%, 520px)',
-            aspectRatio: '9 / 16',
-            boxShadow: '0 30px 80px rgba(0, 0, 0, 0.95), 0 0 1px 1px rgba(212, 175, 55, 0.3)',
-            border: '1px solid rgba(212, 175, 55, 0.22)',
-            borderRadius: '4px',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            backgroundColor: '#070604',
-            zIndex: 10,
-            transition: 'transform 0.4s ease, box-shadow 0.4s ease'
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center center',
+            display: 'block'
           }}
-        >
-          {/* HIGH-DEFINITION UNCROPPED EDITORIAL ARTWORK */}
-          <img 
-            src={bgArtworkUrl} 
-            alt="Britsync Global Guild Registry Artwork"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'contain',
-              objectPosition: 'center',
-              display: 'block',
-              transition: 'opacity 0.6s ease'
-            }}
-          />
-        </div>
+        />
       </section>
 
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* RIGHT SPLIT SCREEN — PERFECTLY CENTERED & SLEEK AUTH FORM         */}
+      {/* RIGHT PANEL — PERFECTLY CENTERED & SLEEK AUTHENTICATION FORM    */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         display: 'flex',
