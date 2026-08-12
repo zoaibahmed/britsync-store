@@ -249,7 +249,8 @@ export default function LoginPage() {
     <main style={{
       display: 'grid',
       gridTemplateColumns: '46% 54%',
-      minHeight: '100vh',
+      height: '100vh',
+      maxHeight: '100vh',
       backgroundColor: 'var(--background)',
       color: 'var(--text)',
       fontFamily: 'var(--font-inter, sans-serif)',
@@ -262,17 +263,17 @@ export default function LoginPage() {
         onClick={handleBackNavigation}
         style={{
           position: 'fixed',
-          top: '2rem',
-          left: '2rem',
+          top: '1.8rem',
+          left: '1.8rem',
           zIndex: 100,
           display: 'inline-flex',
           alignItems: 'center',
           gap: '0.6rem',
-          padding: '0.65rem 1.4rem',
+          padding: '0.55rem 1.2rem',
           backgroundColor: 'rgba(10, 10, 12, 0.85)',
           border: '1px solid var(--accent)',
           color: 'var(--accent)',
-          fontSize: '0.72rem',
+          fontSize: '0.7rem',
           fontWeight: 700,
           letterSpacing: '2px',
           textTransform: 'uppercase',
@@ -310,49 +311,50 @@ export default function LoginPage() {
       </section>
 
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* RIGHT PANEL — ULTRA-SLEEK HIGH-FASHION MINIMALIST FORM           */}
+      {/* RIGHT PANEL — ULTRA-SLEEK HIGH-FASHION NON-SCROLLING FORM         */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
-        minHeight: '100vh',
-        padding: '3rem 3rem',
+        height: '100vh',
+        maxHeight: '100vh',
+        padding: '1.8rem 2.5rem',
         backgroundColor: 'var(--background)',
-        overflowY: 'auto'
+        overflow: 'hidden'
       }}>
         {/* Minimalist Form Container */}
         <motion.div 
-          initial={{ opacity: 0, y: 10 }}
+          initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, ease: "easeOut" }}
+          transition={{ duration: 0.35, ease: "easeOut" }}
           style={{ width: '100%', maxWidth: '420px' }}
         >
           {/* Header Seal */}
-          <div style={{ marginBottom: '2.2rem', textAlign: 'left' }}>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>
+          <div style={{ marginBottom: '1.3rem', textAlign: 'left' }}>
+            <span style={{ fontSize: '0.6rem', letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, display: 'block', marginBottom: '0.3rem' }}>
               BRITSYNC GUILD PORTAL
             </span>
-            <h1 style={{ fontSize: '2.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: 'var(--text)' }}>
+            <h1 style={{ fontSize: '2.1rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: 'var(--text)' }}>
               {phase === 'login' ? 'Sign In' : phase === 'register' ? 'Register Atelier' : 'Verify Code'}
             </h1>
           </div>
 
           {/* MINIMALIST TAB SWITCHER */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', marginBottom: '1.8rem' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', marginBottom: '1.2rem' }}>
               <button
                 onClick={() => { setErrorMsg(''); setPhase('login'); }}
                 style={{
-                  padding: '0.75rem 0',
-                  marginRight: '2.2rem',
+                  padding: '0.6rem 0',
+                  marginRight: '2rem',
                   backgroundColor: 'transparent',
                   border: 'none',
                   borderBottom: phase === 'login' ? '2px solid var(--accent)' : '2px solid transparent',
                   color: phase === 'login' ? 'var(--accent)' : 'var(--text)',
                   opacity: phase === 'login' ? 1 : 0.4,
                   fontWeight: phase === 'login' ? 700 : 400,
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                   letterSpacing: '2.5px',
@@ -364,14 +366,14 @@ export default function LoginPage() {
               <button
                 onClick={() => { setErrorMsg(''); setPhase('register'); }}
                 style={{
-                  padding: '0.75rem 0',
+                  padding: '0.6rem 0',
                   backgroundColor: 'transparent',
                   border: 'none',
                   borderBottom: phase === 'register' ? '2px solid var(--accent)' : '2px solid transparent',
                   color: phase === 'register' ? 'var(--accent)' : 'var(--text)',
                   opacity: phase === 'register' ? 1 : 0.4,
                   fontWeight: phase === 'register' ? 700 : 400,
-                  fontSize: '0.75rem',
+                  fontSize: '0.72rem',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                   letterSpacing: '2.5px',
@@ -385,15 +387,15 @@ export default function LoginPage() {
 
           {/* SLEEK BORDERLESS ROLE TOGGLE */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ display: 'flex', gap: '2rem', marginBottom: '2.2rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
+            <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.3rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.65rem' }}>
               <label 
                 onClick={() => setRole('maker')}
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '0.55rem', 
+                  gap: '0.5rem', 
                   cursor: 'pointer', 
-                  fontSize: '0.72rem', 
+                  fontSize: '0.7rem', 
                   letterSpacing: '1.8px', 
                   textTransform: 'uppercase', 
                   color: role === 'maker' ? 'var(--accent)' : 'var(--text)', 
@@ -417,9 +419,9 @@ export default function LoginPage() {
                 style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '0.55rem', 
+                  gap: '0.5rem', 
                   cursor: 'pointer', 
-                  fontSize: '0.72rem', 
+                  fontSize: '0.7rem', 
                   letterSpacing: '1.8px', 
                   textTransform: 'uppercase', 
                   color: role === 'buyer' ? 'var(--accent)' : 'var(--text)', 
@@ -442,8 +444,8 @@ export default function LoginPage() {
 
           {errorMsg && (
             <motion.div 
-              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-              style={{ backgroundColor: 'rgba(211,47,47,0.08)', border: '1px solid #D32F2F', color: '#D32F2F', padding: '0.8rem 1rem', marginBottom: '1.8rem', fontSize: '0.78rem', fontWeight: 600 }}
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+              style={{ backgroundColor: 'rgba(211,47,47,0.08)', border: '1px solid #D32F2F', color: '#D32F2F', padding: '0.65rem 0.85rem', marginBottom: '1.1rem', fontSize: '0.75rem', fontWeight: 600 }}
             >
               {errorMsg}
             </motion.div>
@@ -451,8 +453,8 @@ export default function LoginPage() {
 
           {successMsg && (
             <motion.div 
-              initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-              style={{ backgroundColor: 'rgba(46,125,50,0.08)', border: '1px solid #2E7D32', color: '#2E7D32', padding: '0.8rem 1rem', marginBottom: '1.8rem', fontSize: '0.78rem', fontWeight: 600 }}
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }}
+              style={{ backgroundColor: 'rgba(46,125,50,0.08)', border: '1px solid #2E7D32', color: '#2E7D32', padding: '0.65rem 0.85rem', marginBottom: '1.1rem', fontSize: '0.75rem', fontWeight: 600 }}
             >
               {successMsg}
             </motion.div>
@@ -464,12 +466,12 @@ export default function LoginPage() {
             {phase === 'login' && (
               <motion.form 
                 key="form-login"
-                initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 10 }} transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 8 }} transition={{ duration: 0.2 }}
                 onSubmit={handleLoginSubmit} 
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1.3rem' }}
               >
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.3rem' }}>
                     Registered Email
                   </label>
                   <input 
@@ -479,19 +481,19 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    style={{ width: '100%' }} 
+                    style={{ width: '100%', padding: '0.45rem 0' }} 
                   />
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
-                    <label style={{ fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700 }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.3rem' }}>
+                    <label style={{ fontSize: '0.6rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700 }}>
                       Password
                     </label>
                     <button 
                       type="button" 
                       onClick={() => setPhase('forgot')}
-                      style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.65rem', cursor: 'pointer', fontWeight: 600 }}
+                      style={{ background: 'none', border: 'none', color: 'var(--accent)', fontSize: '0.62rem', cursor: 'pointer', fontWeight: 600 }}
                     >
                       Forgot?
                     </button>
@@ -504,12 +506,12 @@ export default function LoginPage() {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required
-                      style={{ width: '100%', paddingRight: '2.5rem' }} 
+                      style={{ width: '100%', padding: '0.45rem 0', paddingRight: '2.5rem' }} 
                     />
                     <button 
                       type="button"
                       onClick={() => setPasswordVisible(!passwordVisible)}
-                      style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.85rem' }}
+                      style={{ position: 'absolute', right: '0', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', opacity: 0.6, fontSize: '0.8rem' }}
                     >
                       {passwordVisible ? '👁️' : '🔒'}
                     </button>
@@ -517,7 +519,7 @@ export default function LoginPage() {
                 </div>
 
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.78rem', cursor: 'pointer', opacity: 0.75 }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '0.45rem', fontSize: '0.75rem', cursor: 'pointer', opacity: 0.75 }}>
                     <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} />
                     Remember this device
                   </label>
@@ -528,16 +530,16 @@ export default function LoginPage() {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '1.05rem',
+                    padding: '0.95rem',
                     backgroundColor: 'var(--accent)',
                     color: '#0A0A0C',
-                    fontSize: '0.75rem',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     letterSpacing: '3px',
                     textTransform: 'uppercase',
                     border: 'none',
                     cursor: 'pointer',
-                    marginTop: '0.8rem',
+                    marginTop: '0.4rem',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -550,14 +552,14 @@ export default function LoginPage() {
             {phase === 'register' && (
               <motion.form 
                 key="form-register"
-                initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, x: 8 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -8 }} transition={{ duration: 0.2 }}
                 onSubmit={handleRegisterSubmit} 
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}
               >
                 {/* LINE 1: CUSTODIAN NAME & BUSINESS NAME IN ONE LINE */}
-                <div style={{ display: 'grid', gridTemplateColumns: role === 'maker' ? '1fr 1fr' : '1fr', gap: '1.4rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: role === 'maker' ? '1fr 1fr' : '1fr', gap: '1.2rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                       Custodian Name
                     </label>
                     <input 
@@ -567,13 +569,13 @@ export default function LoginPage() {
                       value={fullName}
                       onChange={e => setFullName(e.target.value)}
                       required
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%', padding: '0.4rem 0' }} 
                     />
                   </div>
 
                   {role === 'maker' && (
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                         Studio / Business Name
                       </label>
                       <input 
@@ -583,7 +585,7 @@ export default function LoginPage() {
                         value={businessName}
                         onChange={e => setBusinessName(e.target.value)}
                         required
-                        style={{ width: '100%' }} 
+                        style={{ width: '100%', padding: '0.4rem 0' }} 
                       />
                     </div>
                   )}
@@ -591,7 +593,7 @@ export default function LoginPage() {
 
                 {/* LINE 2: GMAIL ADDRESS */}
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                     Gmail Address
                   </label>
                   <input 
@@ -601,15 +603,15 @@ export default function LoginPage() {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    style={{ width: '100%' }} 
+                    style={{ width: '100%', padding: '0.4rem 0' }} 
                   />
                 </div>
 
                 {/* LINE 3: YEARS ACTIVE & GUILD CRAFTSMEN IN ONE LINE */}
                 {role === 'maker' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.4rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                         Years Active
                       </label>
                       <input 
@@ -619,11 +621,11 @@ export default function LoginPage() {
                         value={yearsInBusiness}
                         onChange={e => setYearsInBusiness(Number(e.target.value))}
                         required
-                        style={{ width: '100%' }} 
+                        style={{ width: '100%', padding: '0.4rem 0' }} 
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                         Guild Craftsmen
                       </label>
                       <input 
@@ -633,16 +635,16 @@ export default function LoginPage() {
                         value={employeeCount}
                         onChange={e => setEmployeeCount(Number(e.target.value))}
                         required
-                        style={{ width: '100%' }} 
+                        style={{ width: '100%', padding: '0.4rem 0' }} 
                       />
                     </div>
                   </div>
                 )}
 
                 {/* LINE 4: CREATE PASSWORD & CONFIRM PASSWORD IN ONE LINE */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.4rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                       Create Password
                     </label>
                     <input 
@@ -652,12 +654,12 @@ export default function LoginPage() {
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%', padding: '0.4rem 0' }} 
                     />
                   </div>
 
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.25rem' }}>
                       Confirm Password
                     </label>
                     <input 
@@ -667,7 +669,7 @@ export default function LoginPage() {
                       value={confirmPassword}
                       onChange={e => setConfirmPassword(e.target.value)}
                       required
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%', padding: '0.4rem 0' }} 
                     />
                   </div>
                 </div>
@@ -677,16 +679,16 @@ export default function LoginPage() {
                   disabled={loading}
                   style={{
                     width: '100%',
-                    padding: '1.05rem',
+                    padding: '0.95rem',
                     backgroundColor: 'var(--accent)',
                     color: '#0A0A0C',
-                    fontSize: '0.75rem',
+                    fontSize: '0.72rem',
                     fontWeight: 800,
                     letterSpacing: '3px',
                     textTransform: 'uppercase',
                     border: 'none',
                     cursor: 'pointer',
-                    marginTop: '0.8rem',
+                    marginTop: '0.5rem',
                     transition: 'all 0.2s ease'
                   }}
                 >
@@ -699,21 +701,21 @@ export default function LoginPage() {
             {phase === 'verify_otp' && (
               <motion.div 
                 key="form-otp"
-                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.2 }}
                 style={{ textAlign: 'center' }}
               >
-                <div style={{ marginBottom: '2rem' }}>
-                  <span style={{ fontSize: '2.5rem' }}>📧</span>
-                  <h2 style={{ fontSize: '1.6rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: '0.8rem', marginBottom: '0.4rem', color: 'var(--text)' }}>
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <span style={{ fontSize: '2.2rem' }}>📧</span>
+                  <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: '0.5rem', marginBottom: '0.3rem', color: 'var(--text)' }}>
                     Security Code Sent
                   </h2>
-                  <p style={{ opacity: 0.8, fontSize: '0.82rem', margin: 0, lineHeight: 1.6 }}>
+                  <p style={{ opacity: 0.8, fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>
                     Enter the 6-digit security verification code dispatched to <strong>{email}</strong>.
                   </p>
                 </div>
 
-                <form onSubmit={handleOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem', alignItems: 'center' }}>
-                  <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center' }}>
+                <form onSubmit={handleOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
                     {otp.map((digit, i) => (
                       <input 
                         key={i}
@@ -725,9 +727,9 @@ export default function LoginPage() {
                         onChange={e => handleOtpChange(e.target.value, i)}
                         required
                         style={{
-                          width: '45px',
+                          width: '42px',
                           textAlign: 'center',
-                          fontSize: '1.5rem',
+                          fontSize: '1.4rem',
                           fontWeight: 700
                         }} 
                       />
@@ -739,10 +741,10 @@ export default function LoginPage() {
                     disabled={loading}
                     style={{
                       width: '100%',
-                      padding: '1.05rem',
+                      padding: '0.95rem',
                       backgroundColor: 'var(--accent)',
                       color: '#0A0A0C',
-                      fontSize: '0.75rem',
+                      fontSize: '0.72rem',
                       fontWeight: 800,
                       letterSpacing: '3px',
                       textTransform: 'uppercase',
@@ -753,7 +755,7 @@ export default function LoginPage() {
                     {loading ? 'Verifying...' : 'Confirm OTP & Activate Account'}
                   </button>
 
-                  <p style={{ fontSize: '0.78rem', opacity: 0.6, margin: 0 }}>
+                  <p style={{ fontSize: '0.75rem', opacity: 0.6, margin: 0 }}>
                     Didn't receive code?{' '}
                     <button
                       type="button"
@@ -776,18 +778,18 @@ export default function LoginPage() {
             {phase === 'forgot' && (
               <motion.div 
                 key="form-forgot"
-                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.25 }}
+                initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }}
               >
                 <button 
                   onClick={() => setPhase('login')}
-                  style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontSize: '0.78rem', marginBottom: '1.5rem', padding: 0 }}
+                  style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem', marginBottom: '1.2rem', padding: 0 }}
                 >
                   ← Return to Sign In
                 </button>
 
-                <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}>
+                <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.3rem' }}>
                       Registered Email Address
                     </label>
                     <input 
@@ -797,7 +799,7 @@ export default function LoginPage() {
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       required
-                      style={{ width: '100%' }} 
+                      style={{ width: '100%', padding: '0.45rem 0' }} 
                     />
                   </div>
 
@@ -806,16 +808,16 @@ export default function LoginPage() {
                     disabled={loading}
                     style={{
                       width: '100%',
-                      padding: '1.05rem',
+                      padding: '0.95rem',
                       backgroundColor: 'var(--accent)',
                       color: '#0A0A0C',
-                      fontSize: '0.75rem',
+                      fontSize: '0.72rem',
                       fontWeight: 800,
                       letterSpacing: '3px',
                       textTransform: 'uppercase',
                       border: 'none',
                       cursor: 'pointer',
-                      marginTop: '0.8rem'
+                      marginTop: '0.5rem'
                     }}
                   >
                     {loading ? 'Dispatching...' : 'Send Password Reset Link'}
