@@ -291,25 +291,18 @@ export default function LoginPage() {
       <section style={{
         position: 'relative',
         height: '100vh',
-        backgroundColor: '#070604',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
         borderRight: '1px solid var(--glass-border)',
-        overflow: 'hidden',
-        padding: '1.5rem'
+        overflow: 'hidden'
       }}>
         <img 
           src={bgArtworkUrl} 
           alt="Britsync Luxury Guild Artwork"
           style={{
-            maxWidth: '100%',
-            maxHeight: '100%',
-            width: 'auto',
-            height: 'auto',
-            objectFit: 'contain',
-            filter: 'drop-shadow(0 20px 50px rgba(0,0,0,0.85))',
-            transition: 'all 0.6s ease'
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'center',
+            display: 'block'
           }}
         />
       </section>
