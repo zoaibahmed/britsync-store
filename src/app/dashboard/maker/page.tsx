@@ -354,6 +354,28 @@ export default function MakerDashboard() {
 
         {/* Content Area */}
         <div>
+          {/* PENDING AUDIT REVIEW BANNER */}
+          {makerProfile?.verificationStatus === 'PENDING_AUDIT' && (
+            <div style={{
+              backgroundColor: 'rgba(212,175,55,0.08)',
+              border: '1px solid var(--accent)',
+              borderLeft: '5px solid var(--accent)',
+              padding: '2rem',
+              marginBottom: '2.5rem',
+              position: 'relative'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.8rem' }}>
+                <span style={{ fontSize: '1.4rem' }}>🛡️</span>
+                <h3 style={{ fontSize: '1.2rem', color: 'var(--text)', fontFamily: 'var(--font-playfair), Georgia, serif', margin: 0 }}>
+                  Atelier Registration Under Audit by Britsync Curation Panel
+                </h3>
+              </div>
+              <p style={{ fontSize: '0.88rem', lineHeight: 1.8, opacity: 0.88, margin: 0 }}>
+                Welcome, Custodian <strong>{activeFounderName || 'Master Artisan'}</strong>. Your registration dossier for <strong>{activeBusinessName || 'Heritage Atelier'}</strong> has been logged into the Britsync Governance Registry. Our Mayfair Curation Panel is auditing your craft documentation and on-site geofence coordinates. Once approved by the CEO/Admin, an official accreditation email will be dispatched to your Gmail, unlocking full catalog publishing.
+              </p>
+            </div>
+          )}
+
           {/* 1. PRODUCTS TAB */}
           {activeTab === 'products' && (
             <div>

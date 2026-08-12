@@ -17,10 +17,31 @@ interface ContactInquiry {
   replyMessage?: string;
 }
 
+interface PendingMaker {
+  id: string;
+  userId: string;
+  businessName: string;
+  founderName: string;
+  email: string;
+  verificationStatus: string;
+  yearsInBusiness: number;
+  employeeCount: number;
+  country: string;
+  businessStory: string;
+  founderStory: string;
+  createdAt: string;
+  productCount: number;
+}
+
 export default function CEODashboard() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'inquiries' | 'exports' | 'reports'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'audits' | 'inquiries' | 'exports' | 'reports'>('dashboard');
   const [analyticsData, setAnalyticsData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
+  // Maker Audits State
+  const [makersList, setMakersList] = useState<PendingMaker[]>([]);
+  const [approvingMakerId, setApprovingMakerId] = useState<string | null>(null);
+  const [auditFeedback, setAuditFeedback] = useState<{ success: boolean; msg: string } | null>(null);
 
   // Contact Inquiries & Notification Bell States
   const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
@@ -54,6 +75,18 @@ export default function CEODashboard() {
     }
   };
 
+  const fetchMakers = async () => {
+    try {
+      const res = await fetch('/api/admin/makers');
+      if (res.ok) {
+        const data = await res.json();
+        setMakersList(data.makers || []);
+      }
+    } catch (e) {
+      console.error('Failed to fetch admin makers:', e);
+    }
+  };
+
   useEffect(() => {
     const fetchCeoData = async () => {
       setLoading(true);
@@ -71,9 +104,12 @@ export default function CEODashboard() {
     };
     fetchCeoData();
     fetchInquiries();
+    fetchMakers();
 
-    // Poll for new inquiry notifications every 15s
-    const timer = setInterval(fetchInquiries, 15000);
+    const timer = setInterval(() => {
+      fetchInquiries();
+      fetchMakers();
+    }, 15000);
     return () => clearInterval(timer);
   }, []);
 
@@ -132,6 +168,30 @@ export default function CEODashboard() {
     }
   };
 
+  const handleApproveMaker = async (makerProfileId: string, action: 'APPROVE' | 'REJECT') => {
+    setApprovingMakerId(makerProfileId);
+    setAuditFeedback(null);
+    try {
+      const res = await fetch('/api/admin/makers/approve', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ makerProfileId, action }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setAuditFeedback({ success: true, msg: data.message });
+        fetchMakers();
+      } else {
+        setAuditFeedback({ success: false, msg: data.error || 'Failed to update maker status.' });
+      }
+    } catch (e: any) {
+      setAuditFeedback({ success: false, msg: e.message || 'Error communicating with server.' });
+    } finally {
+      setApprovingMakerId(null);
+    }
+  };
+
   const handleDownloadReport = () => {
     setSimulatingDownload(true);
     setDownloadSuccess(null);
@@ -158,19 +218,21 @@ export default function CEODashboard() {
     return inq.category.toUpperCase().includes(categoryFilter.toUpperCase());
   });
 
+  const pendingMakersCount = makersList.filter((m) => m.verificationStatus === 'PENDING_AUDIT').length;
+
   return (
     <main className="grid-bg" style={{ backgroundColor: 'var(--background)', minHeight: '100vh', paddingTop: '8rem', paddingBottom: '6rem', position: 'relative', overflow: 'hidden' }}>
       {/* Absolute ambient light orbs */}
       <div className="glow-orb" style={{ top: '10%', right: '5%', width: '550px', height: '550px', opacity: 0.6 }} />
       <div className="glow-orb" style={{ bottom: '15%', left: '5%', width: '450px', height: '450px', opacity: 0.4 }} />
 
-      <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 2rem', position: 'relative', zIndex: 10 }}>
+      <div style={{ maxWidth: '1250px', margin: '0 auto', padding: '0 2rem', position: 'relative', zIndex: 10 }}>
         
         {/* Header */}
         <div style={{ marginBottom: '3.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid var(--glass-border)', paddingBottom: '2.5rem' }}>
           <div>
             <h1 style={{ fontSize: '2.5rem', color: 'var(--text)', marginBottom: '0.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400 }}>Executive Intelligence Center</h1>
-            <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>Britsync Global C-Suite Dashboard & Client Inquiries Inbox</p>
+            <p style={{ opacity: 0.6, fontSize: '0.9rem' }}>Britsync Global C-Suite Dashboard & Artisan Accreditation Panel</p>
           </div>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: '2rem' }}>
@@ -289,32 +351,37 @@ export default function CEODashboard() {
 
             {/* Navigation Tabs */}
             <div style={{ display: 'flex', gap: '1.5rem' }}>
-              {['dashboard', 'inquiries', 'exports', 'reports'].map((tab) => (
+              {[
+                { id: 'dashboard', label: 'Dashboard' },
+                { id: 'audits', label: `Audits (${pendingMakersCount})` },
+                { id: 'inquiries', label: `Inquiries (${unreadCount})` },
+                { id: 'reports', label: 'Reports' },
+              ].map((tab) => (
                 <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab as any)}
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id as any)}
                   style={{
                     padding: '0.5rem 0',
                     border: 'none',
                     cursor: 'pointer',
                     background: 'transparent',
-                    color: activeTab === tab ? 'var(--accent)' : 'var(--text-muted)',
-                    fontWeight: activeTab === tab ? 600 : 400,
+                    color: activeTab === tab.id ? 'var(--accent)' : 'var(--text-muted)',
+                    fontWeight: activeTab === tab.id ? 600 : 400,
                     fontSize: '0.8rem',
                     textTransform: 'uppercase',
                     letterSpacing: '1.5px',
-                    borderBottom: activeTab === tab ? '2px solid var(--accent)' : '2px solid transparent',
+                    borderBottom: activeTab === tab.id ? '2px solid var(--accent)' : '2px solid transparent',
                     transition: 'all 0.2s'
                   }}
                 >
-                  {tab === 'inquiries' ? `Inquiries (${unreadCount})` : tab}
+                  {tab.label}
                 </button>
               ))}
             </div>
           </div>
         </div>
 
-        {loading && <div style={{ opacity: 0.5, textAlign: 'center', padding: '4rem' }}>Aggregating business metrics & inquiries...</div>}
+        {loading && <div style={{ opacity: 0.5, textAlign: 'center', padding: '4rem' }}>Aggregating executive metrics & audits...</div>}
 
         {!loading && analyticsData && (
           <>
@@ -333,13 +400,13 @@ export default function CEODashboard() {
                     <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Secured held transit funds</span>
                   </div>
                   <div className="card" style={{ padding: '1.5rem', backgroundColor: 'var(--surface)' }}>
-                    <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Britsync Net Margin</span>
-                    <h3 style={{ fontSize: '2rem', color: 'var(--text)', margin: '0.2rem 0' }}>£{analyticsData.kpis.netMargin.toFixed(2)}</h3>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--success)' }}>Margin revenue collected</span>
+                    <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Pending Atelier Audits</span>
+                    <h3 style={{ fontSize: '2rem', color: 'var(--accent)', margin: '0.2rem 0' }}>{pendingMakersCount}</h3>
+                    <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Artisan applications awaiting review</span>
                   </div>
                   <div className="card" style={{ padding: '1.5rem', backgroundColor: 'var(--surface)' }}>
                     <span style={{ opacity: 0.6, fontSize: '0.75rem', fontWeight: 'bold', textTransform: 'uppercase' }}>Unread Inquiries</span>
-                    <h3 style={{ fontSize: '2rem', color: 'var(--accent)', margin: '0.2rem 0' }}>{unreadCount}</h3>
+                    <h3 style={{ fontSize: '2rem', color: 'var(--text)', margin: '0.2rem 0' }}>{unreadCount}</h3>
                     <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>Client Messages awaiting reply</span>
                   </div>
                 </div>
@@ -383,7 +450,141 @@ export default function CEODashboard() {
               </div>
             )}
 
-            {/* 2. INQUIRIES & MESSAGES INBOX TAB */}
+            {/* 2. ARTISAN REGISTRATION AUDITS TAB */}
+            {activeTab === 'audits' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', fontFamily: 'var(--font-playfair), Georgia, serif' }}>Artisan Accreditation & Atelier Audits</h2>
+                  <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>Review artisan registration dossiers, verify geofence coordinates, and send official approval notifications via Gmail.</p>
+                </div>
+
+                {auditFeedback && (
+                  <div style={{
+                    padding: '1rem 1.2rem',
+                    backgroundColor: auditFeedback.success ? 'rgba(46,125,50,0.12)' : 'rgba(211,47,47,0.12)',
+                    color: auditFeedback.success ? '#2E7D32' : '#D32F2F',
+                    border: `1px solid ${auditFeedback.success ? '#2E7D32' : '#D32F2F'}`,
+                    fontSize: '0.88rem',
+                    fontWeight: 600
+                  }}>
+                    {auditFeedback.msg}
+                  </div>
+                )}
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                  {makersList.map((m) => (
+                    <div
+                      key={m.id}
+                      style={{
+                        backgroundColor: 'var(--surface)',
+                        border: '1px solid var(--glass-border)',
+                        borderLeft: m.verificationStatus === 'PENDING_AUDIT' ? '4px solid var(--accent)' : '4px solid var(--success)',
+                        padding: '2rem',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '1.2rem'
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.4rem' }}>
+                            <h3 style={{ fontSize: '1.25rem', fontFamily: 'var(--font-playfair), Georgia, serif', margin: 0, color: 'var(--text)' }}>
+                              {m.businessName}
+                            </h3>
+                            <span style={{
+                              padding: '0.2rem 0.6rem',
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              textTransform: 'uppercase',
+                              letterSpacing: '1px',
+                              backgroundColor: m.verificationStatus === 'PENDING_AUDIT' ? '#D4AF37' : '#2E7D32',
+                              color: m.verificationStatus === 'PENDING_AUDIT' ? '#0A0A0C' : '#FFF'
+                            }}>
+                              {m.verificationStatus === 'PENDING_AUDIT' ? '🛡️ PENDING AUDIT' : '⭐ ACCREDITED ELITE'}
+                            </span>
+                          </div>
+                          <p style={{ fontSize: '0.85rem', opacity: 0.8, margin: 0 }}>
+                            Custodian: <strong>{m.founderName}</strong> • Email: <strong>{m.email}</strong> • Country: <strong>{m.country}</strong>
+                          </p>
+                        </div>
+                        <span style={{ fontSize: '0.75rem', opacity: 0.5 }}>
+                          Registered: {new Date(m.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+
+                      <div style={{ gridTemplateColumns: 'repeat(3, 1fr)', display: 'grid', gap: '1rem', backgroundColor: 'var(--background)', padding: '1rem', border: '1px solid var(--glass-border)' }}>
+                        <div>
+                          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6, display: 'block' }}>Heritage Experience</span>
+                          <strong style={{ fontSize: '0.9rem', color: 'var(--accent)' }}>{m.yearsInBusiness} Years</strong>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6, display: 'block' }}>Guild Craftsmen</span>
+                          <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{m.employeeCount} Master Artisans</strong>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '0.65rem', textTransform: 'uppercase', letterSpacing: '1px', opacity: 0.6, display: 'block' }}>Catalog Works</span>
+                          <strong style={{ fontSize: '0.9rem', color: 'var(--text)' }}>{m.productCount} Items</strong>
+                        </div>
+                      </div>
+
+                      <div style={{ backgroundColor: 'var(--background)', padding: '1.2rem', border: '1px solid var(--glass-border)' }}>
+                        <span style={{ fontSize: '0.7rem', color: 'var(--accent)', textTransform: 'uppercase', letterSpacing: '1px', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>
+                          Atelier Biography & Craft Discipline
+                        </span>
+                        <p style={{ fontSize: '0.88rem', lineHeight: 1.7, opacity: 0.9, margin: 0 }}>
+                          {m.businessStory}
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                        {m.verificationStatus === 'PENDING_AUDIT' && (
+                          <button
+                            onClick={() => handleApproveMaker(m.id, 'REJECT')}
+                            disabled={approvingMakerId === m.id}
+                            style={{
+                              backgroundColor: 'transparent',
+                              border: '1px solid var(--glass-border)',
+                              color: 'var(--text)',
+                              fontSize: '0.72rem',
+                              letterSpacing: '1px',
+                              padding: '0.6rem 1.2rem',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Request Audit Clarification
+                          </button>
+                        )}
+                        <button
+                          onClick={() => handleApproveMaker(m.id, 'APPROVE')}
+                          disabled={approvingMakerId === m.id}
+                          style={{
+                            backgroundColor: 'var(--accent)',
+                            color: '#0A0A0C',
+                            border: 'none',
+                            fontSize: '0.72rem',
+                            letterSpacing: '1.5px',
+                            fontWeight: 800,
+                            padding: '0.65rem 1.4rem',
+                            cursor: 'pointer',
+                            textTransform: 'uppercase'
+                          }}
+                        >
+                          {approvingMakerId === m.id ? 'Processing...' : m.verificationStatus === 'PENDING_AUDIT' ? 'Approve & Send Gmail Accreditation' : 'Re-Send Approval Email'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {makersList.length === 0 && (
+                    <div style={{ backgroundColor: 'var(--surface)', padding: '4rem', textAlign: 'center', opacity: 0.6, border: '1px solid var(--glass-border)' }}>
+                      No artisan registration applications currently in queue.
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* 3. INQUIRIES & MESSAGES INBOX TAB */}
             {activeTab === 'inquiries' && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -443,15 +644,6 @@ export default function CEODashboard() {
                               fontWeight: 700
                             }}>
                               {inq.category}
-                            </span>
-                            <span style={{
-                              fontSize: '0.65rem',
-                              padding: '0.2rem 0.5rem',
-                              backgroundColor: inq.status === 'UNREAD' ? '#D4AF37' : inq.status === 'REPLIED' ? '#2E7D32' : 'var(--glass-border)',
-                              color: inq.status === 'UNREAD' ? '#0A0A0C' : '#FFF',
-                              fontWeight: 700
-                            }}>
-                              {inq.status}
                             </span>
                           </div>
                           <p style={{ fontSize: '0.8rem', opacity: 0.7, margin: 0 }}>
@@ -519,21 +711,7 @@ export default function CEODashboard() {
                       </div>
                     </div>
                   ))}
-
-                  {filteredInquiries.length === 0 && (
-                    <div style={{ backgroundColor: 'var(--surface)', padding: '4rem', textAlign: 'center', opacity: 0.6, border: '1px solid var(--glass-border)' }}>
-                      No contact inquiries match the selected category filter.
-                    </div>
-                  )}
                 </div>
-              </div>
-            )}
-
-            {/* 3. EXPORTS */}
-            {activeTab === 'exports' && (
-              <div className="card" style={{ padding: '2.5rem', backgroundColor: 'var(--surface)' }}>
-                <h2 style={{ fontSize: '1.5rem', color: 'var(--text)', marginBottom: '1.5rem' }}>Global Trade & Customs Export Volumes</h2>
-                <p style={{ opacity: 0.8, lineHeight: 1.8 }}>Track real-time customs clearance, insured transit logs, and GI Appellation passports across Mayfair and global hubs.</p>
               </div>
             )}
 
@@ -586,12 +764,6 @@ export default function CEODashboard() {
                 >
                   {simulatingDownload ? 'Generating Executive Report...' : 'Download Report'}
                 </button>
-
-                {downloadSuccess && (
-                  <p style={{ color: 'var(--success)', marginTop: '1rem', fontSize: '0.85rem' }}>
-                    Successfully generated and downloaded {downloadSuccess}!
-                  </p>
-                )}
               </div>
             )}
           </>

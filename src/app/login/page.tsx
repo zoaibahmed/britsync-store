@@ -20,7 +20,7 @@ export default function LoginPage() {
   const [country, setCountry] = useState('United Kingdom');
   const [agreeTerms, setAgreeTerms] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
-  const [otp, setOtp] = useState(['', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [passwordVisible, setPasswordVisible] = useState(false);
 
   // UI state
@@ -159,7 +159,67 @@ export default function LoginPage() {
 
     setLoading(true);
     try {
-      const res = await fetch('/api/auth/register', {
+      // Dispatch 6-digit OTP to Gmail address via Nodemailer
+      const otpRes = await fetch('/api/auth/send-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, name: fullName }),
+      });
+      const otpData = await otpRes.json();
+      setLoading(false);
+
+      if (!otpRes.ok) {
+        setErrorMsg(otpData.error || 'Failed to send security code to email.');
+        return;
+      }
+
+      setSuccessMsg(`A 6-digit verification code has been sent to ${email}.`);
+      setPhase('verify_otp');
+    } catch (err) {
+      setLoading(false);
+      setErrorMsg('Failed to connect to verification service.');
+    }
+  };
+
+  const handleOtpChange = (val: string, index: number) => {
+    const newOtp = [...otp];
+    newOtp[index] = val;
+    setOtp(newOtp);
+
+    // Auto-focus next input
+    if (val && index < 5) {
+      const nextEl = document.getElementById(`otp-${index + 1}`);
+      nextEl?.focus();
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    const code = otp.join('');
+    if (code.length < 6) {
+      setErrorMsg('Please enter the complete 6-digit verification code.');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Verify OTP Code
+      const vRes = await fetch('/api/auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, code }),
+      });
+      const vData = await vRes.json();
+
+      if (!vRes.ok) {
+        setLoading(false);
+        setErrorMsg(vData.error || 'Invalid verification code.');
+        return;
+      }
+
+      // Create User Account after OTP Verification
+      const regRes = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -168,45 +228,28 @@ export default function LoginPage() {
           name: fullName,
           role: role === 'maker' ? 'MAKER' : 'BUYER',
           businessName: role === 'maker' ? businessName : undefined,
-          country
-        })
+          country,
+        }),
       });
-      const data = await res.json();
+      const regData = await regRes.json();
       setLoading(false);
 
-      if (!res.ok) {
-        setErrorMsg(data.error || 'Registration failed.');
+      if (!regRes.ok) {
+        setErrorMsg(regData.error || 'Account creation failed.');
         return;
       }
 
-      localStorage.setItem('britsync_user', JSON.stringify(data.user));
-      setPhase('verify_otp');
+      localStorage.setItem('britsync_user', JSON.stringify(regData.user));
+      
+      if (role === 'maker') {
+        window.location.href = '/dashboard/maker';
+      } else {
+        window.location.href = '/dashboard/buyer';
+      }
     } catch (err) {
       setLoading(false);
-      setErrorMsg('Failed to connect to registration services.');
+      setErrorMsg('Failed to finalize registration.');
     }
-  };
-
-  const handleOtpChange = (val: string, index: number) => {
-    if (isNaN(Number(val))) return;
-    const newOtp = [...otp];
-    newOtp[index] = val;
-    setOtp(newOtp);
-
-    // Auto-focus next input
-    if (val && index < 3) {
-      const nextEl = document.getElementById(`otp-${index + 1}`);
-      nextEl?.focus();
-    }
-  };
-
-  const handleOtpSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      setPhase('activation_success');
-    }, 1200);
   };
 
   const handleForgotSubmit = (e: React.FormEvent) => {
@@ -664,14 +707,17 @@ export default function LoginPage() {
             <div style={{ animation: 'slideUp 0.5s ease', textAlign: 'center' }}>
               <div style={{ marginBottom: '2.5rem' }}>
                 <span style={{ fontSize: '3rem' }}>📧</span>
-                <h1 style={{ fontSize: '2.2rem', color: 'var(--primary)', fontFamily: 'var(--font-outfit)', fontWeight: 300, marginTop: '1rem', marginBottom: '0.5rem' }}>Security OTP Sent</h1>
+                <h1 style={{ fontSize: '2.2rem', color: 'var(--primary)', fontFamily: 'var(--font-outfit)', fontWeight: 300, marginTop: '1rem', marginBottom: '0.5rem' }}>Security Code Sent</h1>
                 <p style={{ opacity: 0.7, fontSize: '0.9rem', margin: 0 }}>
-                  Enter the 4-digit code dispatched to your registered email to activate your account.
+                  Enter the 6-digit security verification code dispatched to <strong>{email}</strong> to activate your atelier account.
                 </p>
               </div>
 
+              {errorMsg && <div style={{ backgroundColor: '#FFEBEE', color: '#C62828', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 'bold' }}>{errorMsg}</div>}
+              {successMsg && <div style={{ backgroundColor: '#E8F5E9', color: '#2E7D32', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 'bold' }}>{successMsg}</div>}
+
               <form onSubmit={handleOtpSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'center' }}>
-                <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center' }}>
                   {otp.map((digit, i) => (
                     <input 
                       key={i}
@@ -681,7 +727,7 @@ export default function LoginPage() {
                       value={digit}
                       onChange={e => handleOtpChange(e.target.value, i)}
                       required
-                      style={{ width: '60px', height: '60px', borderRadius: '12px', border: '2px solid #ccc', textAlign: 'center', fontSize: '1.8rem', fontWeight: 'bold', color: 'var(--primary)' }} 
+                      style={{ width: '50px', height: '58px', borderRadius: '8px', border: '2px solid var(--glass-border)', backgroundColor: 'var(--surface)', textAlign: 'center', fontSize: '1.6rem', fontWeight: 'bold', color: 'var(--text)' }} 
                     />
                   ))}
                 </div>
@@ -692,12 +738,17 @@ export default function LoginPage() {
                   className="btn-accent" 
                   style={{ width: '100%', padding: '1.1rem', fontSize: '1rem', fontWeight: 'bold', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
                 >
-                  {loading ? 'Activating Profile...' : 'Confirm OTP Activation'}
+                  {loading ? 'Verifying Code & Creating Profile...' : 'Confirm OTP Verification'}
                 </button>
 
                 <p style={{ fontSize: '0.85rem', opacity: 0.6, margin: 0 }}>
                   Didn't receive code?{' '}
-                  <button type="button" onClick={() => alert('A fresh activation code was sent.')} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}>
+                  <button type="button" onClick={async () => {
+                    setLoading(true);
+                    await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name: fullName }) });
+                    setLoading(false);
+                    alert(`A fresh 6-digit code has been dispatched to ${email}`);
+                  }} style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 'bold', padding: 0 }}>
                     Resend Code
                   </button>
                 </p>

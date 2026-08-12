@@ -12,7 +12,13 @@ export async function POST(request: Request) {
       role, 
       businessName, 
       country, 
-      phone 
+      phone,
+      craftType,
+      yearsInBusiness,
+      employeeCount,
+      shortIntro,
+      coverImage,
+      founderPhoto
     } = await request.json();
 
     if (!email || !password || !name) {
@@ -30,14 +36,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Email already registered' }, { status: 409 });
     }
 
-    // Create User and potential Profile in a transaction
+    // Create User and Profile in a transaction
     const result = await prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
           email: normalizedEmail,
           passwordHash: hashPassword(password),
           name,
-          role: role || 'BUYER'
+          role: role || 'BUYER',
+          isEmailVerified: true
         }
       });
 
@@ -55,9 +62,11 @@ export async function POST(request: Request) {
             userId: newUser.id,
             businessName: businessName || `${name}'s Atelier`,
             locationId: countryLoc?.id || '',
-            verificationStatus: 'GENERAL',
-            yearsInBusiness: 1,
-            employeeCount: 1
+            verificationStatus: 'PENDING_AUDIT', // Set PENDING_AUDIT status for admin approval
+            yearsInBusiness: Number(yearsInBusiness) || 1,
+            employeeCount: Number(employeeCount) || 1,
+            businessStory: shortIntro || `Generational master atelier specializing in ${craftType || 'heritage craft'}.`,
+            founderStory: `Founded by master custodian ${name}.`,
           }
         });
 
@@ -100,12 +109,12 @@ export async function POST(request: Request) {
       userId: result.user.id,
       email: result.user.email,
       role: result.user.role,
-      name: result.user.name
     });
 
     return response;
+
   } catch (error) {
     console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Registration failed' }, { status: 500 });
+    return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
   }
 }
