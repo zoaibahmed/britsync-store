@@ -91,6 +91,7 @@ export default function LuxuryHero() {
 
   const lastStateFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
+  const velocityRef = useRef(0);
 
   // Initialize cached dimensions
   useEffect(() => {
@@ -174,23 +175,28 @@ export default function LuxuryHero() {
 
   /* ── advance / rewind frames smoothly ───────────────────────────────── */
   const moveFrames = useCallback((delta: number) => {
-    // Controlled smooth scroll delta (max 1.5 frames per wheel tick for luxurious pacing)
-    const clampedDelta = Math.sign(delta) * Math.min(1.5, Math.abs(delta));
-    const next = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + clampedDelta));
-    if (next === targetFrameRef.current) return;
-    targetFrameRef.current = next;
+    // Impulse step for keyboard / programmatic frame movement
+    velocityRef.current += Math.sign(delta) * Math.min(2, Math.abs(delta));
   }, []);
 
-  // RAF loop for smooth 60fps frame transition with smooth lerp physics (zero React re-render lag)
+  // RAF loop for smooth 60fps frame transition with momentum friction physics
   useEffect(() => {
     let animId: number;
     const tick = () => {
+      // Apply momentum friction physics
+      if (Math.abs(velocityRef.current) > 0.001) {
+        targetFrameRef.current = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + velocityRef.current));
+        velocityRef.current *= 0.88; // Silky smooth deceleration
+      } else {
+        velocityRef.current = 0;
+      }
+
       const diff = targetFrameRef.current - frameRef.current;
       const absDiff = Math.abs(diff);
       
-      if (absDiff > 0.001) {
-        // Fluid tracking lerp at 0.08 speed for smooth, non-jerky animation
-        frameRef.current += diff * 0.08;
+      if (absDiff > 0.001 || Math.abs(velocityRef.current) > 0.001) {
+        // Slow, majestic tracking lerp at 0.035 speed for unhurried luxury movement
+        frameRef.current += diff * 0.035;
         drawFrame(frameRef.current);
         
         const nextInt = Math.round(frameRef.current);
@@ -260,32 +266,21 @@ export default function LuxuryHero() {
     const onWheel = (e: WheelEvent) => {
       if (!heroActiveRef.current) return;
       e.preventDefault();
-
-      // Accumulate delta — only advance a frame every DELTA_PER_FRAME px
-      wheelAccum.current += e.deltaY;
-      const frames = Math.trunc(wheelAccum.current / DELTA_PER_FRAME);
-      if (frames !== 0) {
-        wheelAccum.current -= frames * DELTA_PER_FRAME;
-        moveFrames(frames);
-      }
+      // Slow, majestic velocity impulse (0.008 speed for unhurried luxury pacing)
+      velocityRef.current += e.deltaY * 0.008;
     };
 
     /* ── TOUCH ── */
     const onTouchStart = (e: TouchEvent) => {
       touchStartY.current = e.touches[0].clientY;
-      wheelAccum.current = 0;
+      velocityRef.current = 0;
     };
     const onTouchMove = (e: TouchEvent) => {
       if (!heroActiveRef.current) return;
       e.preventDefault();
       const dy = touchStartY.current - e.touches[0].clientY;
       touchStartY.current = e.touches[0].clientY;
-      wheelAccum.current += dy;
-      const frames = Math.trunc(wheelAccum.current / (DELTA_PER_FRAME * 0.5));
-      if (frames !== 0) {
-        wheelAccum.current -= frames * (DELTA_PER_FRAME * 0.5);
-        moveFrames(frames);
-      }
+      velocityRef.current += dy * 0.04;
     };
 
     /* ── KEYBOARD ── */

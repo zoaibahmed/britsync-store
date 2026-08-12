@@ -132,11 +132,9 @@ export default function LoadingScreen({ loadedCount = 0, totalCount = 1852 }: Lo
           />
         </div>
 
-        {/* Frame Progress Details */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.72rem', color: 'rgba(250, 249, 246, 0.6)' }}>
-          <span style={{ color: '#D4AF37', fontWeight: 600 }}>{progress}%</span>
-          <span>&bull;</span>
-          <span>{loadedCount} / {totalCount} FRAMES</span>
+        {/* Luxury Gold Percentage Progress */}
+        <div style={{ marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.78rem', color: '#D4AF37', fontWeight: 600, letterSpacing: '2px' }}>
+          {progress}%
         </div>
       </div>
     </motion.div>

@@ -48,15 +48,29 @@ body.dark {
   --text-muted: #A0A0A8;
   --surface: #121216;
   --surface-muted: #1A1A20;
-  --error: #A93E3E;
-  --success: #2A7E4F;
-  --glass-bg: rgba(18, 18, 22, 0.88);
+  --error: #E55353;
+  --success: #38A169;
+  --glass-bg: rgba(10, 10, 12, 0.88);
   --glass-border: rgba(212, 175, 55, 0.18);
-  --chat-overlay: rgba(18, 18, 22, 0.6);
-  --chat-input-bg: rgba(250, 249, 246, 0.05);
-  --chat-border: rgba(212, 175, 55, 0.2);
-  --chat-muted: rgba(250, 249, 246, 0.03);
+  --chat-overlay: rgba(250, 249, 246, 0.02);
+  --chat-input-bg: rgba(250, 249, 246, 0.02);
+  --chat-border: rgba(250, 249, 246, 0.08);
+  --chat-muted: rgba(250, 249, 246, 0.04);
   color-scheme: dark;
+}
+
+/* Hide scrollbar completely while Hero section is active or preloader is running */
+html.hero-active,
+html.hero-active body {
+  overflow: hidden !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+html.hero-active::-webkit-scrollbar,
+html.hero-active body::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
 }
 
 html {
