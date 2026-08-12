@@ -93,7 +93,7 @@ export default function ContactPage() {
   };
 
   return (
-    <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden", minHeight: "100vh" }}>
+    <div style={{ backgroundColor: "var(--background)", color: "var(--text)", overflow: "hidden", minHeight: "100vh", zoom: 0.8 }}>
       
       {/* ════════════════════════════════════════════════════════════
           1. CLEAN LUXURY HERO SECTION
