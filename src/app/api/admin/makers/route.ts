@@ -32,8 +32,8 @@ export async function GET() {
       yearsInBusiness: m.yearsInBusiness,
       employeeCount: m.employeeCount,
       country: m.location?.translations?.find((t) => t.languageCode === 'en')?.name || 'Global',
-      businessStory: m.businessStory || 'Generational craft atelier.',
-      founderStory: m.founderStory || '',
+      businessStory: `Generational master atelier specializing in heritage handcraft. Custodian ${m.user?.name || 'Artisan'}.`,
+      founderStory: `Founded by custodian ${m.user?.name || 'Master Artisan'}.`,
       createdAt: m.createdAt.toISOString(),
       productCount: m.products.length,
     }));

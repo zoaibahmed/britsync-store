@@ -16,9 +16,7 @@ export async function POST(request: Request) {
       craftType,
       yearsInBusiness,
       employeeCount,
-      shortIntro,
-      coverImage,
-      founderPhoto
+      shortIntro
     } = await request.json();
 
     if (!email || !password || !name) {
@@ -65,8 +63,6 @@ export async function POST(request: Request) {
             verificationStatus: 'PENDING_AUDIT', // Set PENDING_AUDIT status for admin approval
             yearsInBusiness: Number(yearsInBusiness) || 1,
             employeeCount: Number(employeeCount) || 1,
-            businessStory: shortIntro || `Generational master atelier specializing in ${craftType || 'heritage craft'}.`,
-            founderStory: `Founded by master custodian ${name}.`,
           }
         });
 
@@ -108,6 +104,7 @@ export async function POST(request: Request) {
     await setSessionCookie(response, {
       userId: result.user.id,
       email: result.user.email,
+      name: result.user.name,
       role: result.user.role,
     });
 
