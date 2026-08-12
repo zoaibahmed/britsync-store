@@ -326,7 +326,7 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          style={{ width: '100%', maxWidth: '380px' }}
+          style={{ width: '100%', maxWidth: '420px' }}
         >
           {/* Header Seal */}
           <div style={{ marginBottom: '2.2rem', textAlign: 'left' }}>
@@ -383,7 +383,7 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* SLEEK BORDERLESS ROLE TOGGLE (NO BOXES) */}
+          {/* SLEEK BORDERLESS ROLE TOGGLE */}
           {(phase === 'login' || phase === 'register') && (
             <div style={{ display: 'flex', gap: '2rem', marginBottom: '2.2rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
               <label 
@@ -552,40 +552,44 @@ export default function LoginPage() {
                 key="form-register"
                 initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -10 }} transition={{ duration: 0.25 }}
                 onSubmit={handleRegisterSubmit} 
-                style={{ display: 'flex', flexDirection: 'column', gap: '1.6rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1.4rem' }}
               >
-                {role === 'maker' && (
+                {/* LINE 1: CUSTODIAN NAME & BUSINESS NAME IN ONE LINE */}
+                <div style={{ display: 'grid', gridTemplateColumns: role === 'maker' ? '1fr 1fr' : '1fr', gap: '1.4rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
-                      Studio / Business Name
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      Custodian Name
                     </label>
                     <input 
                       type="text" 
                       className="luxury-line-input"
-                      placeholder="e.g. Aisha Heritage Ceramics"
-                      value={businessName}
-                      onChange={e => setBusinessName(e.target.value)}
+                      placeholder="Master Tariq"
+                      value={fullName}
+                      onChange={e => setFullName(e.target.value)}
                       required
                       style={{ width: '100%' }} 
                     />
                   </div>
-                )}
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
-                    Full Custodian Name
-                  </label>
-                  <input 
-                    type="text" 
-                    className="luxury-line-input"
-                    placeholder="e.g. Master Custodian Tariq"
-                    value={fullName}
-                    onChange={e => setFullName(e.target.value)}
-                    required
-                    style={{ width: '100%' }} 
-                  />
+                  {role === 'maker' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                        Studio / Business Name
+                      </label>
+                      <input 
+                        type="text" 
+                        className="luxury-line-input"
+                        placeholder="Aisha Ceramics"
+                        value={businessName}
+                        onChange={e => setBusinessName(e.target.value)}
+                        required
+                        style={{ width: '100%' }} 
+                      />
+                    </div>
+                  )}
                 </div>
 
+                {/* LINE 2: GMAIL ADDRESS */}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Gmail Address
@@ -593,7 +597,7 @@ export default function LoginPage() {
                   <input 
                     type="email" 
                     className="luxury-line-input"
-                    placeholder="e.g. name@gmail.com"
+                    placeholder="name@gmail.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
@@ -601,10 +605,11 @@ export default function LoginPage() {
                   />
                 </div>
 
+                {/* LINE 3: YEARS ACTIVE & GUILD CRAFTSMEN IN ONE LINE */}
                 {role === 'maker' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.4rem' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                         Years Active
                       </label>
                       <input 
@@ -618,7 +623,7 @@ export default function LoginPage() {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                         Guild Craftsmen
                       </label>
                       <input 
@@ -634,34 +639,37 @@ export default function LoginPage() {
                   </div>
                 )}
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
-                    Create Password
-                  </label>
-                  <input 
-                    type="password" 
-                    className="luxury-line-input"
-                    placeholder="At least 6 characters"
-                    value={password}
-                    onChange={e => setPassword(e.target.value)}
-                    required
-                    style={{ width: '100%' }} 
-                  />
-                </div>
+                {/* LINE 4: CREATE PASSWORD & CONFIRM PASSWORD IN ONE LINE */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.4rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      Create Password
+                    </label>
+                    <input 
+                      type="password" 
+                      className="luxury-line-input"
+                      placeholder="Min 6 chars"
+                      value={password}
+                      onChange={e => setPassword(e.target.value)}
+                      required
+                      style={{ width: '100%' }} 
+                    />
+                  </div>
 
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
-                    Confirm Password
-                  </label>
-                  <input 
-                    type="password" 
-                    className="luxury-line-input"
-                    placeholder="Repeat password"
-                    value={confirmPassword}
-                    onChange={e => setConfirmPassword(e.target.value)}
-                    required
-                    style={{ width: '100%' }} 
-                  />
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
+                      Confirm Password
+                    </label>
+                    <input 
+                      type="password" 
+                      className="luxury-line-input"
+                      placeholder="Repeat pass"
+                      value={confirmPassword}
+                      onChange={e => setConfirmPassword(e.target.value)}
+                      required
+                      style={{ width: '100%' }} 
+                    />
+                  </div>
                 </div>
 
                 <button 
