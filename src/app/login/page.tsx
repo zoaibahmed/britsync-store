@@ -248,7 +248,7 @@ export default function LoginPage() {
   return (
     <main style={{
       display: 'grid',
-      gridTemplateColumns: '1.1fr 1fr',
+      gridTemplateColumns: '1fr 1fr',
       minHeight: '100vh',
       backgroundColor: 'var(--background)',
       color: 'var(--text)',
@@ -262,7 +262,7 @@ export default function LoginPage() {
         onClick={handleBackNavigation}
         style={{
           position: 'fixed',
-          top: '1.8rem',
+          top: '2rem',
           left: '2rem',
           zIndex: 100,
           display: 'inline-flex',
@@ -286,52 +286,29 @@ export default function LoginPage() {
       </button>
       
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* LEFT SPLIT SCREEN — ULTRA-LUXURY BRAND ARTWORK (NO NAVBAR)      */}
+      {/* LEFT SPLIT SCREEN — 100% CLEAN & FULLY VISIBLE ARTWORK            */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         position: 'relative',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
+        height: '100vh',
+        backgroundColor: '#080705',
         backgroundImage: `url(${bgArtworkUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
-        color: '#FAF9F6',
-        padding: '3.5rem 4vw 2.5rem',
+        backgroundRepeat: 'no-repeat',
         borderRight: '1px solid var(--glass-border)',
         transition: 'background-image 0.8s ease-in-out',
         overflow: 'hidden'
-      }}>
-        {/* Subtle Hairline Gold Frame Overlay */}
-        <div style={{ position: 'absolute', inset: '1.5rem', border: '1px solid rgba(212,175,55,0.25)', pointerEvents: 'none', zIndex: 2 }} />
-
-        {/* Spacer for top layout */}
-        <div style={{ zIndex: 10, height: '40px' }} />
-
-        {/* BOTTOM STATS FOOTER GRID */}
-        <div style={{ zIndex: 10, position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', borderTop: '1px solid rgba(212,175,55,0.3)', paddingTop: '1.4rem', textAlign: 'center', backgroundColor: 'rgba(10,10,12,0.65)', backdropFilter: 'blur(8px)', padding: '1rem', borderRadius: '2px' }}>
-          <div>
-            <span style={{ color: '#D4AF37', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>95%</span>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>Artisan Payout</span>
-          </div>
-          <div>
-            <span style={{ color: '#FAF9F6', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>Grade A+</span>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>Geofence Audit</span>
-          </div>
-          <div>
-            <span style={{ color: '#D4AF37', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>100%</span>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>NFC Passports</span>
-          </div>
-        </div>
-      </section>
+      }} />
 
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* RIGHT SPLIT SCREEN — FULL HEIGHT & COMPACT SLEEK FORM             */}
+      {/* RIGHT SPLIT SCREEN — PERFECTLY CENTERED & SLEEK AUTH FORM         */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        minHeight: '100vh',
         padding: '3rem 2.5rem',
         backgroundColor: 'var(--background)',
         overflowY: 'auto'
@@ -341,32 +318,32 @@ export default function LoginPage() {
           initial={{ opacity: 0, y: 15 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4, ease: "easeOut" }}
-          style={{ width: '100%', maxWidth: '380px' }}
+          style={{ width: '100%', maxWidth: '390px' }}
         >
           {/* Header Seal */}
-          <div style={{ textAlign: 'center', marginBottom: '1.8rem' }}>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, display: 'block', marginBottom: '0.3rem' }}>
+          <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+            <span style={{ fontSize: '0.62rem', letterSpacing: '3px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, display: 'block', marginBottom: '0.35rem' }}>
               OFFICIAL AUTHENTICATION
             </span>
-            <h1 style={{ fontSize: '1.9rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: 'var(--text)' }}>
+            <h1 style={{ fontSize: '2.1rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: 'var(--text)' }}>
               {phase === 'login' ? 'Sign In' : phase === 'register' ? 'Register Atelier' : 'Verify Code'}
             </h1>
           </div>
 
           {/* COMPACT GOLD TAB SWITCHER */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ display: 'flex', backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', borderRadius: '2px', padding: '3px', marginBottom: '1.6rem' }}>
+            <div style={{ display: 'flex', backgroundColor: 'var(--surface)', border: '1px solid var(--glass-border)', borderRadius: '2px', padding: '4px', marginBottom: '1.8rem' }}>
               <button
                 onClick={() => { setErrorMsg(''); setPhase('login'); }}
                 style={{
                   flex: 1,
-                  padding: '0.65rem',
+                  padding: '0.7rem',
                   backgroundColor: phase === 'login' ? 'var(--background)' : 'transparent',
                   border: phase === 'login' ? '1px solid var(--glass-border)' : '1px solid transparent',
                   color: phase === 'login' ? 'var(--accent)' : 'var(--text)',
                   opacity: phase === 'login' ? 1 : 0.65,
                   fontWeight: phase === 'login' ? 700 : 400,
-                  fontSize: '0.72rem',
+                  fontSize: '0.75rem',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                   letterSpacing: '1.5px',
@@ -379,13 +356,13 @@ export default function LoginPage() {
                 onClick={() => { setErrorMsg(''); setPhase('register'); }}
                 style={{
                   flex: 1,
-                  padding: '0.65rem',
+                  padding: '0.7rem',
                   backgroundColor: phase === 'register' ? 'var(--background)' : 'transparent',
                   border: phase === 'register' ? '1px solid var(--glass-border)' : '1px solid transparent',
                   color: phase === 'register' ? 'var(--accent)' : 'var(--text)',
                   opacity: phase === 'register' ? 1 : 0.65,
                   fontWeight: phase === 'register' ? 700 : 400,
-                  fontSize: '0.72rem',
+                  fontSize: '0.75rem',
                   cursor: 'pointer',
                   textTransform: 'uppercase',
                   letterSpacing: '1.5px',
@@ -399,13 +376,13 @@ export default function LoginPage() {
 
           {/* ROLE SELECTOR PILLS */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ marginBottom: '1.5rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.6rem' }}>
+            <div style={{ marginBottom: '1.8rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.7rem' }}>
                 <button
                   type="button"
                   onClick={() => setRole('maker')}
                   style={{
-                    padding: '0.75rem 0.8rem',
+                    padding: '0.8rem 0.85rem',
                     backgroundColor: role === 'maker' ? 'rgba(212,175,55,0.1)' : 'var(--surface)',
                     border: role === 'maker' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
                     color: 'var(--text)',
@@ -415,7 +392,7 @@ export default function LoginPage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>🧶 Master Artisan</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>🧶 Master Artisan</span>
                   <span style={{ fontSize: '0.64rem', opacity: 0.7 }}>Maker Portal</span>
                 </button>
 
@@ -423,7 +400,7 @@ export default function LoginPage() {
                   type="button"
                   onClick={() => setRole('buyer')}
                   style={{
-                    padding: '0.75rem 0.8rem',
+                    padding: '0.8rem 0.85rem',
                     backgroundColor: role === 'buyer' ? 'rgba(212,175,55,0.1)' : 'var(--surface)',
                     border: role === 'buyer' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
                     color: 'var(--text)',
@@ -433,7 +410,7 @@ export default function LoginPage() {
                     transition: 'all 0.2s ease'
                   }}
                 >
-                  <span style={{ fontSize: '0.78rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>🏺 Global Patron</span>
+                  <span style={{ fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '1px', display: 'block' }}>🏺 Global Patron</span>
                   <span style={{ fontSize: '0.64rem', opacity: 0.7 }}>Buyer Portal</span>
                 </button>
               </div>
@@ -443,7 +420,7 @@ export default function LoginPage() {
           {errorMsg && (
             <motion.div 
               initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-              style={{ backgroundColor: 'rgba(211,47,47,0.1)', border: '1px solid #D32F2F', color: '#D32F2F', padding: '0.75rem 1rem', marginBottom: '1.2rem', fontSize: '0.8rem', fontWeight: 600 }}
+              style={{ backgroundColor: 'rgba(211,47,47,0.1)', border: '1px solid #D32F2F', color: '#D32F2F', padding: '0.8rem 1rem', marginBottom: '1.4rem', fontSize: '0.8rem', fontWeight: 600 }}
             >
               {errorMsg}
             </motion.div>
@@ -452,7 +429,7 @@ export default function LoginPage() {
           {successMsg && (
             <motion.div 
               initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }}
-              style={{ backgroundColor: 'rgba(46,125,50,0.1)', border: '1px solid #2E7D32', color: '#2E7D32', padding: '0.75rem 1rem', marginBottom: '1.2rem', fontSize: '0.8rem', fontWeight: 600 }}
+              style={{ backgroundColor: 'rgba(46,125,50,0.1)', border: '1px solid #2E7D32', color: '#2E7D32', padding: '0.8rem 1rem', marginBottom: '1.4rem', fontSize: '0.8rem', fontWeight: 600 }}
             >
               {successMsg}
             </motion.div>
@@ -466,10 +443,10 @@ export default function LoginPage() {
                 key="form-login"
                 initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: 12 }} transition={{ duration: 0.25 }}
                 onSubmit={handleLoginSubmit} 
-                style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1.1rem' }}
               >
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Registered Email
                   </label>
                   <input 
@@ -491,7 +468,7 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
                     <label style={{ fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700 }}>
                       Password
                     </label>
@@ -566,11 +543,11 @@ export default function LoginPage() {
                 key="form-register"
                 initial={{ opacity: 0, x: 12 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -12 }} transition={{ duration: 0.25 }}
                 onSubmit={handleRegisterSubmit} 
-                style={{ display: 'flex', flexDirection: 'column', gap: '0.95rem' }}
+                style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}
               >
                 {role === 'maker' && (
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                       Studio / Business Name
                     </label>
                     <input 
@@ -581,7 +558,7 @@ export default function LoginPage() {
                       required
                       style={{
                         width: '100%',
-                        padding: '0.8rem 1rem',
+                        padding: '0.85rem 1rem',
                         backgroundColor: 'var(--surface)',
                         border: '1px solid var(--glass-border)',
                         color: 'var(--text)',
@@ -593,7 +570,7 @@ export default function LoginPage() {
                 )}
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Full Custodian Name
                   </label>
                   <input 
@@ -604,7 +581,7 @@ export default function LoginPage() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.8rem 1rem',
+                      padding: '0.85rem 1rem',
                       backgroundColor: 'var(--surface)',
                       border: '1px solid var(--glass-border)',
                       color: 'var(--text)',
@@ -615,7 +592,7 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Gmail Address
                   </label>
                   <input 
@@ -626,7 +603,7 @@ export default function LoginPage() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.8rem 1rem',
+                      padding: '0.85rem 1rem',
                       backgroundColor: 'var(--surface)',
                       border: '1px solid var(--glass-border)',
                       color: 'var(--text)',
@@ -639,7 +616,7 @@ export default function LoginPage() {
                 {role === 'maker' && (
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                         Years Active
                       </label>
                       <input 
@@ -650,7 +627,7 @@ export default function LoginPage() {
                         required
                         style={{
                           width: '100%',
-                          padding: '0.75rem 0.8rem',
+                          padding: '0.8rem',
                           backgroundColor: 'var(--surface)',
                           border: '1px solid var(--glass-border)',
                           color: 'var(--text)',
@@ -660,7 +637,7 @@ export default function LoginPage() {
                       />
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                      <label style={{ display: 'block', fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                         Guild Craftsmen
                       </label>
                       <input 
@@ -671,7 +648,7 @@ export default function LoginPage() {
                         required
                         style={{
                           width: '100%',
-                          padding: '0.75rem 0.8rem',
+                          padding: '0.8rem',
                           backgroundColor: 'var(--surface)',
                           border: '1px solid var(--glass-border)',
                           color: 'var(--text)',
@@ -684,7 +661,7 @@ export default function LoginPage() {
                 )}
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Create Password
                   </label>
                   <input 
@@ -695,7 +672,7 @@ export default function LoginPage() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.8rem 1rem',
+                      padding: '0.85rem 1rem',
                       backgroundColor: 'var(--surface)',
                       border: '1px solid var(--glass-border)',
                       color: 'var(--text)',
@@ -706,7 +683,7 @@ export default function LoginPage() {
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                     Confirm Password
                   </label>
                   <input 
@@ -717,7 +694,7 @@ export default function LoginPage() {
                     required
                     style={{
                       width: '100%',
-                      padding: '0.8rem 1rem',
+                      padding: '0.85rem 1rem',
                       backgroundColor: 'var(--surface)',
                       border: '1px solid var(--glass-border)',
                       color: 'var(--text)',
@@ -845,7 +822,7 @@ export default function LoginPage() {
 
                 <form onSubmit={handleForgotSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.35rem' }}>
+                    <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '1.2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                       Registered Email Address
                     </label>
                     <input 
