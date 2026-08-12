@@ -16,7 +16,7 @@ import {
 const ASIA_COUNT = 480;
 const AFRICA_COUNT = 432;  // Ends cleanly at africa_0432.webp
 const TOTAL_FRAMES       = ASIA_COUNT + AFRICA_COUNT; // 912
-const DELTA_PER_FRAME    = 10;     // px of scroll needed to advance one frame (balanced normal scroll speed)
+const DELTA_PER_FRAME    = 40;     // px of scroll needed to advance one frame (40px = slow, majestic, unhurried pacing)
 const CONTENT_THRESHOLD  = 660;    // frame index at which content starts appearing (scaled for 912 total)
 
 /* Deterministic particles */
@@ -189,8 +189,8 @@ export default function LuxuryHero() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Fluid tracking lerp at 0.08 speed for smooth, non-jerky animation
-        frameRef.current += diff * 0.08;
+        // Fluid tracking lerp at 0.035 speed for slow, non-jerky, unhurried animation
+        frameRef.current += diff * 0.035;
         drawFrame(frameRef.current);
         
         const nextInt = Math.round(frameRef.current);
