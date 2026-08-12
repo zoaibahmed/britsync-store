@@ -584,14 +584,52 @@ tr:hover td {
 }
 
 /* Input highlights */
-input, select, textarea {
+input:not(.luxury-line-input), select:not(.luxury-line-input), textarea:not(.luxury-line-input) {
   border: 1px solid var(--glass-border) !important;
   background-color: var(--surface) !important;
   transition: border-color 0.3s ease, box-shadow 0.3s ease !important;
 }
-input:focus, select:focus, textarea:focus {
+input:not(.luxury-line-input):focus, select:not(.luxury-line-input):focus, textarea:not(.luxury-line-input):focus {
   border-color: var(--accent) !important;
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.08) !important;
+}
+
+/* Luxury Line Inputs (No Boxes, Pure Hairline Underline) */
+.luxury-line-input {
+  border: none !important;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.35) !important;
+  background-color: transparent !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0.8rem 0 !important;
+  font-size: 0.95rem !important;
+  color: var(--text) !important;
+  outline: none !important;
+  box-shadow: none !important;
+  transition: border-color 0.3s ease !important;
+}
+
+.luxury-line-input:focus {
+  border-bottom: 2px solid var(--accent) !important;
+  box-shadow: none !important;
+}
+
+/* Chrome & Edge Webkit Autofill Background Removal */
+input.luxury-line-input:-webkit-autofill,
+input.luxury-line-input:-webkit-autofill:hover, 
+input.luxury-line-input:-webkit-autofill:focus, 
+input.luxury-line-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #FAF9F6 inset !important;
+  -webkit-text-fill-color: #111111 !important;
+  transition: background-color 5000s ease-in-out 0s !important;
+}
+
+:root[data-theme="dark"] input.luxury-line-input:-webkit-autofill,
+:root[data-theme="dark"] input.luxury-line-input:-webkit-autofill:hover, 
+:root[data-theme="dark"] input.luxury-line-input:-webkit-autofill:focus, 
+:root[data-theme="dark"] input.luxury-line-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px #0A0A0C inset !important;
+  -webkit-text-fill-color: #FAF9F6 !important;
 }
 
 @media (min-width: 1200px) {
@@ -599,6 +637,7 @@ input:focus, select:focus, textarea:focus {
     display: block !important;
   }
 }
+
 
 
 

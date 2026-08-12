@@ -329,7 +329,7 @@ export default function LoginPage() {
           style={{ width: '100%', maxWidth: '380px' }}
         >
           {/* Header Seal */}
-          <div style={{ marginBottom: '2.5rem', textAlign: 'left' }}>
+          <div style={{ marginBottom: '2.2rem', textAlign: 'left' }}>
             <span style={{ fontSize: '0.62rem', letterSpacing: '4px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, display: 'block', marginBottom: '0.4rem' }}>
               BRITSYNC GUILD PORTAL
             </span>
@@ -340,12 +340,12 @@ export default function LoginPage() {
 
           {/* MINIMALIST TAB SWITCHER */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', marginBottom: '2.2rem' }}>
+            <div style={{ display: 'flex', borderBottom: '1px solid var(--glass-border)', marginBottom: '1.8rem' }}>
               <button
                 onClick={() => { setErrorMsg(''); setPhase('login'); }}
                 style={{
                   padding: '0.75rem 0',
-                  marginRight: '2rem',
+                  marginRight: '2.2rem',
                   backgroundColor: 'transparent',
                   border: 'none',
                   borderBottom: phase === 'login' ? '2px solid var(--accent)' : '2px solid transparent',
@@ -383,52 +383,60 @@ export default function LoginPage() {
             </div>
           )}
 
-          {/* ROLE SELECTOR PILLS */}
+          {/* SLEEK BORDERLESS ROLE TOGGLE (NO BOXES) */}
           {(phase === 'login' || phase === 'register') && (
-            <div style={{ marginBottom: '2.2rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem' }}>
-                <button
-                  type="button"
-                  onClick={() => setRole('maker')}
-                  style={{
-                    padding: '0.8rem',
-                    backgroundColor: role === 'maker' ? 'rgba(212, 175, 55, 0.08)' : 'transparent',
-                    border: role === 'maker' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-                    color: 'var(--text)',
-                    opacity: role === 'maker' ? 1 : 0.5,
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    letterSpacing: '1.5px',
-                    textTransform: 'uppercase',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🧶 Artisan Studio
-                </button>
+            <div style={{ display: 'flex', gap: '2rem', marginBottom: '2.2rem', borderBottom: '1px solid var(--glass-border)', paddingBottom: '0.8rem' }}>
+              <label 
+                onClick={() => setRole('maker')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.55rem', 
+                  cursor: 'pointer', 
+                  fontSize: '0.72rem', 
+                  letterSpacing: '1.8px', 
+                  textTransform: 'uppercase', 
+                  color: role === 'maker' ? 'var(--accent)' : 'var(--text)', 
+                  opacity: role === 'maker' ? 1 : 0.45, 
+                  fontWeight: role === 'maker' ? 700 : 400,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <input 
+                  type="radio" 
+                  name="portalRole" 
+                  checked={role === 'maker'} 
+                  onChange={() => setRole('maker')} 
+                  style={{ accentColor: 'var(--accent)', cursor: 'pointer' }} 
+                />
+                Master Artisan
+              </label>
 
-                <button
-                  type="button"
-                  onClick={() => setRole('buyer')}
-                  style={{
-                    padding: '0.8rem',
-                    backgroundColor: role === 'buyer' ? 'rgba(212, 175, 55, 0.08)' : 'transparent',
-                    border: role === 'buyer' ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
-                    color: 'var(--text)',
-                    opacity: role === 'buyer' ? 1 : 0.5,
-                    cursor: 'pointer',
-                    textAlign: 'center',
-                    fontSize: '0.72rem',
-                    fontWeight: 700,
-                    letterSpacing: '1.5px',
-                    textTransform: 'uppercase',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  🏺 Global Patron
-                </button>
-              </div>
+              <label 
+                onClick={() => setRole('buyer')}
+                style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.55rem', 
+                  cursor: 'pointer', 
+                  fontSize: '0.72rem', 
+                  letterSpacing: '1.8px', 
+                  textTransform: 'uppercase', 
+                  color: role === 'buyer' ? 'var(--accent)' : 'var(--text)', 
+                  opacity: role === 'buyer' ? 1 : 0.45, 
+                  fontWeight: role === 'buyer' ? 700 : 400,
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                <input 
+                  type="radio" 
+                  name="portalRole" 
+                  checked={role === 'buyer'} 
+                  onChange={() => setRole('buyer')} 
+                  style={{ accentColor: 'var(--accent)', cursor: 'pointer' }} 
+                />
+                Global Patron
+              </label>
             </div>
           )}
 
@@ -466,20 +474,12 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="email" 
+                    className="luxury-line-input"
                     placeholder="custodian@atelier.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 0',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--glass-border)',
-                      color: 'var(--text)',
-                      fontSize: '0.92rem',
-                      outline: 'none'
-                    }} 
+                    style={{ width: '100%' }} 
                   />
                 </div>
 
@@ -499,21 +499,12 @@ export default function LoginPage() {
                   <div style={{ position: 'relative' }}>
                     <input 
                       type={passwordVisible ? "text" : "password"} 
+                      className="luxury-line-input"
                       placeholder="••••••••••••"
                       value={password}
                       onChange={e => setPassword(e.target.value)}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '0.8rem 0',
-                        paddingRight: '2.5rem',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: '1px solid var(--glass-border)',
-                        color: 'var(--text)',
-                        fontSize: '0.92rem',
-                        outline: 'none'
-                      }} 
+                      style={{ width: '100%', paddingRight: '2.5rem' }} 
                     />
                     <button 
                       type="button"
@@ -570,20 +561,12 @@ export default function LoginPage() {
                     </label>
                     <input 
                       type="text" 
+                      className="luxury-line-input"
                       placeholder="e.g. Aisha Heritage Ceramics"
                       value={businessName}
                       onChange={e => setBusinessName(e.target.value)}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '0.8rem 0',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: '1px solid var(--glass-border)',
-                        color: 'var(--text)',
-                        fontSize: '0.92rem',
-                        outline: 'none'
-                      }} 
+                      style={{ width: '100%' }} 
                     />
                   </div>
                 )}
@@ -594,20 +577,12 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="text" 
+                    className="luxury-line-input"
                     placeholder="e.g. Master Custodian Tariq"
                     value={fullName}
                     onChange={e => setFullName(e.target.value)}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 0',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--glass-border)',
-                      color: 'var(--text)',
-                      fontSize: '0.92rem',
-                      outline: 'none'
-                    }} 
+                    style={{ width: '100%' }} 
                   />
                 </div>
 
@@ -617,45 +592,29 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="email" 
+                    className="luxury-line-input"
                     placeholder="e.g. name@gmail.com"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 0',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--glass-border)',
-                      color: 'var(--text)',
-                      fontSize: '0.92rem',
-                      outline: 'none'
-                    }} 
+                    style={{ width: '100%' }} 
                   />
                 </div>
 
                 {role === 'maker' && (
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                     <div>
                       <label style={{ display: 'block', fontSize: '0.6rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700, marginBottom: '0.4rem' }}>
                         Years Active
                       </label>
                       <input 
                         type="number" 
+                        className="luxury-line-input"
                         min={1}
                         value={yearsInBusiness}
                         onChange={e => setYearsInBusiness(Number(e.target.value))}
                         required
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem 0',
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          borderBottom: '1px solid var(--glass-border)',
-                          color: 'var(--text)',
-                          fontSize: '0.92rem',
-                          outline: 'none'
-                        }} 
+                        style={{ width: '100%' }} 
                       />
                     </div>
                     <div>
@@ -664,20 +623,12 @@ export default function LoginPage() {
                       </label>
                       <input 
                         type="number" 
+                        className="luxury-line-input"
                         min={1}
                         value={employeeCount}
                         onChange={e => setEmployeeCount(Number(e.target.value))}
                         required
-                        style={{
-                          width: '100%',
-                          padding: '0.75rem 0',
-                          backgroundColor: 'transparent',
-                          border: 'none',
-                          borderBottom: '1px solid var(--glass-border)',
-                          color: 'var(--text)',
-                          fontSize: '0.92rem',
-                          outline: 'none'
-                        }} 
+                        style={{ width: '100%' }} 
                       />
                     </div>
                   </div>
@@ -689,20 +640,12 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="password" 
+                    className="luxury-line-input"
                     placeholder="At least 6 characters"
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 0',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--glass-border)',
-                      color: 'var(--text)',
-                      fontSize: '0.92rem',
-                      outline: 'none'
-                    }} 
+                    style={{ width: '100%' }} 
                   />
                 </div>
 
@@ -712,20 +655,12 @@ export default function LoginPage() {
                   </label>
                   <input 
                     type="password" 
+                    className="luxury-line-input"
                     placeholder="Repeat password"
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     required
-                    style={{
-                      width: '100%',
-                      padding: '0.8rem 0',
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      borderBottom: '1px solid var(--glass-border)',
-                      color: 'var(--text)',
-                      fontSize: '0.92rem',
-                      outline: 'none'
-                    }} 
+                    style={{ width: '100%' }} 
                   />
                 </div>
 
@@ -777,19 +712,15 @@ export default function LoginPage() {
                         id={`otp-${i}`}
                         type="text" 
                         maxLength={1}
+                        className="luxury-line-input"
                         value={digit}
                         onChange={e => handleOtpChange(e.target.value, i)}
                         required
                         style={{
                           width: '45px',
-                          height: '52px',
-                          border: 'none',
-                          borderBottom: '2px solid var(--accent)',
-                          backgroundColor: 'transparent',
                           textAlign: 'center',
                           fontSize: '1.5rem',
-                          fontWeight: 700,
-                          color: 'var(--text)'
+                          fontWeight: 700
                         }} 
                       />
                     ))}
@@ -853,20 +784,12 @@ export default function LoginPage() {
                     </label>
                     <input 
                       type="email" 
+                      className="luxury-line-input"
                       placeholder="custodian@atelier.com"
                       value={email}
                       onChange={e => setEmail(e.target.value)}
                       required
-                      style={{
-                        width: '100%',
-                        padding: '0.8rem 0',
-                        backgroundColor: 'transparent',
-                        border: 'none',
-                        borderBottom: '1px solid var(--glass-border)',
-                        color: 'var(--text)',
-                        fontSize: '0.92rem',
-                        outline: 'none'
-                      }} 
+                      style={{ width: '100%' }} 
                     />
                   </div>
 
