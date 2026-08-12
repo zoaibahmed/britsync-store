@@ -124,6 +124,8 @@ export default function Navbar() {
     };
   }, []);
 
+  if (pathname === '/login') return null;
+
   const isHomepage = pathname === '/';
   const shouldBeSolid = scrolled || !isHomepage;
 

@@ -25,29 +25,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [carouselIndex, setCarouselIndex] = useState(0);
-
-  // High-fashion vertical portrait artisan imagery (9:16 aspect ratio)
-  const portraitShowcases = [
-    {
-      url: "https://images.unsplash.com/photo-1544256718-3bcf237f3974?auto=format&fit=crop&q=80&w=1200",
-      title: "Generational Master Ateliers",
-      subtitle: "HUMAN PROVENANCE & GEOFENCED CRAFT",
-      desc: "Direct support of master artisan families preserving century-old handcraft techniques in verified local workshops."
-    },
-    {
-      url: "https://images.unsplash.com/photo-1589156280159-27698a70f29e?auto=format&fit=crop&q=80&w=1200",
-      title: "95% Patron Direct Escrow",
-      subtitle: "ZERO MIDDLEMEN MARGIN EXPLOITATION",
-      desc: "Every transaction routes 95% of gross sales directly to the master artisan's verified local bank or digital wallet."
-    },
-    {
-      url: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?auto=format&fit=crop&q=80&w=1200",
-      title: "Cryptographic Provenance Passports",
-      subtitle: "GI REGIONAL APPELLATION PROTECTED",
-      desc: "Physical NFC passports log exact village coordinates, labor audit grades, and master craftsman signatures."
-    }
-  ];
 
   // Auto-detect phase from URL search params
   useEffect(() => {
@@ -72,16 +49,16 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cycle animated showcase images
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCarouselIndex(prev => (prev + 1) % portraitShowcases.length);
-    }, 6500);
-    return () => clearInterval(timer);
-  }, []);
-
   const validateEmail = (emailStr: string) => {
     return /\S+@\S+\.\S+/.test(emailStr);
+  };
+
+  const handleBackNavigation = () => {
+    if (typeof window !== 'undefined' && window.history.length > 2) {
+      window.history.back();
+    } else {
+      window.location.href = '/';
+    }
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {
@@ -265,105 +242,85 @@ export default function LoginPage() {
     }, 1500);
   };
 
+  // Background artwork based on active mode
+  const bgArtworkUrl = (phase === 'login' || phase === 'forgot') ? '/login-bg.png' : '/register-bg.png';
+
   return (
     <main style={{
       display: 'grid',
       gridTemplateColumns: '1.1fr 1fr',
-      minHeight: 'calc(100vh - 6.5rem)',
-      paddingTop: '6.5rem', // Clean spacing starting RIGHT BELOW fixed Navbar
+      minHeight: '100vh',
       backgroundColor: 'var(--background)',
       color: 'var(--text)',
       fontFamily: 'var(--font-inter, sans-serif)',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      position: 'relative'
     }} className="no-print animate-fade-in">
+
+      {/* FLOATING SMART BACK BUTTON — REDIRECTS TO PREVIOUS PAGE (OR HOME) */}
+      <button
+        onClick={handleBackNavigation}
+        style={{
+          position: 'fixed',
+          top: '1.8rem',
+          left: '2rem',
+          zIndex: 100,
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.6rem',
+          padding: '0.65rem 1.4rem',
+          backgroundColor: 'rgba(10, 10, 12, 0.85)',
+          border: '1px solid var(--accent)',
+          color: 'var(--accent)',
+          fontSize: '0.72rem',
+          fontWeight: 700,
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+          cursor: 'pointer',
+          backdropFilter: 'blur(12px)',
+          boxShadow: '0 8px 30px rgba(0,0,0,0.5)',
+          transition: 'all 0.25s ease'
+        }}
+      >
+        ← Back
+      </button>
       
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* LEFT SPLIT SCREEN — HIGH FASHION 9:16 PORTRAIT ARTISAN SHOWCASE */}
+      {/* LEFT SPLIT SCREEN — ULTRA-LUXURY BRAND ARTWORK (NO NAVBAR)      */}
       {/* ════════════════════════════════════════════════════════════════ */}
       <section style={{
         position: 'relative',
         display: 'flex',
         flexDirection: 'column',
         justifyContent: 'space-between',
-        backgroundImage: `url(${portraitShowcases[carouselIndex].url})`,
+        backgroundImage: `url(${bgArtworkUrl})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center 20%',
+        backgroundPosition: 'center',
         color: '#FAF9F6',
-        padding: '3rem 4vw',
+        padding: '3.5rem 4vw 2.5rem',
         borderRight: '1px solid var(--glass-border)',
-        transition: 'background-image 1s ease-in-out',
+        transition: 'background-image 0.8s ease-in-out',
         overflow: 'hidden'
       }}>
-        {/* Dark Luxury Overlay */}
-        <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(10, 10, 12, 0.76)', zIndex: 1, pointerEvents: 'none' }} />
-
-        {/* Outer Hairline Gold Border Frame */}
+        {/* Subtle Hairline Gold Frame Overlay */}
         <div style={{ position: 'absolute', inset: '1.5rem', border: '1px solid rgba(212,175,55,0.25)', pointerEvents: 'none', zIndex: 2 }} />
 
-        {/* TOP BRAND HEADER */}
-        <div style={{ zIndex: 10, position: 'relative' }}>
-          <Link href="/" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '0.75rem' }}>
-            <img src="/logo.png" alt="Britsync Logo" style={{ height: '36px', width: 'auto', objectFit: 'contain' }} />
-            <div>
-              <span style={{ letterSpacing: '4px', fontSize: '1.2rem', color: '#FAF9F6', margin: 0, textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, display: 'block' }}>BRITSYNC</span>
-              <span style={{ fontSize: '0.52rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block' }}>GLOBAL GUILD REGISTRY</span>
-            </div>
-          </Link>
-        </div>
-
-        {/* CENTER — DYNAMIC ARTISAN STORY SHOWCASE */}
-        <div style={{ zIndex: 10, position: 'relative', margin: 'auto 0', width: '100%', maxWidth: '520px' }}>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={carouselIndex}
-              initial={{ opacity: 0, y: 14 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -14 }}
-              transition={{ duration: 0.4 }}
-            >
-              <span style={{ color: '#D4AF37', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '2.5px', fontSize: '0.68rem', display: 'block', marginBottom: '0.6rem' }}>
-                {portraitShowcases[carouselIndex].subtitle}
-              </span>
-              <h1 style={{ fontSize: 'clamp(1.8rem, 2.6vw, 3rem)', lineHeight: 1.2, marginBottom: '1rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: '#FAF9F6' }}>
-                {portraitShowcases[carouselIndex].title}
-              </h1>
-              <p style={{ fontSize: '0.92rem', lineHeight: 1.75, opacity: 0.88, fontWeight: 300, maxWidth: '440px' }}>
-                {portraitShowcases[carouselIndex].desc}
-              </p>
-            </motion.div>
-          </AnimatePresence>
-
-          {/* Carousel Step Indicators */}
-          <div style={{ display: 'flex', gap: '0.5rem', marginTop: '2rem' }}>
-            {portraitShowcases.map((_, i) => (
-              <div 
-                key={i} 
-                onClick={() => setCarouselIndex(i)}
-                style={{ 
-                  width: i === carouselIndex ? '36px' : '12px', 
-                  height: '3px', 
-                  backgroundColor: i === carouselIndex ? '#D4AF37' : 'rgba(255,255,255,0.25)',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s ease' 
-                }} 
-              />
-            ))}
-          </div>
-        </div>
+        {/* Spacer for top layout */}
+        <div style={{ zIndex: 10, height: '40px' }} />
 
         {/* BOTTOM STATS FOOTER GRID */}
-        <div style={{ zIndex: 10, position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', borderTop: '1px solid rgba(255,255,255,0.12)', paddingTop: '1.4rem', textAlign: 'center' }}>
+        <div style={{ zIndex: 10, position: 'relative', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.8rem', borderTop: '1px solid rgba(212,175,55,0.3)', paddingTop: '1.4rem', textAlign: 'center', backgroundColor: 'rgba(10,10,12,0.65)', backdropFilter: 'blur(8px)', padding: '1rem', borderRadius: '2px' }}>
           <div>
             <span style={{ color: '#D4AF37', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>95%</span>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>Artisan Payout</span>
+            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>Artisan Payout</span>
           </div>
           <div>
             <span style={{ color: '#FAF9F6', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>Grade A+</span>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>Geofence Audit</span>
+            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>Geofence Audit</span>
           </div>
           <div>
             <span style={{ color: '#D4AF37', fontSize: '1.3rem', fontWeight: 300, fontFamily: 'var(--font-playfair), Georgia, serif', display: 'block' }}>100%</span>
-            <span style={{ fontSize: '0.65rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.7 }}>NFC Passports</span>
+            <span style={{ fontSize: '0.62rem', letterSpacing: '1px', textTransform: 'uppercase', opacity: 0.8 }}>NFC Passports</span>
           </div>
         </div>
       </section>

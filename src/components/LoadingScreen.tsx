@@ -132,11 +132,9 @@ export default function LoadingScreen({ loadedCount = 0, totalCount = 1852 }: Lo
           />
         </div>
 
-        {/* Frame Progress Details */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.72rem', color: 'rgba(250, 249, 246, 0.6)' }}>
-          <span style={{ color: '#D4AF37', fontWeight: 600 }}>{progress}%</span>
-          <span>&bull;</span>
-          <span>{loadedCount} / {totalCount} FRAMES</span>
+        {/* Preloader Progress Percentage */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#D4AF37', letterSpacing: '2px' }}>
+          <span>{progress}%</span>
         </div>
       </div>
     </motion.div>
