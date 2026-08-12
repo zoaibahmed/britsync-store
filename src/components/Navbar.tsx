@@ -136,6 +136,7 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Collections', path: '/collections' },
+    { name: 'Artisans', path: '/makers' },
     { name: 'About', path: '/about' },
     { name: 'Contact', path: '/contact' },
   ];
@@ -143,6 +144,7 @@ export default function Navbar() {
   const SearchIcon = () => <Icons.Search size={17} />;
   const WishlistIcon = () => <Icons.Wishlist size={17} />;
   const CartIcon = () => <Icons.Cart size={17} />;
+  const ProfileIcon = () => <Icons.Profile size={17} />;
 
   const isNavVisible = visible && (!isHomepage || !heroActive);
 
@@ -217,7 +219,7 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Links */}
-        <div className="desktop-nav-links" style={{ display: 'flex', gap: '2.4rem', alignItems: 'center' }}>
+        <div className="desktop-nav-links" style={{ display: 'flex', gap: '2.2rem', alignItems: 'center' }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.path;
             return (
@@ -252,10 +254,10 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="desktop-nav-actions" style={{ display: 'flex', gap: '1.4rem', alignItems: 'center' }}>
-          <Link href="/search" style={{ color: 'var(--text)', opacity: 0.85, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}><SearchIcon /></Link>
+        <div className="desktop-nav-actions" style={{ display: 'flex', gap: '1.3rem', alignItems: 'center' }}>
+          <Link href="/search" aria-label="Search" style={{ color: 'var(--text)', opacity: 0.85, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}><SearchIcon /></Link>
           
-          <Link href="/wishlist" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
+          <Link href="/wishlist" aria-label="Wishlist" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
             <WishlistIcon />
             {wishlistCount > 0 && (
               <span style={{
@@ -278,7 +280,7 @@ export default function Navbar() {
             )}
           </Link>
           
-          <Link href="/cart" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
+          <Link href="/cart" aria-label="Cart" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
             <CartIcon />
             {cartCount > 0 && (
               <span style={{
@@ -301,10 +303,38 @@ export default function Navbar() {
             )}
           </Link>
 
+          <Link href="/login" aria-label="Sign In / Account" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
+            <ProfileIcon />
+          </Link>
+
           <span style={{ width: '1px', height: '20px', backgroundColor: 'var(--glass-border)' }} />
 
           {/* Theme Toggle Button */}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
+
+          <Link href="/login" style={{
+            color: 'var(--text)',
+            backgroundColor: 'transparent',
+            textDecoration: 'none',
+            fontSize: '0.68rem',
+            textTransform: 'uppercase',
+            letterSpacing: '2px',
+            fontWeight: 600,
+            padding: '0.65rem 1rem',
+            border: '1px solid var(--glass-border)',
+            transition: 'all 0.3s ease'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--accent)';
+            e.currentTarget.style.color = 'var(--accent)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--glass-border)';
+            e.currentTarget.style.color = 'var(--text)';
+          }}
+          >
+            Sign In
+          </Link>
 
           <Link href="/become-a-maker" style={{
             color: '#0A0A0C',
@@ -390,6 +420,7 @@ export default function Navbar() {
           <Link href="/search" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><SearchIcon /> Search</Link>
           <Link href="/wishlist" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><WishlistIcon /> Wishlist ({wishlistCount})</Link>
           <Link href="/cart" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><CartIcon /> Cart ({cartCount})</Link>
+          <Link href="/login" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--text)', textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '1.2rem' }}><ProfileIcon /> Sign In / Account</Link>
           
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: '0.8rem', paddingTop: '1rem', borderTop: '1px solid var(--glass-border)' }}>
             <span style={{ fontSize: '0.85rem', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'var(--font-playfair), Georgia, serif', color: 'var(--text)' }}>
