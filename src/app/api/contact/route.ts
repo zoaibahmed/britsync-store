@@ -1,9 +1,10 @@
 import { NextResponse } from 'next/server';
+import { saveInquiry } from '@/lib/inquiryStore';
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, inquiryType, country, message } = body;
+    const { name, email, phone, category, inquiryType, country, subject, message } = body;
 
     if (!name || !email || !message) {
       return NextResponse.json(
@@ -12,22 +13,27 @@ export async function POST(request: Request) {
       );
     }
 
-    const ticketId = `BR-2026-TKT-${Math.floor(100000 + Math.random() * 900000)}`;
+    const selectedCategory = category || inquiryType || 'General Governance';
+
+    // Save inquiry to persistent database store
+    const saved = saveInquiry({
+      name,
+      email,
+      phone: phone || '',
+      category: selectedCategory,
+      country: country || 'Global',
+      subject: subject || `${selectedCategory} Inquiry from ${name}`,
+      message,
+    });
 
     return NextResponse.json({
       success: true,
-      ticketId,
-      message: 'Your inquiry has been received by Britsync Concierge.',
-      details: {
-        name,
-        email,
-        phone: phone || 'N/A',
-        inquiryType: inquiryType || 'General Governance',
-        country: country || 'Not Specified',
-        receivedAt: new Date().toISOString(),
-      }
+      ticketId: saved.id,
+      message: 'Your inquiry has been logged into Britsync Concierge database.',
+      details: saved,
     });
   } catch (error) {
+    console.error('Contact submit error:', error);
     return NextResponse.json(
       { error: 'Failed to submit contact inquiry.' },
       { status: 500 }

@@ -302,9 +302,11 @@ export default function MakerDetailsClient({
         .mp-sans  { font-family: var(--font-inter, system-ui, sans-serif); }
 
         /* Utility */
-        .mp-gold   { color: #C9A84C; }
-        .mp-cream  { color: #F5F0E8; }
-        .mp-muted  { color: rgba(245,240,232,0.45); }
+        .mp-gold   { color: #D4AF37; }
+        .mp-cream  { color: var(--text); }
+        .mp-muted  { color: var(--text); opacity: 0.75; }
+        .mp-bg-surface { background: var(--surface); }
+        .mp-bg-main { background: var(--background); }
         .mp-label  {
           font-family: var(--font-inter, system-ui);
           font-size: 0.6rem; font-weight: 700;
@@ -1182,46 +1184,9 @@ export default function MakerDetailsClient({
         )}
 
         {/* ═══════════════════════════════════════════════ */}
-        {/* SCENE 14 — SIMILAR ATELIERS (ALL DARK)        */}
-        {/* ═══════════════════════════════════════════════ */}
-        {similarMakers.length > 0 && (
-          <div style={{ background: "#0E0E0E", padding: "8vh 5vw" }}>
-            <div style={{ maxWidth: "1300px", margin: "0 auto" }}>
-              <motion.div initial="hidden" whileInView="show" viewport={{ once: true }} variants={fadeUp} style={{ marginBottom: "5vh" }}>
-                <span className="mp-label">Heritage Registry</span>
-                <h2 className="mp-serif mp-cream" style={{ fontSize: "clamp(2.5rem,5vw,6rem)", fontWeight: 300 }}>
-                  Similar <em className="mp-gold">Ateliers</em>
-                </h2>
-              </motion.div>
-              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit,minmax(240px,1fr))", gap: "1.5rem" }}>
-                {similarMakers.map((sm, i) => (
-                  <Link href={`/makers/${sm.id}`} key={sm.id} style={{ textDecoration: "none" }}>
-                    <motion.div
-                      initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
-                      variants={[fadeLeft, fadeUp, fadeRight, fadeScale][i % 4]}
-                      whileHover={{ y: -5 }}
-                      style={{ background: "#141414", border: "1px solid rgba(255,255,255,0.05)", borderRadius: "2px", overflow: "hidden" }}
-                    >
-                      <div style={{ height: "165px", overflow: "hidden" }}>
-                        <img src={sm.heroImage} alt={sm.businessName} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                      </div>
-                      <div style={{ padding: "1.3rem 1.5rem" }}>
-                        <span className="mp-label" style={{ marginBottom: "0.3rem" }}>📍 {sm.country}</span>
-                        <h3 className="mp-serif mp-cream" style={{ fontSize: "1.25rem", fontWeight: 400, marginBottom: "0.2rem" }}>{sm.businessName}</h3>
-                        <div className="mp-sans mp-muted" style={{ fontSize: "0.75rem" }}>{sm.productCount} Masterworks</div>
-                      </div>
-                    </motion.div>
-                  </Link>
-                ))}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ═══════════════════════════════════════════════ */}
         {/* FOOTER BRIDGE                                   */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ backgroundColor: "#0E0E0E", height: "60px" }} />
+        <div style={{ backgroundColor: "var(--background)", height: "60px" }} />
 
         {/* ══ CINEMATIC LIGHTBOX ══ */}
         <AnimatePresence>

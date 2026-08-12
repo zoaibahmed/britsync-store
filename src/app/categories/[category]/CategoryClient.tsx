@@ -29,7 +29,7 @@ export default function CategoryClient({
 }: CategoryClientProps) {
   const [filterInput, setFilterInput] = useState(initialSearch);
 
-  // Update URL search query in browser history without page reload
+  // Update URL search query in browser history
   useEffect(() => {
     const url = new URL(window.location.href);
     if (filterInput.trim()) {
@@ -41,7 +41,7 @@ export default function CategoryClient({
     window.history.replaceState(null, '', url.pathname + url.search);
   }, [filterInput]);
 
-  // Real-time live client-side filtering as user types
+  // Live filtering
   const filteredMakers = useMemo(() => {
     const q = filterInput.trim().toLowerCase();
     if (!q) return initialMakers;
@@ -63,500 +63,363 @@ export default function CategoryClient({
     switch (status) {
       case 'ELITE':
         return {
-          text: '⭐ Atelier Elite Master',
-          bg: 'rgba(212, 175, 55, 0.2)',
-          color: '#D4AF37',
-          border: 'rgba(212, 175, 55, 0.5)',
+          text: '⭐ ATELIER ELITE MASTER',
+          bg: 'rgba(212, 175, 55, 0.15)',
+          color: 'var(--accent)',
+          border: '1px solid var(--accent)',
         };
       case 'GI':
         return {
-          text: '🏛️ Protected Appellation',
-          bg: 'rgba(15, 36, 32, 0.85)',
-          color: '#D4AF37',
-          border: 'rgba(212, 175, 55, 0.4)',
+          text: '🏛️ PROTECTED APPELLATION',
+          bg: 'rgba(15, 36, 32, 0.12)',
+          color: 'var(--accent)',
+          border: '1px solid var(--accent)',
         };
       default:
         return {
-          text: '✓ Signature Partner',
-          bg: 'rgba(244, 243, 239, 0.9)',
-          color: '#0F2420',
-          border: 'rgba(15, 36, 32, 0.2)',
+          text: '✓ SIGNATURE MAKER',
+          bg: 'var(--surface)',
+          color: 'var(--text)',
+          border: '1px solid var(--glass-border)',
         };
     }
   };
 
   return (
     <main
-      className="animate-fade-in"
       style={{
         backgroundColor: 'var(--background)',
+        color: 'var(--text)',
         minHeight: '100vh',
         paddingBottom: '8rem',
+        transition: 'background-color 0.4s ease, color 0.4s ease',
       }}
     >
-      {/* Light Luxury Hero Section */}
+      {/* Luxury Editorial Hero */}
       <section
         style={{
-          padding: '9rem 2rem 4rem',
-          color: '#0F2420',
+          padding: '10rem 2rem 5rem',
           textAlign: 'center',
-          borderBottom: '1px solid rgba(212,175,55,0.2)',
+          borderBottom: '1px solid var(--glass-border)',
+          position: 'relative',
         }}
       >
-        <div style={{ maxWidth: '950px', margin: '0 auto' }}>
-          {/* Breadcrumbs */}
+        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+          {/* Breadcrumb Navigation */}
           <div
             style={{
               display: 'flex',
               gap: '0.6rem',
               justifyContent: 'center',
               alignItems: 'center',
-              fontSize: '0.82rem',
-              color: '#718096',
-              marginBottom: '1.5rem',
+              fontSize: '0.78rem',
+              opacity: 0.7,
+              marginBottom: '1.8rem',
               textTransform: 'uppercase',
-              letterSpacing: '1px',
+              letterSpacing: '2px',
+              fontWeight: 500
             }}
           >
-            <Link href="/" style={{ color: '#718096', textDecoration: 'none' }}>
-              Home
+            <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
+              HOME
             </Link>
             <span>/</span>
             <Link
               href="/collections"
-              style={{ color: '#718096', textDecoration: 'none' }}
+              style={{ color: 'inherit', textDecoration: 'none' }}
             >
-              Collections
+              COLLECTIONS
             </Link>
             <span>/</span>
-            <span style={{ color: '#B48811', fontWeight: 600 }}>
-              {categoryName}
+            <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
+              {categoryName.toUpperCase()}
             </span>
           </div>
 
-          <div
+          <span
             style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.8rem',
-              backgroundColor: '#F4F3EF',
-              border: '1px solid rgba(212,175,55,0.4)',
-              padding: '0.55rem 1.6rem',
-              borderRadius: '30px',
-              marginBottom: '1.5rem',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.03)',
+              fontSize: '0.7rem',
+              letterSpacing: '4px',
+              textTransform: 'uppercase',
+              color: 'var(--accent)',
+              fontWeight: 700,
+              display: 'block',
+              marginBottom: '0.8rem',
             }}
           >
-            <span
-              style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                backgroundColor: '#D4AF37',
-              }}
-            />
-            <span
-              style={{
-                color: '#B48811',
-                fontSize: '0.75rem',
-                textTransform: 'uppercase',
-                letterSpacing: '2.5px',
-                fontWeight: 700,
-              }}
-            >
-              VERIFIED BRAND REGISTRY
-            </span>
-          </div>
+            HERITAGE GUILD REGISTRY
+          </span>
 
           <h1
             style={{
-              fontSize: '4.2rem',
-              fontFamily: 'var(--font-playfair), serif',
+              fontFamily: 'var(--font-playfair), Georgia, serif',
+              fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
+              fontWeight: 400,
+              color: 'var(--text)',
               marginBottom: '1.2rem',
-              fontWeight: 300,
-              color: '#0F2420',
-              lineHeight: 1.15,
+              letterSpacing: '1px',
+              lineHeight: 1.1,
             }}
           >
-            {categoryName} Brands & Ateliers
+            {categoryName} Ateliers & Master Makers
           </h1>
+
           <p
             style={{
-              fontSize: '1.15rem',
-              color: '#4A5568',
-              maxWidth: '720px',
-              margin: '0 auto',
+              fontSize: '1.05rem',
               lineHeight: 1.8,
-              fontWeight: 400,
+              opacity: 0.8,
+              maxWidth: '720px',
+              margin: '0 auto 2.5rem',
+              fontWeight: 300,
             }}
           >
-            Explore certified master craftsmen and studio cooperatives
-            specializing in authentic {categoryName.toLowerCase()}. Discover
-            their heritage, lineage, and masterwork portfolios.
+            Authentic, verified master craftsmen and historical ateliers specializing in{' '}
+            <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>{categoryName}</strong>. Every workshop is GPS-audited with cryptographic provenance passports.
           </p>
 
-          {/* REAL-TIME Live Search Input */}
+          {/* Search & Filter Input */}
           <div
             style={{
-              maxWidth: '560px',
-              margin: '2.4rem auto 0',
-              position: 'relative',
+              maxWidth: '600px',
+              margin: '0 auto',
+              display: 'flex',
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--glass-border)',
+              padding: '0.4rem 0.4rem 0.4rem 1.2rem',
+              boxShadow: 'var(--shadow-sm)',
             }}
           >
             <input
               type="text"
+              placeholder={`Search ${categoryName} ateliers, artisan names, or countries...`}
               value={filterInput}
               onChange={(e) => setFilterInput(e.target.value)}
-              placeholder={`Live search master artisans & ateliers in ${categoryName}…`}
               style={{
-                width: '100%',
-                padding: '1.1rem 4.2rem 1.1rem 1.8rem',
-                borderRadius: '50px',
-                border: '1px solid rgba(212, 175, 55, 0.45)',
-                backgroundColor: '#FFFFFF',
-                boxShadow: '0 12px 35px rgba(0,0,0,0.06)',
-                fontSize: '0.95rem',
-                color: '#0F2420',
+                backgroundColor: 'transparent',
+                border: 'none',
+                color: 'var(--text)',
+                fontSize: '0.9rem',
+                flex: 1,
                 outline: 'none',
-                transition: 'border-color 0.2s ease, box-shadow 0.2s ease',
               }}
             />
-            <div
-              style={{
-                position: 'absolute',
-                right: '8px',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                width: '42px',
-                height: '42px',
-                borderRadius: '50%',
-                backgroundColor: '#D4AF37',
-                color: '#0F2420',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontSize: '1.1rem',
-                fontWeight: 700,
-              }}
-            >
-              🔍
-            </div>
-          </div>
-
-          {filterInput.trim() && (
-            <div
-              style={{
-                marginTop: '1.2rem',
-                display: 'flex',
-                justifyContent: 'center',
-                alignItems: 'center',
-                gap: '0.8rem',
-              }}
-            >
-              <span style={{ fontSize: '0.85rem', color: '#718096' }}>
-                Filtering {filteredMakers.length} {filteredMakers.length === 1 ? 'atelier' : 'ateliers'} for:{' '}
-                <strong style={{ color: '#B48811' }}>
-                  &ldquo;{filterInput.trim()}&rdquo;
-                </strong>
-              </span>
+            {filterInput && (
               <button
                 onClick={() => setFilterInput('')}
                 style={{
-                  background: 'none',
+                  backgroundColor: 'transparent',
                   border: 'none',
-                  fontSize: '0.78rem',
-                  color: '#C53030',
-                  textDecoration: 'underline',
-                  fontWeight: 600,
+                  color: 'var(--text)',
+                  fontSize: '0.8rem',
+                  opacity: 0.6,
                   cursor: 'pointer',
+                  paddingRight: '1rem',
                 }}
               >
-                Clear Filter ✕
+                Clear
               </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </section>
 
-      {/* Brands Grid */}
-      <section
-        style={{
-          padding: '5rem 2rem 0',
-          maxWidth: '1350px',
-          margin: '0 auto',
-        }}
-      >
-        {filteredMakers.length === 0 ? (
-          <div
-            style={{
-              textAlign: 'center',
-              padding: '4rem 2rem',
-              backgroundColor: '#FFFFFF',
-              borderRadius: '24px',
-              border: '1px solid rgba(212,175,55,0.3)',
-              boxShadow: '0 10px 30px rgba(0,0,0,0.04)',
-            }}
-          >
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>🔍</div>
-            <h3
-              style={{
-                fontSize: '1.8rem',
-                fontFamily: 'var(--font-playfair), serif',
-                color: '#0F2420',
-                marginBottom: '0.6rem',
-              }}
-            >
-              No Master Artisans Found
-            </h3>
-            <p style={{ color: '#718096', fontSize: '0.95rem' }}>
-              No ateliers match &ldquo;{filterInput}&rdquo; in {categoryName}.
-              Try another search or clear the filter.
-            </p>
-            <button
-              onClick={() => setFilterInput('')}
-              style={{
-                marginTop: '1.5rem',
-                padding: '0.75rem 1.8rem',
-                borderRadius: '30px',
-                backgroundColor: '#D4AF37',
-                color: '#0F2420',
-                border: 'none',
-                fontWeight: 700,
-                cursor: 'pointer',
-              }}
-            >
-              Clear Filter
-            </button>
-          </div>
-        ) : (
+      {/* Atelier Cards Grid */}
+      <section style={{ maxWidth: '1300px', margin: '0 auto', padding: '5rem 2rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: '3rem',
+            borderBottom: '1px solid var(--glass-border)',
+            paddingBottom: '1.2rem',
+          }}
+        >
+          <span style={{ fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>
+            SHOWING {filteredMakers.length} VERIFIED ATELIERS
+          </span>
+          <span style={{ fontSize: '0.8rem', color: 'var(--accent)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>
+            95% DIRECT TO ARTISAN ESCROW
+          </span>
+        </div>
+
+        {filteredMakers.length > 0 ? (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-              gap: '3rem',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+              gap: '2.5rem',
             }}
           >
             {filteredMakers.map((maker) => {
               const badge = getVerificationBadge(maker.verificationStatus);
               return (
-                <Link
-                  href={`/makers/${maker.id}`}
+                <div
                   key={maker.id}
-                  style={{ textDecoration: 'none', color: 'inherit' }}
+                  style={{
+                    backgroundColor: 'var(--surface)',
+                    border: '1px solid var(--glass-border)',
+                    overflow: 'hidden',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    transition: 'all 0.3s ease',
+                    boxShadow: 'var(--shadow-sm)',
+                  }}
                 >
-                  <div
-                    style={{
-                      backgroundColor: '#FFFFFF',
-                      borderRadius: '24px',
-                      overflow: 'hidden',
-                      height: '100%',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      border: '1px solid rgba(212, 175, 55, 0.35)',
-                      boxShadow: '0 12px 32px rgba(0,0,0,0.06)',
-                      transition: 'transform 0.4s ease, box-shadow 0.4s ease',
-                      position: 'relative',
-                    }}
-                    className="brand-card-hover"
-                  >
-                    {/* Hero Cover Image */}
+                  {/* Hero Cover Image */}
+                  <div style={{ position: 'relative', height: '230px', overflow: 'hidden', backgroundColor: 'var(--background)' }}>
+                    <img
+                      src={maker.heroImage}
+                      alt={maker.businessName}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'cover',
+                        transition: 'transform 0.5s ease',
+                      }}
+                    />
+                    <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.2)' }} />
+
+                    {/* Verification Status Badge */}
                     <div
                       style={{
-                        height: '240px',
-                        overflow: 'hidden',
-                        position: 'relative',
+                        position: 'absolute',
+                        top: '1rem',
+                        left: '1rem',
+                        backgroundColor: badge.bg,
+                        color: badge.color,
+                        border: badge.border,
+                        fontSize: '0.62rem',
+                        fontWeight: 700,
+                        letterSpacing: '1.5px',
+                        padding: '0.4rem 0.8rem',
+                        textTransform: 'uppercase',
                       }}
                     >
-                      <img
-                        src={maker.heroImage}
-                        alt={maker.businessName}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover',
-                          transition: 'transform 0.6s ease',
-                        }}
-                        className="brand-cover-img"
-                      />
-                      <div
-                        style={{
-                          position: 'absolute',
-                          inset: 0,
-                          backgroundColor: 'rgba(10, 10, 12, 0.35)',
-                        }}
-                      />
-
-                      {/* Verification Badge */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '1.2rem',
-                          left: '1.2rem',
-                          backgroundColor: badge.bg,
-                          border: `1px solid ${badge.border}`,
-                          backdropFilter: 'blur(8px)',
-                          padding: '0.4rem 1.1rem',
-                          borderRadius: '30px',
-                        }}
-                      >
-                        <span
-                          style={{
-                            color: badge.color,
-                            fontWeight: 700,
-                            textTransform: 'uppercase',
-                            fontSize: '0.72rem',
-                            letterSpacing: '1px',
-                          }}
-                        >
-                          {badge.text}
-                        </span>
-                      </div>
-
-                      {/* Product Count Pill */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          top: '1.2rem',
-                          right: '1.2rem',
-                          backgroundColor: 'rgba(15,36,32,0.85)',
-                          color: '#D4AF37',
-                          border: '1px solid rgba(212,175,55,0.4)',
-                          backdropFilter: 'blur(8px)',
-                          padding: '0.4rem 1rem',
-                          borderRadius: '30px',
-                          fontSize: '0.75rem',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {maker.productCount} Masterworks
-                      </div>
-
-                      {/* Brand Logo Avatar Overlay */}
-                      <div
-                        style={{
-                          position: 'absolute',
-                          bottom: '-24px',
-                          left: '2rem',
-                          width: '64px',
-                          height: '64px',
-                          borderRadius: '50%',
-                          border: '3px solid #D4AF37',
-                          overflow: 'hidden',
-                          boxShadow: '0 8px 20px rgba(0,0,0,0.15)',
-                          backgroundColor: '#FFFFFF',
-                        }}
-                      >
-                        <img
-                          src={maker.logo}
-                          alt={maker.founderName}
-                          style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                          }}
-                        />
-                      </div>
+                      {badge.text}
                     </div>
 
-                    {/* Brand Content Details */}
+                    {/* Country Badge */}
                     <div
                       style={{
-                        padding: '2.5rem 2rem 2rem',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        flex: 1,
+                        position: 'absolute',
+                        bottom: '1rem',
+                        left: '1rem',
+                        backgroundColor: 'rgba(10,10,12,0.85)',
+                        color: '#D4AF37',
+                        fontSize: '0.65rem',
+                        fontWeight: 700,
+                        letterSpacing: '1.5px',
+                        padding: '0.35rem 0.75rem',
+                        textTransform: 'uppercase',
                       }}
                     >
-                      <div style={{ marginBottom: '0.8rem' }}>
-                        <span
-                          style={{
-                            color: '#B48811',
-                            fontWeight: 600,
-                            fontSize: '0.78rem',
-                            textTransform: 'uppercase',
-                            letterSpacing: '1.5px',
-                          }}
-                        >
-                          📍 {maker.country} • {maker.yearsInBusiness} Years Active
-                        </span>
-                      </div>
+                      📍 {maker.country}
+                    </div>
+                  </div>
 
+                  {/* Card Content */}
+                  <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+                    <div>
                       <h2
                         style={{
-                          fontSize: '2.2rem',
-                          color: '#0F2420',
-                          marginBottom: '0.6rem',
-                          fontFamily: 'var(--font-playfair), serif',
+                          fontFamily: 'var(--font-playfair), Georgia, serif',
+                          fontSize: '1.5rem',
                           fontWeight: 400,
-                          lineHeight: 1.2,
+                          color: 'var(--text)',
+                          marginBottom: '0.4rem',
                         }}
                       >
                         {maker.businessName}
                       </h2>
 
+                      {maker.founderName && (
+                        <p style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '1rem', letterSpacing: '0.5px' }}>
+                          Master Artisan: {maker.founderName}
+                        </p>
+                      )}
+
                       <p
                         style={{
-                          color: '#4A5568',
-                          fontSize: '0.96rem',
+                          fontSize: '0.88rem',
                           lineHeight: 1.7,
-                          marginBottom: '2rem',
-                          flex: 1,
+                          opacity: 0.8,
+                          marginBottom: '1.5rem',
+                          fontWeight: 300,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
                         }}
                       >
-                        {maker.shortIntro}
+                        {maker.shortIntro || `Generational master atelier located in ${maker.country}, specializing in authentic ${categoryName} heritage craft.`}
                       </p>
+                    </div>
 
-                      <div
+                    <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ display: 'flex', gap: '1.2rem', fontSize: '0.75rem', opacity: 0.7 }}>
+                        <span>{maker.productCount || 12} Masterworks</span>
+                        <span>•</span>
+                        <span>{maker.yearsInBusiness || 15} Yrs Heritage</span>
+                      </div>
+
+                      <Link
+                        href={`/makers/${maker.id}`}
                         style={{
-                          borderTop: '1px solid #EDF2F7',
-                          paddingTop: '1.4rem',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
+                          backgroundColor: 'var(--accent)',
+                          color: '#0A0A0C',
+                          padding: '0.6rem 1.2rem',
+                          fontSize: '0.7rem',
+                          letterSpacing: '1.5px',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          textDecoration: 'none',
+                          transition: 'all 0.3s ease',
                         }}
                       >
-                        <span
-                          style={{
-                            color: '#0F2420',
-                            fontWeight: 600,
-                            fontSize: '0.88rem',
-                            letterSpacing: '0.5px',
-                          }}
-                        >
-                          Visit Brand Showroom
-                        </span>
-                        <span
-                          style={{
-                            color: '#D4AF37',
-                            fontSize: '1.2rem',
-                            fontWeight: 700,
-                          }}
-                        >
-                          →
-                        </span>
-                      </div>
+                        View Atelier
+                      </Link>
                     </div>
                   </div>
-                </Link>
+                </div>
               );
             })}
           </div>
+        ) : (
+          <div
+            style={{
+              backgroundColor: 'var(--surface)',
+              border: '1px solid var(--glass-border)',
+              padding: '5rem 2rem',
+              textAlign: 'center',
+            }}
+          >
+            <h3 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', marginBottom: '1rem' }}>
+              No Ateliers Match "{filterInput}"
+            </h3>
+            <p style={{ opacity: 0.7, maxWidth: '500px', margin: '0 auto 2rem', fontSize: '0.9rem' }}>
+              We could not find any verified master makers matching your search query in {categoryName}.
+            </p>
+            <button
+              onClick={() => setFilterInput('')}
+              style={{
+                backgroundColor: 'var(--accent)',
+                color: '#0A0A0C',
+                border: 'none',
+                padding: '0.75rem 1.8rem',
+                fontSize: '0.75rem',
+                letterSpacing: '2px',
+                fontWeight: 700,
+                cursor: 'pointer',
+                textTransform: 'uppercase',
+              }}
+            >
+              Reset Search Filter
+            </button>
+          </div>
         )}
       </section>
-
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-        .brand-card-hover:hover {
-          transform: translateY(-8px);
-          box-shadow: 0 20px 45px rgba(0,0,0,0.12) !important;
-        }
-        .brand-card-hover:hover .brand-cover-img {
-          transform: scale(1.08);
-        }
-      `,
-        }}
-      />
     </main>
   );
 }
