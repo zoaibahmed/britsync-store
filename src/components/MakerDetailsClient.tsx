@@ -127,8 +127,8 @@ function DarkProductCard({ product, maker }: {
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         style={{
-          background: "#141414",
-          border: hovered ? "1px solid rgba(201,168,76,0.5)" : "1px solid rgba(255,255,255,0.07)",
+          background: "var(--surface)",
+          border: hovered ? "1px solid var(--accent)" : "1px solid var(--glass-border)",
           borderRadius: "3px",
           overflow: "hidden",
           height: "100%",
@@ -136,11 +136,11 @@ function DarkProductCard({ product, maker }: {
           flexDirection: "column",
           transform: hovered ? "translateY(-6px)" : "translateY(0)",
           transition: "all 0.4s cubic-bezier(0.16,1,0.3,1)",
-          boxShadow: hovered ? "0 20px 50px rgba(0,0,0,0.5)" : "0 4px 20px rgba(0,0,0,0.3)",
+          boxShadow: hovered ? "var(--shadow-md)" : "var(--shadow-sm)",
         }}
       >
         {/* Image */}
-        <div style={{ position: "relative", height: "280px", overflow: "hidden", background: "#0A0A0A" }}>
+        <div style={{ position: "relative", height: "280px", overflow: "hidden", background: "var(--background)" }}>
           <div style={{
             position: "absolute", inset: 0,
             backgroundImage: `url("${img}")`,
@@ -157,14 +157,14 @@ function DarkProductCard({ product, maker }: {
             opacity: hovered ? 1 : 0,
             transform: hovered ? "scale(1.02)" : "scale(1.08)",
           }} />
-          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(14,14,14,0.35)" }} />
+          <div style={{ position: "absolute", inset: 0, backgroundColor: "rgba(0,0,0,0.15)" }} />
 
           {/* Badge */}
           <div style={{
             position: "absolute", top: "1rem", left: "1rem",
-            background: "rgba(14,14,14,0.85)", backdropFilter: "blur(12px)",
-            border: "1px solid rgba(201,168,76,0.3)",
-            color: "#C9A84C", padding: "0.3rem 0.8rem", borderRadius: "20px",
+            background: "rgba(10,10,12,0.85)", backdropFilter: "blur(12px)",
+            border: "1px solid var(--accent)",
+            color: "#D4AF37", padding: "0.3rem 0.8rem", borderRadius: "20px",
             fontSize: "0.6rem", fontWeight: 700, letterSpacing: "1.5px",
             textTransform: "uppercase",
           }}>
@@ -175,9 +175,9 @@ function DarkProductCard({ product, maker }: {
           {/* Passport chip */}
           <div style={{
             position: "absolute", top: "1rem", right: "1rem",
-            background: "rgba(201,168,76,0.15)", backdropFilter: "blur(10px)",
-            border: "1px solid rgba(201,168,76,0.35)",
-            color: "#C9A84C", padding: "0.3rem 0.65rem", borderRadius: "20px",
+            background: "rgba(212,175,55,0.15)", backdropFilter: "blur(10px)",
+            border: "1px solid var(--accent)",
+            color: "#D4AF37", padding: "0.3rem 0.65rem", borderRadius: "20px",
             fontSize: "0.6rem", fontWeight: 700,
           }}>
             🛡️ Passport
@@ -187,7 +187,7 @@ function DarkProductCard({ product, maker }: {
           <div style={{
             position: "absolute", bottom: "0.8rem", left: "1rem",
             fontSize: "0.6rem", fontWeight: 700, letterSpacing: "2px",
-            textTransform: "uppercase", color: "rgba(201,168,76,0.7)",
+            textTransform: "uppercase", color: "#D4AF37",
           }}>
             {product.category}
           </div>
@@ -198,11 +198,11 @@ function DarkProductCard({ product, maker }: {
           <h3 style={{
             fontFamily: "var(--font-cormorant, Georgia, serif)",
             fontSize: "1.3rem", fontWeight: 400, lineHeight: 1.2,
-            color: "#F5F0E8", margin: 0,
+            color: "var(--text)", margin: 0,
           }}>
             {product.name}
           </h3>
-          <div style={{ fontSize: "0.7rem", color: "rgba(245,240,232,0.4)", fontFamily: "var(--font-inter, system-ui)", letterSpacing: "0.5px" }}>
+          <div style={{ fontSize: "0.75rem", color: "var(--text)", opacity: 0.6, fontFamily: "var(--font-inter, system-ui)", letterSpacing: "0.5px" }}>
             {maker.businessName} · {maker.country}
           </div>
 
@@ -475,7 +475,7 @@ export default function MakerDetailsClient({
         }
       `}</style>
 
-      <div className="mp" style={{ background: "#0E0E0E", color: "#F5F0E8", overflowX: "hidden" }}>
+      <div className="mp" style={{ background: "var(--background)", color: "var(--text)", overflowX: "hidden" }}>
 
         {/* SCROLL PROGRESS LINE */}
         <motion.div style={{
@@ -592,7 +592,7 @@ export default function MakerDetailsClient({
         {/* ═══════════════════════════════════════════════ */}
         {/* TICKER STRIP                                   */}
         {/* ═══════════════════════════════════════════════ */}
-        <div style={{ background: "#0E0E0E", borderTop: "1px solid rgba(201,168,76,0.1)", borderBottom: "1px solid rgba(201,168,76,0.1)", overflow: "hidden" }}>
+        <div style={{ background: "var(--surface)", borderTop: "1px solid var(--glass-border)", borderBottom: "1px solid var(--glass-border)", overflow: "hidden" }}>
           <div className="mp-ticker">
             {["⭐ Atelier Elite", "🛡️ Cryptographic Passport", "📍 GPS Geofenced", "🤝 95% Patron Direct", "📜 GI Appellation", "🌍 Generational Heritage",
               "⭐ Atelier Elite", "🛡️ Cryptographic Passport", "📍 GPS Geofenced", "🤝 95% Patron Direct", "📜 GI Appellation", "🌍 Generational Heritage"].map((t, i) => (
@@ -605,9 +605,8 @@ export default function MakerDetailsClient({
 
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* ZONES 2 + 3 — CHAPTER TITLE + STICKY BIOGRAPHY — ONE BACKGROUND   */}
-        {/* Both inside one wrapper so there is zero visual seam between them   */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <div style={{ background: "#111" }}>
+        <div style={{ background: "var(--background)" }}>
 
           {/* CHAPTER TITLE */}
           <div style={{ padding: "13vh 5vw 6vh" }}>
@@ -695,7 +694,7 @@ export default function MakerDetailsClient({
         {/* ═══════════════════════════════════════════════════════════════════ */}
         {/* ZONES 4 + 5 — COLLECTION TITLE + PRODUCT SPOTLIGHTS — ONE BG     */}
         {/* ═══════════════════════════════════════════════════════════════════ */}
-        <div id="collection" style={{ background: "#0E0E0E" }}>
+        <div id="collection" style={{ background: "var(--background)" }}>
 
           {/* COLLECTION CHAPTER TITLE */}
           <div style={{ padding: "13vh 5vw 0" }}>
@@ -707,7 +706,7 @@ export default function MakerDetailsClient({
                 <motion.em
                   initial={{ opacity: 0, x: 40 }} whileInView={{ opacity: 1, x: 0 }}
                   viewport={{ once: true }} transition={{ delay: 0.4, duration: 1 }}
-                  style={{ color: "#C9A84C" }}
+                  style={{ color: "#D4AF37" }}
                 >
                   Collection.
                 </motion.em>
@@ -715,14 +714,13 @@ export default function MakerDetailsClient({
             </div>
           </div>
 
-          {/* PRODUCT SPOTLIGHTS — inside same #0E0E0E zone */}
+          {/* PRODUCT SPOTLIGHTS */}
           {mappedSpotlight.map((product, idx) => {
             const flip = idx % 2 !== 0;
-            const overlayBg = idx === 1 ? "rgba(13,26,20,0.95)" : "#0E0E0E";
             const img = product.images[0] || "https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?auto=format&fit=crop&q=80&w=1200";
 
             return (
-              <div key={product.id} style={{ background: idx === 1 ? "#0D1A14" : "#0E0E0E" }}>
+              <div key={product.id} style={{ background: "var(--background)" }}>
                 <div className="mp-spotlight" data-flip={String(flip)}>
 
                   {/* Image panel — float animation + scale-in reveal */}

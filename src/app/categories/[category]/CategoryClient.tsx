@@ -2,6 +2,7 @@
 
 import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface MakerItem {
   id: string;
@@ -22,12 +23,24 @@ interface CategoryClientProps {
   initialMakers: MakerItem[];
 }
 
+const CATEGORY_DISCIPLINES = [
+  { slug: 'Ceramics', label: 'Ceramics', icon: '🏺' },
+  { slug: 'Textiles', label: 'Textiles', icon: '🧵' },
+  { slug: 'Jewelry', label: 'Jewellery', icon: '💎' },
+  { slug: 'Leather', label: 'Leather', icon: '👜' },
+  { slug: 'Metal Craft', label: 'Metal Craft', icon: '🗡️' },
+  { slug: 'Home Decor', label: 'Living Spaces', icon: '🏛️' },
+];
+
 export default function CategoryClient({
   categoryName,
   initialSearch,
   initialMakers,
 }: CategoryClientProps) {
   const [filterInput, setFilterInput] = useState(initialSearch);
+  const [activeTier, setActiveTier] = useState<string>('ALL');
+  const [viewMode, setViewMode] = useState<'ateliers' | 'works'>('ateliers');
+  const [activeDiscipline, setActiveDiscipline] = useState<string>(categoryName);
 
   // Update URL search query in browser history
   useEffect(() => {
@@ -43,9 +56,14 @@ export default function CategoryClient({
 
   // Live filtering
   const filteredMakers = useMemo(() => {
-    const q = filterInput.trim().toLowerCase();
-    if (!q) return initialMakers;
     return initialMakers.filter((m) => {
+      // Tier filter
+      if (activeTier !== 'ALL' && m.verificationStatus !== activeTier) return false;
+
+      // Text search query
+      const q = filterInput.trim().toLowerCase();
+      if (!q) return true;
+
       const bizName = (m.businessName || '').toLowerCase();
       const founderName = (m.founderName || '').toLowerCase();
       const country = (m.country || '').toLowerCase();
@@ -57,7 +75,7 @@ export default function CategoryClient({
         intro.includes(q)
       );
     });
-  }, [initialMakers, filterInput]);
+  }, [initialMakers, filterInput, activeTier]);
 
   const getVerificationBadge = (status: string) => {
     switch (status) {
@@ -95,16 +113,17 @@ export default function CategoryClient({
         transition: 'background-color 0.4s ease, color 0.4s ease',
       }}
     >
-      {/* Luxury Editorial Hero */}
+      {/* High-Fashion Editorial Hero */}
       <section
         style={{
-          padding: '10rem 2rem 5rem',
+          padding: '9.5rem 2rem 5rem',
           textAlign: 'center',
           borderBottom: '1px solid var(--glass-border)',
           position: 'relative',
+          backgroundColor: 'var(--surface)',
         }}
       >
-        <div style={{ maxWidth: '960px', margin: '0 auto' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           {/* Breadcrumb Navigation */}
           <div
             style={{
@@ -112,28 +131,65 @@ export default function CategoryClient({
               gap: '0.6rem',
               justifyContent: 'center',
               alignItems: 'center',
-              fontSize: '0.78rem',
+              fontSize: '0.75rem',
               opacity: 0.7,
-              marginBottom: '1.8rem',
+              marginBottom: '2rem',
               textTransform: 'uppercase',
               letterSpacing: '2px',
-              fontWeight: 500
+              fontWeight: 500,
             }}
           >
             <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
               HOME
             </Link>
             <span>/</span>
-            <Link
-              href="/collections"
-              style={{ color: 'inherit', textDecoration: 'none' }}
-            >
+            <Link href="/collections" style={{ color: 'inherit', textDecoration: 'none' }}>
               COLLECTIONS
             </Link>
             <span>/</span>
             <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
-              {categoryName.toUpperCase()}
+              {activeDiscipline.toUpperCase()}
             </span>
+          </div>
+
+          {/* Discipline Selector Pills */}
+          <div
+            style={{
+              display: 'flex',
+              gap: '0.8rem',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+              marginBottom: '2.5rem',
+            }}
+          >
+            {CATEGORY_DISCIPLINES.map((disc) => {
+              const isActive = activeDiscipline.toLowerCase() === disc.slug.toLowerCase();
+              return (
+                <Link
+                  key={disc.slug}
+                  href={`/categories/${encodeURIComponent(disc.slug)}`}
+                  onClick={() => setActiveDiscipline(disc.slug)}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.55rem 1.2rem',
+                    backgroundColor: isActive ? 'var(--accent)' : 'var(--background)',
+                    color: isActive ? '#0A0A0C' : 'var(--text)',
+                    border: isActive ? '1px solid var(--accent)' : '1px solid var(--glass-border)',
+                    fontSize: '0.72rem',
+                    letterSpacing: '1.5px',
+                    fontWeight: isActive ? 800 : 500,
+                    textTransform: 'uppercase',
+                    textDecoration: 'none',
+                    transition: 'all 0.3s ease',
+                  }}
+                >
+                  <span>{disc.icon}</span>
+                  <span>{disc.label}</span>
+                </Link>
+              );
+            })}
           </div>
 
           <span
@@ -147,85 +203,135 @@ export default function CategoryClient({
               marginBottom: '0.8rem',
             }}
           >
-            HERITAGE GUILD REGISTRY
+            GLOBAL HERITAGE GUILD REGISTRY
           </span>
 
           <h1
             style={{
               fontFamily: 'var(--font-playfair), Georgia, serif',
-              fontSize: 'clamp(2.5rem, 5vw, 4.2rem)',
-              fontWeight: 400,
+              fontSize: 'clamp(2.6rem, 5.5vw, 4.8rem)',
+              fontWeight: 300,
               color: 'var(--text)',
-              marginBottom: '1.2rem',
-              letterSpacing: '1px',
-              lineHeight: 1.1,
+              marginBottom: '1.4rem',
+              letterSpacing: '-0.01em',
+              lineHeight: 1.05,
             }}
           >
-            {categoryName} Ateliers & Master Makers
+            Masterwork <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{activeDiscipline}</em> Ateliers
           </h1>
 
           <p
             style={{
-              fontSize: '1.05rem',
-              lineHeight: 1.8,
-              opacity: 0.8,
-              maxWidth: '720px',
-              margin: '0 auto 2.5rem',
+              fontSize: '1.08rem',
+              lineHeight: 1.85,
+              opacity: 0.85,
+              maxWidth: '740px',
+              margin: '0 auto 3rem',
               fontWeight: 300,
             }}
           >
-            Authentic, verified master craftsmen and historical ateliers specializing in{' '}
-            <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>{categoryName}</strong>. Every workshop is GPS-audited with cryptographic provenance passports.
+            Verified generational craftsmen and historical ateliers specializing in{' '}
+            <strong style={{ color: 'var(--accent)', fontWeight: 600 }}>{activeDiscipline}</strong>. Every workshop is GPS-audited on-site with 95% direct patron escrow payouts.
           </p>
 
-          {/* Search & Filter Input */}
+          {/* Floating Key Metrics Strip */}
           <div
             style={{
-              maxWidth: '600px',
-              margin: '0 auto',
-              display: 'flex',
-              backgroundColor: 'var(--surface)',
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+              gap: '1.5rem',
+              maxWidth: '850px',
+              margin: '0 auto 3rem',
+              padding: '1.5rem',
+              backgroundColor: 'var(--background)',
               border: '1px solid var(--glass-border)',
-              padding: '0.4rem 0.4rem 0.4rem 1.2rem',
-              boxShadow: 'var(--shadow-sm)',
             }}
           >
-            <input
-              type="text"
-              placeholder={`Search ${categoryName} ateliers, artisan names, or countries...`}
-              value={filterInput}
-              onChange={(e) => setFilterInput(e.target.value)}
+            <div>
+              <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.6, fontWeight: 700, display: 'block' }}>
+                Active Ateliers
+              </span>
+              <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', color: 'var(--accent)', fontWeight: 400 }}>
+                {filteredMakers.length} Guilds
+              </span>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.6, fontWeight: 700, display: 'block' }}>
+                Direct Escrow Payout
+              </span>
+              <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', color: 'var(--text)', fontWeight: 400 }}>
+                95% to Artisan
+              </span>
+            </div>
+            <div>
+              <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.6, fontWeight: 700, display: 'block' }}>
+                Provenance Security
+              </span>
+              <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', color: 'var(--accent)', fontWeight: 400 }}>
+                GPS & Passport
+              </span>
+            </div>
+          </div>
+
+          {/* Search & Filter Bar */}
+          <div
+            style={{
+              maxWidth: '680px',
+              margin: '0 auto',
+              display: 'flex',
+              gap: '0.8rem',
+              alignItems: 'center',
+            }}
+          >
+            <div
               style={{
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: 'var(--text)',
-                fontSize: '0.9rem',
                 flex: 1,
-                outline: 'none',
+                display: 'flex',
+                alignItems: 'center',
+                backgroundColor: 'var(--background)',
+                border: '1px solid var(--glass-border)',
+                padding: '0.5rem 0.5rem 0.5rem 1.2rem',
               }}
-            />
-            {filterInput && (
-              <button
-                onClick={() => setFilterInput('')}
+            >
+              <span style={{ marginRight: '0.6rem', opacity: 0.5 }}>🔍</span>
+              <input
+                type="text"
+                placeholder={`Search ${activeDiscipline} ateliers, artisan names, or countries...`}
+                value={filterInput}
+                onChange={(e) => setFilterInput(e.target.value)}
                 style={{
                   backgroundColor: 'transparent',
                   border: 'none',
                   color: 'var(--text)',
-                  fontSize: '0.8rem',
-                  opacity: 0.6,
-                  cursor: 'pointer',
-                  paddingRight: '1rem',
+                  fontSize: '0.9rem',
+                  flex: 1,
+                  outline: 'none',
                 }}
-              >
-                Clear
-              </button>
-            )}
+              />
+              {filterInput && (
+                <button
+                  onClick={() => setFilterInput('')}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    color: 'var(--text)',
+                    fontSize: '0.8rem',
+                    opacity: 0.6,
+                    cursor: 'pointer',
+                    paddingRight: '0.8rem',
+                  }}
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Atelier Cards Grid */}
-      <section style={{ maxWidth: '1300px', margin: '0 auto', padding: '5rem 2rem' }}>
+      {/* Main Content Area */}
+      <section style={{ maxWidth: '1350px', margin: '0 auto', padding: '4rem 2rem' }}>
+        {/* Filter Controls Bar */}
         <div
           style={{
             display: 'flex',
@@ -233,42 +339,77 @@ export default function CategoryClient({
             alignItems: 'center',
             marginBottom: '3rem',
             borderBottom: '1px solid var(--glass-border)',
-            paddingBottom: '1.2rem',
+            paddingBottom: '1.5rem',
+            flexWrap: 'wrap',
+            gap: '1.5rem',
           }}
         >
-          <span style={{ fontSize: '0.8rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>
-            SHOWING {filteredMakers.length} VERIFIED ATELIERS
-          </span>
-          <span style={{ fontSize: '0.8rem', color: 'var(--accent)', letterSpacing: '1.5px', fontWeight: 700, textTransform: 'uppercase' }}>
-            95% DIRECT TO ARTISAN ESCROW
-          </span>
+          {/* Verification Tier Tabs */}
+          <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap' }}>
+            {[
+              { id: 'ALL', label: 'All Tiers' },
+              { id: 'ELITE', label: '⭐ Atelier Elite' },
+              { id: 'GI', label: '🏛️ Protected GI' },
+              { id: 'GENERAL', label: '✓ Signature Guild' },
+            ].map((tier) => (
+              <button
+                key={tier.id}
+                onClick={() => setActiveTier(tier.id)}
+                style={{
+                  padding: '0.45rem 0.9rem',
+                  fontSize: '0.7rem',
+                  letterSpacing: '1px',
+                  textTransform: 'uppercase',
+                  fontWeight: activeTier === tier.id ? 700 : 500,
+                  border: '1px solid var(--glass-border)',
+                  backgroundColor: activeTier === tier.id ? 'var(--accent)' : 'transparent',
+                  color: activeTier === tier.id ? '#0A0A0C' : 'var(--text)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                }}
+              >
+                {tier.label}
+              </button>
+            ))}
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+            <span style={{ fontSize: '0.78rem', letterSpacing: '2px', textTransform: 'uppercase', opacity: 0.7, fontWeight: 600 }}>
+              SHOWING {filteredMakers.length} ATELIERS
+            </span>
+          </div>
         </div>
 
+        {/* Atelier Cards Grid */}
         {filteredMakers.length > 0 ? (
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
               gap: '2.5rem',
             }}
           >
             {filteredMakers.map((maker) => {
               const badge = getVerificationBadge(maker.verificationStatus);
               return (
-                <div
+                <motion.div
                   key={maker.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4 }}
+                  whileHover={{ y: -6 }}
                   style={{
                     backgroundColor: 'var(--surface)',
                     border: '1px solid var(--glass-border)',
                     overflow: 'hidden',
                     display: 'flex',
                     flexDirection: 'column',
-                    transition: 'all 0.3s ease',
                     boxShadow: 'var(--shadow-sm)',
                   }}
                 >
                   {/* Hero Cover Image */}
-                  <div style={{ position: 'relative', height: '230px', overflow: 'hidden', backgroundColor: 'var(--background)' }}>
+                  <div style={{ position: 'relative', height: '240px', overflow: 'hidden', backgroundColor: 'var(--background)' }}>
                     <img
                       src={maker.heroImage}
                       alt={maker.businessName}
@@ -276,10 +417,10 @@ export default function CategoryClient({
                         width: '100%',
                         height: '100%',
                         objectFit: 'cover',
-                        transition: 'transform 0.5s ease',
+                        transition: 'transform 0.6s ease',
                       }}
                     />
-                    <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.2)' }} />
+                    <div style={{ position: 'absolute', inset: 0, backgroundColor: 'rgba(0,0,0,0.25)' }} />
 
                     {/* Verification Status Badge */}
                     <div
@@ -290,11 +431,12 @@ export default function CategoryClient({
                         backgroundColor: badge.bg,
                         color: badge.color,
                         border: badge.border,
-                        fontSize: '0.62rem',
-                        fontWeight: 700,
+                        fontSize: '0.6rem',
+                        fontWeight: 800,
                         letterSpacing: '1.5px',
                         padding: '0.4rem 0.8rem',
                         textTransform: 'uppercase',
+                        backdropFilter: 'blur(10px)',
                       }}
                     >
                       {badge.text}
@@ -313,6 +455,7 @@ export default function CategoryClient({
                         letterSpacing: '1.5px',
                         padding: '0.35rem 0.75rem',
                         textTransform: 'uppercase',
+                        backdropFilter: 'blur(10px)',
                       }}
                     >
                       📍 {maker.country}
@@ -322,28 +465,37 @@ export default function CategoryClient({
                   {/* Card Content */}
                   <div style={{ padding: '2rem', flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
                     <div>
-                      <h2
-                        style={{
-                          fontFamily: 'var(--font-playfair), Georgia, serif',
-                          fontSize: '1.5rem',
-                          fontWeight: 400,
-                          color: 'var(--text)',
-                          marginBottom: '0.4rem',
-                        }}
-                      >
-                        {maker.businessName}
-                      </h2>
-
-                      {maker.founderName && (
-                        <p style={{ fontSize: '0.82rem', color: 'var(--accent)', fontWeight: 600, marginBottom: '1rem', letterSpacing: '0.5px' }}>
-                          Master Artisan: {maker.founderName}
-                        </p>
-                      )}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '0.8rem' }}>
+                        {maker.logo && (
+                          <div style={{ width: '40px', height: '40px', borderRadius: '50%', border: '1px solid var(--accent)', overflow: 'hidden', flexShrink: 0 }}>
+                            <img src={maker.logo} alt={maker.founderName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        )}
+                        <div>
+                          <h2
+                            style={{
+                              fontFamily: 'var(--font-playfair), Georgia, serif',
+                              fontSize: '1.5rem',
+                              fontWeight: 400,
+                              color: 'var(--text)',
+                              margin: 0,
+                              lineHeight: 1.2,
+                            }}
+                          >
+                            {maker.businessName}
+                          </h2>
+                          {maker.founderName && (
+                            <p style={{ fontSize: '0.8rem', color: 'var(--accent)', fontWeight: 600, margin: 0 }}>
+                              Custodian: {maker.founderName}
+                            </p>
+                          )}
+                        </div>
+                      </div>
 
                       <p
                         style={{
                           fontSize: '0.88rem',
-                          lineHeight: 1.7,
+                          lineHeight: 1.75,
                           opacity: 0.8,
                           marginBottom: '1.5rem',
                           fontWeight: 300,
@@ -353,13 +505,13 @@ export default function CategoryClient({
                           overflow: 'hidden',
                         }}
                       >
-                        {maker.shortIntro || `Generational master atelier located in ${maker.country}, specializing in authentic ${categoryName} heritage craft.`}
+                        {maker.shortIntro || `Generational master atelier located in ${maker.country}, specializing in authentic ${activeDiscipline} heritage craft.`}
                       </p>
                     </div>
 
                     <div style={{ borderTop: '1px solid var(--glass-border)', paddingTop: '1.2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <div style={{ display: 'flex', gap: '1.2rem', fontSize: '0.75rem', opacity: 0.7 }}>
-                        <span>{maker.productCount || 12} Masterworks</span>
+                        <span>{maker.productCount || 12} Works</span>
                         <span>•</span>
                         <span>{maker.yearsInBusiness || 15} Yrs Heritage</span>
                       </div>
@@ -369,20 +521,20 @@ export default function CategoryClient({
                         style={{
                           backgroundColor: 'var(--accent)',
                           color: '#0A0A0C',
-                          padding: '0.6rem 1.2rem',
+                          padding: '0.65rem 1.3rem',
                           fontSize: '0.7rem',
                           letterSpacing: '1.5px',
-                          fontWeight: 700,
+                          fontWeight: 800,
                           textTransform: 'uppercase',
                           textDecoration: 'none',
                           transition: 'all 0.3s ease',
                         }}
                       >
-                        View Atelier
+                        Explore Atelier →
                       </Link>
                     </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
@@ -396,13 +548,13 @@ export default function CategoryClient({
             }}
           >
             <h3 style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', marginBottom: '1rem' }}>
-              No Ateliers Match "{filterInput}"
+              No Ateliers Match Your Filter
             </h3>
             <p style={{ opacity: 0.7, maxWidth: '500px', margin: '0 auto 2rem', fontSize: '0.9rem' }}>
-              We could not find any verified master makers matching your search query in {categoryName}.
+              We could not find any verified master makers matching your selected criteria in {activeDiscipline}.
             </p>
             <button
-              onClick={() => setFilterInput('')}
+              onClick={() => { setFilterInput(''); setActiveTier('ALL'); }}
               style={{
                 backgroundColor: 'var(--accent)',
                 color: '#0A0A0C',
@@ -415,7 +567,7 @@ export default function CategoryClient({
                 textTransform: 'uppercase',
               }}
             >
-              Reset Search Filter
+              Reset Filters
             </button>
           </div>
         )}
