@@ -147,10 +147,8 @@ export default function LoginPage() {
         return;
       }
 
-      setSuccessMsg(`Security code dispatched to ${email}.${otpData.otpCode ? ` Your Code is ${otpData.otpCode}` : ''}`);
-      if (otpData.otpCode && typeof otpData.otpCode === 'string') {
-        setOtp(otpData.otpCode.split(''));
-      }
+      setSuccessMsg(`A 6-digit security code has been dispatched to ${email}. Please check your inbox.`);
+      setOtp(['', '', '', '', '', '']);
       setPhase('verify_otp');
     } catch (err) {
       setLoading(false);
@@ -765,15 +763,9 @@ export default function LoginPage() {
                       onClick={async () => {
                         setLoading(true);
                         try {
-                          const res = await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name: fullName }) });
-                          const data = await res.json();
+                          await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name: fullName }) });
                           setLoading(false);
-                          if (data.otpCode && typeof data.otpCode === 'string') {
-                            setOtp(data.otpCode.split(''));
-                            alert(`Fresh 6-digit verification code dispatched: ${data.otpCode}`);
-                          } else {
-                            alert(`A fresh 6-digit code has been dispatched to ${email}`);
-                          }
+                          alert(`A fresh 6-digit verification code has been dispatched to ${email}`);
                         } catch (err) {
                           setLoading(false);
                           alert('Failed to resend code.');

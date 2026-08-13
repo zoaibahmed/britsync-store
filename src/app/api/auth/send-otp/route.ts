@@ -65,7 +65,6 @@ export async function POST(request: Request) {
     return NextResponse.json({
       success: true,
       message: `OTP verification code dispatched to ${normalizedEmail}`,
-      otpCode, // Also return for seamless testing environments
     });
   } catch (error: any) {
     console.error('Send OTP Error:', error);
