@@ -76,7 +76,12 @@ export async function PUT(request: Request) {
     const { 
       businessName, 
       employeeCount, 
-      yearsInBusiness
+      yearsInBusiness,
+      craftCategory,
+      businessStory,
+      founderStory,
+      coverImage,
+      founderPhoto
     } = body;
 
     const updatedMaker = await prisma.makerProfile.update({
