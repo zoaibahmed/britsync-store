@@ -26,21 +26,35 @@ export default function MakerDashboard() {
   const [newPrimaryImage, setNewPrimaryImage] = useState('');
   const [newProductStory, setNewProductStory] = useState('');
 
-  // Complete Profile Onboarding Modal & Form State
+  // Multi-Step Profile Onboarding Wizard State (Steps 1 - 4)
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3 | 4>(1);
+
+  // Step 1 Fields: Identity & Category
   const [editBusinessName, setEditBusinessName] = useState('');
   const [editFounderName, setEditFounderName] = useState('');
   const [editCraftCategory, setEditCraftCategory] = useState('Ceramics & Pottery');
   const [editYearsInBusiness, setEditYearsInBusiness] = useState('5');
   const [editEmployeeCount, setEditEmployeeCount] = useState('3');
+  const [editCityCountry, setEditCityCountry] = useState('Kashmir, India');
+
+  // Step 2 Fields: Heritage & Stories
   const [editBusinessStory, setEditBusinessStory] = useState('');
   const [editFounderStory, setEditFounderStory] = useState('');
-  const [editCoverImage, setEditCoverImage] = useState('');
-  const [editFounderPhoto, setEditFounderPhoto] = useState('');
-  const [savingProfile, setSavingProfile] = useState(false);
+  const [editCraftTechniques, setEditCraftTechniques] = useState('Hand-turned wheel, natural wood-fire kilns, mineral glazes');
 
-  // Wallet payout states
+  // Step 3 Fields: Media & Gallery
+  const [editCoverImage, setEditCoverImage] = useState('https://images.unsplash.com/photo-1565193566173-7a0cb3d162cc');
+  const [editFounderPhoto, setEditFounderPhoto] = useState('https://images.unsplash.com/photo-1544256718-3bcf237f3974');
+  const [editGallery1, setEditGallery1] = useState('https://images.unsplash.com/photo-1578749556568-bc2c40e68b61');
+  const [editGallery2, setEditGallery2] = useState('https://images.unsplash.com/photo-1513694203232-719a280e022f');
+  const [editGallery3, setEditGallery3] = useState('https://images.unsplash.com/photo-1601662528567-526cd06f6582');
+
+  // Step 4 Fields: Payout Account
   const [preferredMethod, setPreferredMethod] = useState('Stripe Connect');
+  const [payoutAccountDetails, setPayoutAccountDetails] = useState('GB89 WEST 1234 5678 9012 34');
+
+  const [savingProfile, setSavingProfile] = useState(false);
 
   const loadDashboardData = async () => {
     try {
@@ -67,8 +81,8 @@ export default function MakerDashboard() {
         setEditCraftCategory(profileData.craftCategory || 'Ceramics & Pottery');
         setEditBusinessStory(profileData.businessStory || '');
         setEditFounderStory(profileData.founderStory || '');
-        setEditCoverImage(profileData.coverImage || '');
-        setEditFounderPhoto(profileData.founderPhoto || '');
+        if (profileData.coverImage) setEditCoverImage(profileData.coverImage);
+        if (profileData.founderPhoto) setEditFounderPhoto(profileData.founderPhoto);
 
         // 3. Fetch products for this maker
         const productsRes = await fetch(`/api/products?makerId=${profileData.id}&limit=100`);
@@ -142,7 +156,9 @@ export default function MakerDashboard() {
     loadDashboardData();
   }, []);
 
-  const handleSaveProfile = async () => {
+  const isVerifiedMaker = makerProfile?.verificationStatus === 'GUILD_VERIFIED' || makerProfile?.verificationStatus === 'ROYAL_CHARTER';
+
+  const handleSaveProfileWizard = async () => {
     setSavingProfile(true);
     try {
       const res = await fetch('/api/maker-profile', {
@@ -168,7 +184,10 @@ export default function MakerDashboard() {
         return;
       }
 
-      alert('✓ Your Atelier Studio Profile has been saved successfully!');
+      // Request verification audit automatically
+      await fetch('/api/verification-requests', { method: 'POST' });
+
+      alert('✓ Studio Accreditation Profile completed!\n- Audit request submitted to Britsync Governance.\n- You will be notified once a Guild Inspector reviews your workshop.');
       setShowProfileModal(false);
       loadDashboardData();
     } catch (e) {
@@ -177,7 +196,16 @@ export default function MakerDashboard() {
     }
   };
 
-  const handlePublishProduct = async () => {
+  const handlePublishProductClick = () => {
+    if (!isVerifiedMaker) {
+      alert('🔒 Studio Verification Required:\n\nTo maintain Britsync\'s high standards of authenticity, master artisans must complete their 4-step accreditation profile and receive Guild Audit approval before publishing items.\n\nPlease complete your studio profile and request a Guild Audit below!');
+      setShowProfileModal(true);
+      return;
+    }
+    setShowAddForm(true);
+  };
+
+  const handlePublishProductSubmit = async () => {
     if (!newProductName || !newProductPrice || !newProductStock) {
       alert('Please fill out product name, price, and inventory stock.');
       return;
@@ -225,7 +253,7 @@ export default function MakerDashboard() {
       alert('Your cleared balance is £0.00. No payouts eligible for release.');
       return;
     }
-    const confirmW = confirm(`Withdraw £${walletBalance.toFixed(2)} to your bank account via ${preferredMethod}?`);
+    const confirmW = confirm(`Withdraw £${walletBalance.toFixed(2)} to ${payoutAccountDetails} via ${preferredMethod}?`);
     if (confirmW) {
       try {
         const res = await fetch('/api/wallet', {
@@ -246,32 +274,15 @@ export default function MakerDashboard() {
     }
   };
 
-  const handleRequestVerification = async () => {
-    try {
-      const res = await fetch('/api/verification-requests', { method: 'POST' });
-      if (!res.ok) {
-        const err = await res.json();
-        alert(`Error: ${err.error || 'Failed to request verification.'}`);
-        return;
-      }
-      alert('✓ Verification audit requested! A Guild Inspector will visit your workshop.');
-      loadDashboardData();
-    } catch (e) {
-      alert('Failed to request verification audit.');
-    }
-  };
-
   // Calculate profile completion percentage
   const profileCompletionScore = () => {
     let score = 30; // base registered
-    if (makerProfile?.businessName) score += 15;
+    if (editBusinessName) score += 15;
     if (editCraftCategory) score += 15;
     if (editBusinessStory) score += 20;
     if (editCoverImage || editFounderPhoto) score += 20;
     return Math.min(score, 100);
   };
-
-  const isProfileIncomplete = profileCompletionScore() < 80;
 
   return (
     <div style={{
@@ -315,9 +326,9 @@ export default function MakerDashboard() {
               fontWeight: 800,
               letterSpacing: '1px',
               textTransform: 'uppercase',
-              backgroundColor: makerProfile?.verificationStatus === 'GUILD_VERIFIED' ? 'rgba(46,125,50,0.15)' : 'rgba(212,175,55,0.15)',
-              color: makerProfile?.verificationStatus === 'GUILD_VERIFIED' ? '#2E7D32' : '#D4AF37',
-              border: makerProfile?.verificationStatus === 'GUILD_VERIFIED' ? '1px solid #2E7D32' : '1px solid #D4AF37'
+              backgroundColor: isVerifiedMaker ? 'rgba(46,125,50,0.15)' : 'rgba(212,175,55,0.15)',
+              color: isVerifiedMaker ? '#2E7D32' : '#D4AF37',
+              border: isVerifiedMaker ? '1px solid #2E7D32' : '1px solid #D4AF37'
             }}>
               {makerProfile?.verificationStatus || 'GENERAL MAKER'}
             </span>
@@ -376,7 +387,7 @@ export default function MakerDashboard() {
                   textAlign: 'left'
                 }}
               >
-                <span>🎨 Studio Bio & Heritage</span>
+                <span>🎨 Studio Bio & Gallery</span>
                 <span style={{ fontSize: '0.62rem', fontWeight: 800, color: profileCompletionScore() >= 80 ? '#2E7D32' : '#D4AF37' }}>
                   {profileCompletionScore()}%
                 </span>
@@ -500,8 +511,8 @@ export default function MakerDashboard() {
       {/* ════════════════════════════════════════════════════════════════ */}
       <main style={{ padding: '2.5rem 3rem', backgroundColor: '#0A0A0C', minHeight: '100vh', overflowY: 'auto' }}>
 
-        {/* PROFILE COMPLETION ONBOARDING BANNER */}
-        {isProfileIncomplete && (
+        {/* UNVERIFIED MAKER LOCK WARNING BANNER */}
+        {!isVerifiedMaker && (
           <div style={{
             backgroundColor: '#121216',
             border: '1px solid #D4AF37',
@@ -513,18 +524,18 @@ export default function MakerDashboard() {
           }}>
             <div>
               <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>
-                ACTION REQUIRED — COMPLETE ATELIER PROFILE ({profileCompletionScore()}% COMPLETED)
+                🔒 PRODUCT PUBLISHING LOCKED — STUDIO ACCREDITATION REQUIRED
               </span>
               <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-                Welcome to Britsync, {user?.name || 'Artisan'}! Complete your studio details.
+                Complete your 4-step accreditation profile to unlock product listings
               </h3>
               <p style={{ fontSize: '0.8rem', opacity: 0.7, margin: '0.4rem 0 0 0' }}>
-                Please select your Guild Craft Category, write your workshop story, and upload studio imagery for global buyer discovery.
+                To maintain Britsync's authentic luxury standards, all craft studios must submit their category, workshop media, and heritage story for Guild Audit approval.
               </p>
             </div>
 
             <button
-              onClick={() => setShowProfileModal(true)}
+              onClick={() => { setShowProfileModal(true); setWizardStep(1); }}
               style={{
                 padding: '0.85rem 1.6rem',
                 backgroundColor: '#D4AF37',
@@ -538,7 +549,7 @@ export default function MakerDashboard() {
                 whiteSpace: 'nowrap'
               }}
             >
-              Complete Profile Now
+              Start 4-Step Accreditation Wizard →
             </button>
           </div>
         )}
@@ -551,7 +562,7 @@ export default function MakerDashboard() {
             </span>
             <h1 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
               {activeTab === 'products' && 'Handcrafted Atelier Items'}
-              {activeTab === 'profile' && 'Studio Profile & Guild Category'}
+              {activeTab === 'profile' && 'Studio Profile & Media Gallery'}
               {activeTab === 'orders' && 'Buyer Orders & Dispatch Management'}
               {activeTab === 'wallet' && 'Earnings, Balance & Bank Withdrawals'}
               {activeTab === 'verification' && 'Cryptographic Passports & Audits'}
@@ -560,24 +571,24 @@ export default function MakerDashboard() {
 
           <div style={{ display: 'flex', gap: '1rem' }}>
             <button
-              onClick={() => setShowAddForm(true)}
+              onClick={handlePublishProductClick}
               style={{
                 padding: '0.8rem 1.4rem',
-                backgroundColor: '#D4AF37',
-                color: '#0A0A0C',
+                backgroundColor: isVerifiedMaker ? '#D4AF37' : '#2A2A30',
+                color: isVerifiedMaker ? '#0A0A0C' : 'rgba(255,255,255,0.4)',
                 fontSize: '0.72rem',
                 fontWeight: 800,
                 letterSpacing: '2px',
                 textTransform: 'uppercase',
-                border: 'none',
+                border: isVerifiedMaker ? 'none' : '1px solid rgba(255,255,255,0.1)',
                 cursor: 'pointer'
               }}
             >
-              + Publish Handcrafted Item
+              {isVerifiedMaker ? '+ Publish Handcrafted Item' : '🔒 Publish Item (Locked)'}
             </button>
 
             <button
-              onClick={() => setShowProfileModal(true)}
+              onClick={() => { setShowProfileModal(true); setWizardStep(1); }}
               style={{
                 padding: '0.8rem 1.4rem',
                 backgroundColor: 'transparent',
@@ -599,7 +610,7 @@ export default function MakerDashboard() {
         {activeTab === 'products' && (
           <div>
             {/* ADD PRODUCT MODAL / PANEL */}
-            {showAddForm && (
+            {showAddForm && isVerifiedMaker && (
               <div style={{ backgroundColor: '#121216', border: '1px solid #D4AF37', padding: '2rem', marginBottom: '2.5rem' }}>
                 <h3 style={{ fontSize: '1.3rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: 0, marginBottom: '1.5rem', color: '#FFFFFF' }}>
                   Publish New Handcrafted Item to Britsync Market
@@ -694,7 +705,7 @@ export default function MakerDashboard() {
 
                 <div style={{ display: 'flex', gap: '1rem' }}>
                   <button
-                    onClick={handlePublishProduct}
+                    onClick={handlePublishProductSubmit}
                     style={{ padding: '0.9rem 2rem', backgroundColor: '#D4AF37', color: '#0A0A0C', fontSize: '0.75rem', fontWeight: 800, border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '2px' }}
                   >
                     Confirm & Publish Item
@@ -729,7 +740,7 @@ export default function MakerDashboard() {
                     {products.length === 0 ? (
                       <tr>
                         <td colSpan={5} style={{ padding: '3rem', textAlign: 'center', opacity: 0.6, fontSize: '0.85rem' }}>
-                          No products published yet. Click <strong>+ Publish Handcrafted Item</strong> above to list your first item!
+                          No products published yet. Complete your studio profile and request Guild Audit approval to list your items!
                         </td>
                       </tr>
                     ) : (
@@ -756,27 +767,39 @@ export default function MakerDashboard() {
           </div>
         )}
 
-        {/* TAB 2: STUDIO PROFILE & HERITAGE */}
+        {/* TAB 2: STUDIO PROFILE & GALLERY */}
         {activeTab === 'profile' && (
           <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2.5rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '1.2rem' }}>
               <div>
                 <h2 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-                  {makerProfile?.businessName || 'Atelier Studio Profile'}
+                  {makerProfile?.businessName || editBusinessName || 'Atelier Studio Profile'}
                 </h2>
                 <p style={{ opacity: 0.6, fontSize: '0.85rem', margin: '0.3rem 0 0 0' }}>
-                  Guild Category: <strong>{editCraftCategory}</strong> • Active for <strong>{editYearsInBusiness} Years</strong> with <strong>{editEmployeeCount} Guild Craftsmen</strong>
+                  Guild Category: <strong>{editCraftCategory}</strong> • Active for <strong>{editYearsInBusiness} Years</strong> in <strong>{editCityCountry}</strong>
                 </p>
               </div>
               <button
-                onClick={() => setShowProfileModal(true)}
+                onClick={() => { setShowProfileModal(true); setWizardStep(1); }}
                 style={{ padding: '0.8rem 1.5rem', backgroundColor: '#D4AF37', color: '#0A0A0C', fontWeight: 800, fontSize: '0.72rem', letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
               >
-                Edit Studio Details
+                Edit Studio Details & Gallery
               </button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+            {/* STUDIO BANNER MEDIA */}
+            <div style={{ marginBottom: '2.5rem', position: 'relative', height: '220px', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(212,175,55,0.2)' }}>
+              {editCoverImage ? (
+                <img src={editCoverImage} alt="Studio Banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <div style={{ width: '100%', height: '100%', backgroundColor: '#070709', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#D4AF37', fontSize: '0.8rem', letterSpacing: '2px' }}>
+                  STUDIO WORKSHOP COVER BANNER
+                </div>
+              )}
+            </div>
+
+            {/* STORIES GRID */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2.5rem' }}>
               <div style={{ backgroundColor: '#0A0A0C', padding: '1.8rem', border: '1px solid rgba(255,255,255,0.1)' }}>
                 <h3 style={{ fontSize: '1.1rem', color: '#D4AF37', marginTop: 0, marginBottom: '1rem' }}>Studio Heritage Bio</h3>
                 <p style={{ fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85 }}>
@@ -789,6 +812,20 @@ export default function MakerDashboard() {
                 <p style={{ fontSize: '0.9rem', lineHeight: 1.6, opacity: 0.85 }}>
                   {editFounderStory || `${user?.name || 'Master Artisan'} leads the studio with a commitment to uncompromised quality and heritage.`}
                 </p>
+              </div>
+            </div>
+
+            {/* CRAFTSMANSHIP PROCESS GALLERY */}
+            <div>
+              <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, color: '#FFFFFF', marginBottom: '1.2rem' }}>
+                Workshop & Craftsmanship Process Gallery
+              </h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1.2rem' }}>
+                {[editGallery1, editGallery2, editGallery3].map((url, idx) => (
+                  <div key={idx} style={{ height: '160px', backgroundColor: '#0A0A0C', border: '1px solid rgba(212,175,55,0.2)', overflow: 'hidden' }}>
+                    <img src={url} alt={`Gallery ${idx}`} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -907,14 +944,14 @@ export default function MakerDashboard() {
                 {makerProfile?.verificationStatus || 'GENERAL MAKER'}
               </h3>
               <p style={{ fontSize: '0.85rem', opacity: 0.7, margin: '0.8rem 0 1.5rem 0', lineHeight: 1.6 }}>
-                Request a physical workshop audit by a local Guild Inspector to achieve <strong>GUILD_VERIFIED</strong> status and unlock Royal Charter provenance certificates on your items.
+                Request a physical workshop audit by a local Guild Inspector to achieve <strong>GUILD_VERIFIED</strong> status and unlock item publishing on your products.
               </p>
 
               <button
-                onClick={handleRequestVerification}
+                onClick={() => { setShowProfileModal(true); setWizardStep(1); }}
                 style={{ padding: '0.9rem 1.8rem', backgroundColor: '#D4AF37', color: '#0A0A0C', fontWeight: 800, fontSize: '0.75rem', letterSpacing: '2px', textTransform: 'uppercase', border: 'none', cursor: 'pointer' }}
               >
-                Request Workshop Audit Visit
+                Request Guild Audit Visit
               </button>
             </div>
           </div>
@@ -923,7 +960,7 @@ export default function MakerDashboard() {
       </main>
 
       {/* ════════════════════════════════════════════════════════════════ */}
-      {/* COMPLETE STUDIO PROFILE ONBOARDING MODAL                         */}
+      {/* 4-STEP STUDIO ACCREDITATION ONBOARDING WIZARD MODAL              */}
       {/* ════════════════════════════════════════════════════════════════ */}
       {showProfileModal && (
         <div style={{
@@ -947,138 +984,260 @@ export default function MakerDashboard() {
             maxHeight: '90vh',
             overflowY: 'auto'
           }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '1rem' }}>
+            {/* WIZARD HEADER & PROGRESS INDICATOR */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '1rem' }}>
               <div>
                 <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 800, display: 'block' }}>
-                  ATELIER ACCREDITATION FORM
+                  STUDIO ACCREDITATION WIZARD — STEP {wizardStep} OF 4
                 </span>
                 <h3 style={{ fontSize: '1.5rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-                  Complete Your Guild Studio Profile
+                  {wizardStep === 1 && '1. Guild Category & Studio Identity'}
+                  {wizardStep === 2 && '2. Heritage Story & Craftsmanship'}
+                  {wizardStep === 3 && '3. Studio & Workshop Media Gallery'}
+                  {wizardStep === 4 && '4. Bank Account & Payout Setup'}
                 </h3>
               </div>
               <button onClick={() => setShowProfileModal(false)} style={{ background: 'none', border: 'none', color: '#FFFFFF', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '1.2rem' }}>
+            {/* STEP PROGRESS BAR */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem' }}>
+              {[1, 2, 3, 4].map((stepNum) => (
+                <div
+                  key={stepNum}
+                  style={{
+                    flex: 1,
+                    height: '4px',
+                    backgroundColor: wizardStep >= stepNum ? '#D4AF37' : 'rgba(255,255,255,0.1)'
+                  }}
+                />
+              ))}
+            </div>
+
+            {/* WIZARD STEP 1: IDENTITY & CATEGORY */}
+            {wizardStep === 1 && (
               <div>
-                <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                  Guild Craft Specialty Category
-                </label>
-                <select
-                  value={editCraftCategory}
-                  onChange={(e) => setEditCraftCategory(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '1.2rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Guild Craft Specialty Category
+                    </label>
+                    <select
+                      value={editCraftCategory}
+                      onChange={(e) => setEditCraftCategory(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                    >
+                      <option value="Ceramics & Pottery">Ceramics & Pottery</option>
+                      <option value="Textiles & Weaving">Textiles & Weaving</option>
+                      <option value="Jewelry & Precious Metals">Jewelry & Precious Metals</option>
+                      <option value="Woodwork & Joinery">Woodwork & Joinery</option>
+                      <option value="Leather Crafting">Leather Crafting</option>
+                      <option value="Home Decor & Glassware">Home Decor & Glassware</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Studio / Business Name
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Tariq Heritage Ceramics"
+                      value={editBusinessName}
+                      onChange={(e) => setEditBusinessName(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1.2rem', marginBottom: '1.8rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Years Active in Craft
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 12"
+                      value={editYearsInBusiness}
+                      onChange={(e) => setEditYearsInBusiness(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Craftsmen Count
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 4"
+                      value={editEmployeeCount}
+                      onChange={(e) => setEditEmployeeCount(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Location (City & Country)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Multan, Pakistan"
+                      value={editCityCountry}
+                      onChange={(e) => setEditCityCountry(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WIZARD STEP 2: HERITAGE & STORIES */}
+            {wizardStep === 2 && (
+              <div>
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                    Studio Bio & Generation Origin Story
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Share your atelier history, regional roots, and traditional techniques..."
+                    value={editBusinessStory}
+                    onChange={(e) => setEditBusinessStory(e.target.value)}
+                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                    Master Founder Story & Vision
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Share your personal journey as a master artisan..."
+                    value={editFounderStory}
+                    onChange={(e) => setEditFounderStory(e.target.value)}
+                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none', resize: 'vertical' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.8rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                    Traditional Craft Techniques & Raw Materials Used
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Hand-turned wheel, natural wood-fire kilns, mineral glazes"
+                    value={editCraftTechniques}
+                    onChange={(e) => setEditCraftTechniques(e.target.value)}
+                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* WIZARD STEP 3: MEDIA & GALLERY */}
+            {wizardStep === 3 && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '1.2rem' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Studio Cover Banner Image URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editCoverImage}
+                      onChange={(e) => setEditCoverImage(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.85rem', outline: 'none' }}
+                    />
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                      Master Founder Portrait URL
+                    </label>
+                    <input
+                      type="text"
+                      value={editFounderPhoto}
+                      onChange={(e) => setEditFounderPhoto(e.target.value)}
+                      style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.85rem', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1.8rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.5rem' }}>
+                    Workshop Craftsmanship Process Photos (3 URLs)
+                  </label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                    <input type="text" value={editGallery1} onChange={(e) => setEditGallery1(e.target.value)} style={{ width: '100%', padding: '0.75rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: '0.82rem' }} />
+                    <input type="text" value={editGallery2} onChange={(e) => setEditGallery2(e.target.value)} style={{ width: '100%', padding: '0.75rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: '0.82rem' }} />
+                    <input type="text" value={editGallery3} onChange={(e) => setEditGallery3(e.target.value)} style={{ width: '100%', padding: '0.75rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', color: '#FFFFFF', fontSize: '0.82rem' }} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* WIZARD STEP 4: PAYOUT & SUBMISSION */}
+            {wizardStep === 4 && (
+              <div>
+                <div style={{ marginBottom: '1.2rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                    Preferred Payout Method
+                  </label>
+                  <select
+                    value={preferredMethod}
+                    onChange={(e) => setPreferredMethod(e.target.value)}
+                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                  >
+                    <option value="Stripe Connect">Stripe Connect (Direct Transfer)</option>
+                    <option value="Wise Transfer">Wise (International SWIFT/IBAN)</option>
+                    <option value="Direct Bank Transfer">Direct Bank Wire Transfer</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '2rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
+                    Bank Account / IBAN / Email Details
+                  </label>
+                  <input
+                    type="text"
+                    value={payoutAccountDetails}
+                    onChange={(e) => setPayoutAccountDetails(e.target.value)}
+                    style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* WIZARD NAVIGATION BUTTONS */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', borderTop: '1px solid rgba(212, 175, 55, 0.2)', paddingTop: '1.5rem' }}>
+              {wizardStep > 1 && (
+                <button
+                  onClick={() => setWizardStep((prev) => (prev - 1) as any)}
+                  style={{ padding: '0.9rem 1.6rem', backgroundColor: 'transparent', color: '#FFFFFF', fontSize: '0.75rem', fontWeight: 700, border: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer' }}
                 >
-                  <option value="Ceramics & Pottery">Ceramics & Pottery</option>
-                  <option value="Textiles & Weaving">Textiles & Weaving</option>
-                  <option value="Jewelry & Precious Metals">Jewelry & Precious Metals</option>
-                  <option value="Woodwork & Joinery">Woodwork & Joinery</option>
-                  <option value="Leather Crafting">Leather Crafting</option>
-                  <option value="Home Decor & Glassware">Home Decor & Glassware</option>
-                </select>
-              </div>
+                  ← Previous Step
+                </button>
+              )}
 
-              <div>
-                <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                  Studio / Business Name
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Tariq Heritage Ceramics"
-                  value={editBusinessName}
-                  onChange={(e) => setEditBusinessName(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.2rem', marginBottom: '1.2rem' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                  Years Active in Craft
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 12"
-                  value={editYearsInBusiness}
-                  onChange={(e) => setEditYearsInBusiness(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
-                />
-              </div>
-
-              <div>
-                <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                  Guild Craftsmen Count
-                </label>
-                <input
-                  type="number"
-                  placeholder="e.g. 4"
-                  value={editEmployeeCount}
-                  onChange={(e) => setEditEmployeeCount(e.target.value)}
-                  style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
-                />
-              </div>
-            </div>
-
-            <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                Studio Bio & Heritage Generation Story
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Share your atelier history, regional roots, and traditional techniques..."
-                value={editBusinessStory}
-                onChange={(e) => setEditBusinessStory(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none', resize: 'vertical' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.8rem' }}>
-              <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                Master Founder Story
-              </label>
-              <textarea
-                rows={3}
-                placeholder="Share your personal journey as a master artisan..."
-                value={editFounderStory}
-                onChange={(e) => setEditFounderStory(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none', resize: 'vertical' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button
-                disabled={savingProfile}
-                onClick={handleSaveProfile}
-                style={{
-                  flex: 1,
-                  padding: '1rem',
-                  backgroundColor: '#D4AF37',
-                  color: '#0A0A0C',
-                  fontSize: '0.78rem',
-                  fontWeight: 800,
-                  letterSpacing: '2.5px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                {savingProfile ? 'Saving Studio Details...' : 'Save & Activate Profile'}
-              </button>
-              <button
-                onClick={() => setShowProfileModal(false)}
-                style={{
-                  padding: '1rem 1.5rem',
-                  backgroundColor: 'transparent',
-                  color: '#FFFFFF',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancel
-              </button>
+              {wizardStep < 4 ? (
+                <button
+                  onClick={() => setWizardStep((prev) => (prev + 1) as any)}
+                  style={{ marginLeft: 'auto', padding: '0.9rem 2rem', backgroundColor: '#D4AF37', color: '#0A0A0C', fontSize: '0.75rem', fontWeight: 800, border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '2px' }}
+                >
+                  Next Step →
+                </button>
+              ) : (
+                <button
+                  disabled={savingProfile}
+                  onClick={handleSaveProfileWizard}
+                  style={{ marginLeft: 'auto', padding: '0.9rem 2rem', backgroundColor: '#D4AF37', color: '#0A0A0C', fontSize: '0.78rem', fontWeight: 800, border: 'none', cursor: 'pointer', textTransform: 'uppercase', letterSpacing: '2.5px' }}
+                >
+                  {savingProfile ? 'Submitting Profile...' : 'Submit Profile for Guild Verification Audit'}
+                </button>
+              )}
             </div>
 
           </div>
