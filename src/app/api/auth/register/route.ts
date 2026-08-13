@@ -50,17 +50,26 @@ export async function POST(request: Request) {
       let inspectorProfile = null;
 
       if (role === 'MAKER') {
-        // Find a country location to assign
-        const countryLoc = await tx.location.findFirst({
+        // Find or create a country location to assign
+        let countryLoc = await tx.location.findFirst({
           where: { locationType: 'COUNTRY' }
         });
+
+        if (!countryLoc) {
+          countryLoc = await tx.location.create({
+            data: {
+              locationType: 'COUNTRY',
+              path: `globe.europe.${(country || 'uk').toLowerCase().replace(/\s+/g, '')}`,
+            }
+          });
+        }
 
         makerProfile = await tx.makerProfile.create({
           data: {
             userId: newUser.id,
             businessName: businessName || `${name}'s Atelier`,
-            locationId: countryLoc?.id || '',
-            verificationStatus: 'PENDING_AUDIT', // Set PENDING_AUDIT status for admin approval
+            locationId: countryLoc.id,
+            verificationStatus: 'GENERAL',
             yearsInBusiness: Number(yearsInBusiness) || 1,
             employeeCount: Number(employeeCount) || 1,
           }
@@ -110,8 +119,8 @@ export async function POST(request: Request) {
 
     return response;
 
-  } catch (error) {
-    console.error('Registration error:', error);
-    return NextResponse.json({ error: 'Failed to create user account' }, { status: 500 });
+  } catch (error: any) {
+    console.error('Registration error:', error?.message || error);
+    return NextResponse.json({ error: error?.message || 'Failed to create user account' }, { status: 500 });
   }
 }
