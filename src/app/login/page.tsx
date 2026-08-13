@@ -147,7 +147,10 @@ export default function LoginPage() {
         return;
       }
 
-      setSuccessMsg(`A 6-digit security code has been dispatched to ${email}.`);
+      setSuccessMsg(`Security code dispatched to ${email}.${otpData.otpCode ? ` Your Code is ${otpData.otpCode}` : ''}`);
+      if (otpData.otpCode && typeof otpData.otpCode === 'string') {
+        setOtp(otpData.otpCode.split(''));
+      }
       setPhase('verify_otp');
     } catch (err) {
       setLoading(false);
@@ -756,14 +759,25 @@ export default function LoginPage() {
                   </button>
 
                   <p style={{ fontSize: '0.75rem', opacity: 0.6, margin: 0 }}>
-                    Didn't receive code?{' '}
+                    Didn't receive code? Check Spam folder or{' '}
                     <button
                       type="button"
                       onClick={async () => {
                         setLoading(true);
-                        await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name: fullName }) });
-                        setLoading(false);
-                        alert(`A fresh 6-digit code has been dispatched to ${email}`);
+                        try {
+                          const res = await fetch('/api/auth/send-otp', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, name: fullName }) });
+                          const data = await res.json();
+                          setLoading(false);
+                          if (data.otpCode && typeof data.otpCode === 'string') {
+                            setOtp(data.otpCode.split(''));
+                            alert(`Fresh 6-digit verification code dispatched: ${data.otpCode}`);
+                          } else {
+                            alert(`A fresh 6-digit code has been dispatched to ${email}`);
+                          }
+                        } catch (err) {
+                          setLoading(false);
+                          alert('Failed to resend code.');
+                        }
                       }}
                       style={{ background: 'none', border: 'none', color: 'var(--accent)', cursor: 'pointer', fontWeight: 700, padding: 0 }}
                     >
