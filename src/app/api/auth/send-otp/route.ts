@@ -51,16 +51,12 @@ export async function POST(request: Request) {
       </div>
     `;
 
-    try {
-      await transporter.sendMail({
-        from: `"Britsync Guild Registry" <${senderEmail}>`,
-        to: normalizedEmail,
-        subject: `[Britsync Security] ${otpCode} is your Atelier Verification Code`,
-        html: htmlBody,
-      });
-    } catch (mailErr: any) {
-      console.warn('Gmail OTP dispatch warning (proceeding with local code log):', mailErr.message);
-    }
+    await transporter.sendMail({
+      from: `"Britsync Guild Registry" <${senderEmail}>`,
+      to: normalizedEmail,
+      subject: `[Britsync Security] ${otpCode} is your Atelier Verification Code`,
+      html: htmlBody,
+    });
 
     return NextResponse.json({
       success: true,
