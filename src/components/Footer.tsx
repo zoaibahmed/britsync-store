@@ -4,7 +4,7 @@ import { usePathname } from 'next/navigation';
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === '/login') return null;
+  if (pathname === '/login' || pathname?.startsWith('/dashboard')) return null;
   return (
     <footer style={{
       backgroundColor: 'var(--surface)',
