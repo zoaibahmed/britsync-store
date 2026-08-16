@@ -132,9 +132,9 @@ export default function LoadingScreen({ loadedCount = 0, totalCount = 1852 }: Lo
           />
         </div>
 
-        {/* Preloader Progress Percentage */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.75rem', color: '#D4AF37', letterSpacing: '2px' }}>
-          <span>{progress}%</span>
+        {/* Luxury Gold Percentage Progress */}
+        <div style={{ marginTop: '1.2rem', fontFamily: 'monospace', fontSize: '0.78rem', color: '#D4AF37', fontWeight: 600, letterSpacing: '2px' }}>
+          {progress}%
         </div>
       </div>
     </motion.div>
