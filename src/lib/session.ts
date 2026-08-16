@@ -3,11 +3,48 @@ import { NextRequest, NextResponse } from 'next/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'britsync_secret_heritage_key_2026_secure';
 
-interface SessionPayload {
+export interface SessionPayload {
   userId: string;
   email: string;
   role: string;
   name: string;
+}
+
+export const STAFF_ROLES = [
+  'CEO', 'SUPER_ADMIN', 'ADMIN', 'ACCREDITATION_OFFICER', 'INSPECTOR',
+  'CATALOG_CURATOR', 'FINANCE_OFFICER', 'FULFILLMENT_OFFICER', 'CONCIERGE',
+  'PROVENANCE_OFFICER', 'BI_OFFICER', 'PLATFORM_ADMIN', 'INTERNAL_AUDITOR'
+];
+
+export const MAKER_ROLES = ['MAKER', 'STUDIO_MANAGER'];
+
+// Granular RBAC Permissions
+export function canAccessOperationsShell(role: string): boolean {
+  return STAFF_ROLES.includes(role);
+}
+
+export function canGrantRoyalCharter(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN'].includes(role);
+}
+
+export function canApproveAccreditation(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN', 'ACCREDITATION_OFFICER'].includes(role);
+}
+
+export function canCurateCatalog(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN', 'CATALOG_CURATOR'].includes(role);
+}
+
+export function canProcessPayout(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN', 'FINANCE_OFFICER'].includes(role);
+}
+
+export function canManageFulfillment(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN', 'FULFILLMENT_OFFICER'].includes(role);
+}
+
+export function canManageCommissions(role: string): boolean {
+  return ['CEO', 'SUPER_ADMIN', 'ADMIN', 'CONCIERGE'].includes(role);
 }
 
 // Convert string secret to CryptoKey for Web Crypto API

@@ -289,7 +289,7 @@ async function main() {
 
   // 4. Create Users (Admin, Buyer, Inspectors, and Makers)
   const admin = await prisma.user.create({
-    data: { email: 'admin@britsync.com', passwordHash: hashPassword('password123'), name: 'Britsync Admin', role: 'ADMIN' }
+    data: { email: 'admin@britsync.com', passwordHash: hashPassword('password123'), name: 'Britsync Admin', role: 'ADMIN', isEmailVerified: true }
   });
   const buyer = await prisma.user.create({
     data: { email: 'buyer@example.com', passwordHash: hashPassword('password123'), name: 'Premium Collector', role: 'BUYER' }

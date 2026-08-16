@@ -1,1128 +1,911 @@
-"use client";
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
+'use client';
+import { useState, useEffect, useCallback } from 'react';
 
-interface ContactInquiry {
-  id: string;
-  name: string;
-  email: string;
-  phone?: string;
-  category: string;
-  country?: string;
-  subject?: string;
-  message: string;
-  status: 'UNREAD' | 'READ' | 'REPLIED';
-  createdAt: string;
-  repliedAt?: string;
-  replyMessage?: string;
-}
+type CeoSection =
+  | 'command-center' | 'studio-applications' | 'studio-audit' | 'master-catalog'
+  | 'orders' | 'financial-ledger' | 'communications' | 'reporting';
 
-interface PendingMaker {
-  id: string;
-  userId: string;
-  businessName: string;
-  founderName: string;
-  email: string;
-  verificationStatus: string;
-  yearsInBusiness: number;
-  employeeCount: number;
-  country: string;
-  businessStory: string;
-  founderStory: string;
-  createdAt: string;
-  productCount: number;
-}
+const STATUS_META: Record<string, { label: string; color: string; bg: string }> = {
+  GENERAL:           { label: 'Applicant',        color: '#8a7a6a', bg: '#1a1810' },
+  INCOMPLETE:        { label: 'In Progress',       color: '#c9a84c', bg: '#1a1600' },
+  PENDING_AUDIT:     { label: 'Pending Audit',     color: '#6ab4f5', bg: '#091828' },
+  UNDER_REVIEW:      { label: 'Under Review',      color: '#a78bfa', bg: '#120e24' },
+  REVISION_REQUIRED: { label: 'Revision Required', color: '#f59e6a', bg: '#1e0e00' },
+  GUILD_VERIFIED:    { label: 'Guild Verified',    color: '#4ade80', bg: '#051a0a' },
+  ROYAL_CHARTER:     { label: 'Royal Charter',     color: '#c9a84c', bg: '#1a1000' },
+  REJECTED:          { label: 'Not Approved',      color: '#f87171', bg: '#1a0505' },
+};
 
-export default function CEODashboard() {
-  const [activeTab, setActiveTab] = useState<
-    'dashboard' | 'audits' | 'products' | 'inquiries' | 'financials' | 'reports'
-  >('dashboard');
+const PRODUCT_STATUS_META: Record<string, { label: string; color: string }> = {
+  DRAFT:                { label: 'Draft',            color: '#8a7a6a' },
+  SUBMITTED_FOR_REVIEW: { label: 'CEO Review',       color: '#6ab4f5' },
+  CATALOG_REVIEW:       { label: 'Under Review',     color: '#a78bfa' },
+  APPROVED:             { label: 'Approved',          color: '#4ade80' },
+  PUBLISHED:            { label: 'Live',              color: '#c9a84c' },
+  REVISION_REQUIRED:    { label: 'Needs Revision',   color: '#f59e6a' },
+  REJECTED:             { label: 'Rejected',          color: '#f87171' },
+};
 
-  const [analyticsData, setAnalyticsData] = useState<any>(null);
+const fmt = (n: number) =>
+  `£${(n || 0).toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+export default function CeoDashboard() {
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState<CeoSection>('command-center');
+  const [kpis, setKpis] = useState<any>(null);
+  const [pipeline, setPipeline] = useState<Record<string, number>>({});
+  const [makers, setMakers] = useState<any[]>([]);
+  const [products, setProducts] = useState<any[]>([]);
+  const [productFilter, setProductFilter] = useState('ALL');
+  const [statusCounts, setStatusCounts] = useState<Record<string, number>>({});
 
-  // Maker Audits State
-  const [makersList, setMakersList] = useState<PendingMaker[]>([]);
-  const [approvingMakerId, setApprovingMakerId] = useState<string | null>(null);
-  const [auditFeedback, setAuditFeedback] = useState<{ success: boolean; msg: string } | null>(null);
+  // Audit profile
+  const [selectedMakerId, setSelectedMakerId] = useState<string | null>(null);
+  const [auditMaker, setAuditMaker] = useState<any>(null);
+  const [auditLoading, setAuditLoading] = useState(false);
+  const [auditAction, setAuditAction] = useState('');
+  const [auditReason, setAuditReason] = useState('');
+  const [auditNote, setAuditNote] = useState('');
+  const [auditMsg, setAuditMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // Contact Inquiries States
-  const [inquiries, setInquiries] = useState<ContactInquiry[]>([]);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
-  const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
+  // Catalog moderation
+  const [selectedProductId, setSelectedProductId] = useState<string | null>(null);
+  const [catalogAction, setCatalogAction] = useState('');
+  const [catalogReason, setCatalogReason] = useState('');
+  const [catalogMsg, setCatalogMsg] = useState<{ ok: boolean; text: string } | null>(null);
+  const [catalogActionLoading, setCatalogActionLoading] = useState(false);
 
-  // Gmail Reply Modal States
-  const [replyModalInquiry, setReplyModalInquiry] = useState<ContactInquiry | null>(null);
-  const [replySubject, setReplySubject] = useState<string>('');
-  const [replyText, setReplyText] = useState<string>('');
-  const [sendingReply, setSendingReply] = useState<boolean>(false);
-  const [replyFeedback, setReplyFeedback] = useState<{ success: boolean; msg: string } | null>(null);
+  // Maker search/filter
+  const [makerSearch, setMakerSearch] = useState('');
+  const [makerStatusFilter, setMakerStatusFilter] = useState('ALL');
 
-  // Executive Reports states
-  const [reportFreq, setReportFreq] = useState<'daily' | 'weekly' | 'monthly' | 'quarterly' | 'yearly'>('monthly');
-  const [reportFormat, setReportFormat] = useState<'pdf' | 'excel' | 'csv'>('csv');
-  const [simulatingDownload, setSimulatingDownload] = useState<boolean>(false);
-  const [downloadSuccess, setDownloadSuccess] = useState<string | null>(null);
-
-  // Mock Products list for admin catalog overview
-  const [adminProducts, setAdminProducts] = useState<any[]>([
-    { id: '1', name: 'Royal Crown Ceramic Urn', maker: 'Aisha Ceramics', price: 450, category: 'Ceramics', status: 'VERIFIED', stock: 12 },
-    { id: '2', name: 'Heritage Cashmere Shawl', maker: 'Scottish Looms', price: 890, category: 'Textiles', status: 'ROYAL_CHARTER', stock: 5 },
-    { id: '3', name: 'Hand-Hammered Brass Bowl', maker: 'Tariq Metalcraft', price: 320, category: 'Woodwork', status: 'GENERAL', stock: 20 },
-    { id: '4', name: 'Victorian Leather Holdall', maker: 'Kensington Leather', price: 1250, category: 'Leather', status: 'GUILD_VERIFIED', stock: 8 },
-  ]);
-
-  const fetchInquiries = async () => {
+  const loadDashboard = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/inquiries');
-      if (res.ok) {
-        const data = await res.json();
-        setInquiries(data.inquiries || []);
-        setUnreadCount(data.unreadCount || 0);
+      const [statsRes, makersRes] = await Promise.all([
+        fetch('/api/admin/dashboard-stats'),
+        fetch('/api/admin/makers'),
+      ]);
+
+      if (statsRes.ok) {
+        const d = await statsRes.json();
+        setKpis(d.kpis);
+        setPipeline(d.pipeline || {});
       }
-    } catch (e) {
-      console.error('Failed to fetch inquiries:', e);
+
+      if (makersRes.ok) {
+        const d = await makersRes.json();
+        setMakers(d.makers || []);
+      }
+    } catch (err) {
+      console.error('CEO dashboard load error:', err);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  const fetchMakers = async () => {
-    try {
-      const res = await fetch('/api/admin/makers');
-      if (res.ok) {
-        const data = await res.json();
-        setMakersList(data.makers || []);
-      }
-    } catch (e) {
-      console.error('Failed to fetch admin makers:', e);
-    }
-  };
-
-  useEffect(() => {
-    const fetchCeoData = async () => {
-      setLoading(true);
-      try {
-        const res = await fetch('/api/analytics/ceo');
-        if (res.ok) {
-          const data = await res.json();
-          setAnalyticsData(data);
-        }
-      } catch (e) {
-        console.error('Failed to load CEO analytics:', e);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCeoData();
-    fetchMakers();
-    fetchInquiries();
-
-    const interval = setInterval(() => {
-      fetchInquiries();
-      fetchMakers();
-    }, 20000);
-
-    return () => clearInterval(interval);
   }, []);
 
-  const openReplyModal = (inquiry: ContactInquiry) => {
-    setReplyModalInquiry(inquiry);
-    setReplySubject(inquiry.subject ? `Re: ${inquiry.subject}` : `Reply regarding ${inquiry.category} Inquiry`);
-    setReplyText(`Dear ${inquiry.name},\n\nThank you for reaching out to the Britsync Global Guild Registry Secretariat.\n\n\nSincerely,\nBritsync Governance Team\nMayfair Headquarters, London`);
-    setReplyFeedback(null);
-  };
-
-  const handleSendReply = async () => {
-    if (!replyModalInquiry) return;
-    setSendingReply(true);
-    setReplyFeedback(null);
-
+  const loadProducts = useCallback(async () => {
     try {
-      const res = await fetch('/api/admin/inquiries/reply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          inquiryId: replyModalInquiry.id,
-          toEmail: replyModalInquiry.email,
-          toName: replyModalInquiry.name,
-          subject: replySubject,
-          message: replyText
-        })
-      });
-
-      const data = await res.json();
-      setSendingReply(false);
-
-      if (res.ok && data.success) {
-        setReplyFeedback({ success: true, msg: 'Email reply dispatched via Gmail SMTP.' });
-        fetchInquiries();
-        setTimeout(() => {
-          setReplyModalInquiry(null);
-        }, 1200);
-      } else {
-        setReplyFeedback({ success: false, msg: data.error || 'Failed to dispatch email.' });
+      const res = await fetch(`/api/admin/catalog?status=${productFilter}`);
+      if (res.ok) {
+        const d = await res.json();
+        setProducts(d.products || []);
+        setStatusCounts(d.statusCounts || {});
       }
-    } catch (e: any) {
-      setSendingReply(false);
-      setReplyFeedback({ success: false, msg: e.message || 'Network error sending email.' });
+    } catch (err) {
+      console.error('Catalog load error:', err);
     }
-  };
+  }, [productFilter]);
 
-  const handleMakerAction = async (makerId: string, status: string) => {
-    setApprovingMakerId(makerId);
-    setAuditFeedback(null);
+  useEffect(() => { loadDashboard(); }, [loadDashboard]);
+  useEffect(() => { if (activeSection === 'master-catalog') loadProducts(); }, [activeSection, loadProducts]);
+  useEffect(() => { if (activeSection === 'master-catalog') loadProducts(); }, [productFilter]);
+
+  const openAuditProfile = async (makerId: string) => {
+    setSelectedMakerId(makerId);
+    setActiveSection('studio-audit');
+    setAuditLoading(true);
+    setAuditMsg(null);
     try {
-      const res = await fetch('/api/admin/makers/approve', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ makerId, status })
-      });
-
-      const data = await res.json();
-      if (res.ok && data.success) {
-        setAuditFeedback({ success: true, msg: data.message });
-        fetchMakers();
-      } else {
-        setAuditFeedback({ success: false, msg: data.error || 'Failed to update maker status.' });
+      const res = await fetch(`/api/admin/accreditation/${makerId}`);
+      if (res.ok) {
+        const d = await res.json();
+        setAuditMaker(d.maker);
       }
-    } catch (e: any) {
-      setAuditFeedback({ success: false, msg: e.message || 'Error communicating with server.' });
     } finally {
-      setApprovingMakerId(null);
+      setAuditLoading(false);
     }
   };
 
-  const handleDownloadReport = () => {
-    setSimulatingDownload(true);
-    setDownloadSuccess(null);
-    setTimeout(() => {
-      setSimulatingDownload(false);
-      setDownloadSuccess(`Britsync-Executive-${reportFreq.toUpperCase()}-Report.${reportFormat}`);
-      const csvContent = "data:text/csv;charset=utf-8,KPI,Value\n" +
-        `Total Revenue,£${analyticsData?.kpis?.totalRevenue?.toFixed(2) || '0.00'}\n` +
-        `Escrow Holds,£${analyticsData?.kpis?.escrowBalance?.toFixed(2) || '0.00'}\n` +
-        `Net Britsync Margin,£${analyticsData?.kpis?.netMargin?.toFixed(2) || '0.00'}\n` +
-        `Completed Orders,${analyticsData?.kpis?.orderCount || '0'}\n`;
-      const encodedUri = encodeURI(csvContent);
-      const link = document.createElement("a");
-      link.setAttribute("href", encodedUri);
-      link.setAttribute("download", `Britsync_${reportFreq}_Report.csv`);
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    }, 1200);
+  const submitAuditAction = async () => {
+    if (!selectedMakerId || !auditAction) return;
+    if (auditAction === 'REQUEST_REVISION' && !auditReason) {
+      setAuditMsg({ ok: false, text: 'A revision reason is required.' });
+      return;
+    }
+    setActionLoading(true);
+    setAuditMsg(null);
+    try {
+      const res = await fetch(`/api/admin/accreditation/${selectedMakerId}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: auditAction, reason: auditReason, internalNote: auditNote }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setAuditMsg({ ok: true, text: `Action completed: ${json.newStatus}` });
+        // Refresh
+        const refreshRes = await fetch(`/api/admin/accreditation/${selectedMakerId}`);
+        if (refreshRes.ok) { const d = await refreshRes.json(); setAuditMaker(d.maker); }
+        loadDashboard();
+        setAuditAction(''); setAuditReason(''); setAuditNote('');
+      } else {
+        setAuditMsg({ ok: false, text: json.error || 'Action failed' });
+      }
+    } finally {
+      setActionLoading(false);
+    }
   };
 
-  const filteredInquiries = inquiries.filter((inq) => {
-    if (categoryFilter === 'ALL') return true;
-    return inq.category.toUpperCase().includes(categoryFilter.toUpperCase());
+  const submitCatalogAction = async (productId: string, action: string, reason?: string) => {
+    setCatalogActionLoading(true);
+    setCatalogMsg(null);
+    try {
+      const res = await fetch('/api/admin/catalog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productId, action, reason }),
+      });
+      const json = await res.json();
+      if (res.ok) {
+        setCatalogMsg({ ok: true, text: `Product updated to: ${json.newStatus}` });
+        loadProducts();
+      } else {
+        setCatalogMsg({ ok: false, text: json.error || 'Action failed' });
+      }
+    } finally {
+      setCatalogActionLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#080705', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{ width: 48, height: 48, border: '2px solid #c9a84c', borderTopColor: 'transparent', borderRadius: '50%', animation: 'spin 1s linear infinite', margin: '0 auto 16px' }} />
+          <p style={{ color: '#8a7a6a', fontFamily: 'var(--font-outfit)', fontSize: 13, letterSpacing: 2, textTransform: 'uppercase' }}>Loading Executive Command Center</p>
+          <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+        </div>
+      </div>
+    );
+  }
+
+  const filteredMakers = makers.filter(m => {
+    const matchesSearch = !makerSearch ||
+      m.businessName?.toLowerCase().includes(makerSearch.toLowerCase()) ||
+      m.founderName?.toLowerCase().includes(makerSearch.toLowerCase()) ||
+      m.email?.toLowerCase().includes(makerSearch.toLowerCase());
+    const matchesStatus = makerStatusFilter === 'ALL' || m.verificationStatus === makerStatusFilter;
+    return matchesSearch && matchesStatus;
   });
 
-  const pendingMakersCount = makersList.filter((m) => m.verificationStatus === 'PENDING_AUDIT' || m.verificationStatus === 'GENERAL').length;
+  return (
+    <div style={{ display: 'flex', minHeight: '100vh', background: '#080705', color: '#f5f0e8' }}>
+      {/* Sidebar */}
+      <CeoSidebar active={activeSection} onNavigate={setActiveSection} kpis={kpis} />
+
+      {/* Main */}
+      <div style={{ flex: 1, padding: '32px 36px', overflowY: 'auto', minWidth: 0 }}>
+        {activeSection === 'command-center' && (
+          <CommandCenterSection kpis={kpis} pipeline={pipeline} makers={makers} onOpenMaker={openAuditProfile} onNavigate={setActiveSection} fmt={fmt} />
+        )}
+        {activeSection === 'studio-applications' && (
+          <StudioApplicationsSection
+            makers={filteredMakers} allMakers={makers}
+            search={makerSearch} setSearch={setMakerSearch}
+            statusFilter={makerStatusFilter} setStatusFilter={setMakerStatusFilter}
+            onOpenMaker={openAuditProfile}
+          />
+        )}
+        {activeSection === 'studio-audit' && (
+          <StudioAuditSection
+            maker={auditMaker} loading={auditLoading}
+            auditAction={auditAction} setAuditAction={setAuditAction}
+            auditReason={auditReason} setAuditReason={setAuditReason}
+            auditNote={auditNote} setAuditNote={setAuditNote}
+            auditMsg={auditMsg} actionLoading={actionLoading}
+            submitAction={submitAuditAction}
+            onBack={() => setActiveSection('studio-applications')}
+            fmt={fmt}
+          />
+        )}
+        {activeSection === 'master-catalog' && (
+          <MasterCatalogSection
+            products={products} statusCounts={statusCounts}
+            productFilter={productFilter} setProductFilter={setProductFilter}
+            catalogMsg={catalogMsg} catalogActionLoading={catalogActionLoading}
+            submitCatalogAction={submitCatalogAction}
+            fmt={fmt}
+          />
+        )}
+        {activeSection === 'financial-ledger' && (
+          <FinancialLedgerSection kpis={kpis} fmt={fmt} />
+        )}
+        {activeSection === 'communications' && (
+          <CommunicationsSection />
+        )}
+        {activeSection === 'reporting' && (
+          <ReportingSection kpis={kpis} fmt={fmt} />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// CEO SIDEBAR
+// ══════════════════════════════════════════════════════════════════════════════
+function CeoSidebar({ active, onNavigate, kpis }: any) {
+  const navItem = (id: string, label: string, icon: string, badge?: number) => (
+    <button
+      key={id}
+      onClick={() => onNavigate(id)}
+      style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '9px 16px', borderRadius: 6, cursor: 'pointer',
+        background: active === id ? 'rgba(201,168,76,0.12)' : 'transparent',
+        border: active === id ? '1px solid rgba(201,168,76,0.25)' : '1px solid transparent',
+        color: active === id ? '#c9a84c' : '#8a7a6a',
+        fontSize: 13, fontFamily: 'var(--font-outfit)', fontWeight: active === id ? 600 : 400,
+        width: '100%', textAlign: 'left', transition: 'all 0.15s',
+      }}
+    >
+      <span style={{ display: 'flex', alignItems: 'center', gap: 9 }}>
+        <span style={{ fontSize: 14 }}>{icon}</span>
+        {label}
+      </span>
+      {badge != null && badge > 0 && (
+        <span style={{ background: '#c9a84c', color: '#080705', fontSize: 10, fontWeight: 700, padding: '1px 6px', borderRadius: 99, fontFamily: 'var(--font-outfit)' }}>
+          {badge}
+        </span>
+      )}
+    </button>
+  );
+
+  const sectionLabel = (label: string) => (
+    <p style={{ fontSize: 10, fontFamily: 'var(--font-outfit)', letterSpacing: 2.5, color: '#4a4030', fontWeight: 700, textTransform: 'uppercase', padding: '16px 16px 6px', margin: 0 }}>{label}</p>
+  );
 
   return (
-    <div style={{
-      display: 'grid',
-      gridTemplateColumns: '260px 1fr',
-      minHeight: '100vh',
-      backgroundColor: '#0A0A0C',
-      color: '#FAF9F6',
-      fontFamily: 'var(--font-inter, sans-serif)',
-      position: 'relative'
-    }}>
+    <div style={{ width: 240, minWidth: 240, height: '100vh', position: 'sticky', top: 0, background: '#0c0b08', borderRight: '1px solid #1e1c18', display: 'flex', flexDirection: 'column', overflowY: 'auto' }}>
+      {/* Brand */}
+      <div style={{ padding: '24px 20px 20px', borderBottom: '1px solid #1e1c18' }}>
+        <p style={{ fontSize: 10, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 4px' }}>BritSync</p>
+        <p style={{ fontSize: 15, color: '#f5f0e8', fontFamily: 'var(--font-playfair)', margin: '0 0 4px', fontWeight: 600 }}>Guild Secretariat</p>
+        <span style={{ fontSize: 10, background: 'rgba(248,113,113,0.12)', color: '#f87171', border: '1px solid rgba(248,113,113,0.25)', borderRadius: 4, padding: '2px 8px', fontFamily: 'var(--font-outfit)', letterSpacing: 1 }}>RESTRICTED ACCESS</span>
+      </div>
 
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {/* FULL LEFT SIDEBAR COMMAND NAVIGATION PANEL                       */}
-      {/* ════════════════════════════════════════════════════════════════ */}
-      <aside style={{
-        backgroundColor: '#070709',
-        borderRight: '1px solid rgba(212, 175, 55, 0.15)',
-        display: 'flex',
-        flexDirection: 'column',
-        justifyContent: 'space-between',
-        padding: '1.8rem 1.2rem',
-        position: 'sticky',
-        top: 0,
-        height: '100vh',
-        zIndex: 50
-      }}>
-        <div>
-          {/* Header Brand Badge */}
-          <div style={{ marginBottom: '2.5rem', paddingBottom: '1.2rem', borderBottom: '1px solid rgba(212, 175, 55, 0.15)' }}>
-            <span style={{ fontSize: '0.6rem', letterSpacing: '3px', color: '#D4AF37', fontWeight: 800, textTransform: 'uppercase', display: 'block', marginBottom: '0.2rem' }}>
-              SECRETARIAT PORTAL
-            </span>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-              BritSync CEO
-            </h2>
-          </div>
+      <div style={{ padding: '8px 8px', flex: 1 }}>
+        {sectionLabel('Executive')}
+        {navItem('command-center', 'Command Center', '◈')}
 
-          {/* SIDEBAR SECTIONS */}
-          <nav style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            
-            {/* SECTION 1: OVERVIEW & ANALYTICS */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                OVERVIEW & ANALYTICS
-              </span>
-              <button
-                onClick={() => setActiveTab('dashboard')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'dashboard' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'dashboard' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'dashboard' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'dashboard' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📊 Command Overview
-              </button>
-            </div>
+        {sectionLabel('Guild Registry')}
+        {navItem('studio-applications', 'Studio Registry', '🏛', kpis?.pendingAuditCount + kpis?.underReviewCount)}
 
-            {/* SECTION 2: ARTISAN & GUILD REGISTRY */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                ARTISAN & GUILD REGISTRY
-              </span>
-              <button
-                onClick={() => setActiveTab('audits')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'audits' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'audits' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'audits' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'audits' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <span>🧶 Guild Studio Audits</span>
-                {pendingMakersCount > 0 && (
-                  <span style={{ backgroundColor: '#D4AF37', color: '#0A0A0C', fontSize: '0.62rem', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>
-                    {pendingMakersCount}
-                  </span>
-                )}
-              </button>
-            </div>
+        {sectionLabel('Catalog')}
+        {navItem('master-catalog', 'Master Catalog', '📚', kpis?.pendingReview)}
 
-            {/* SECTION 3: CATALOG & PRODUCTS */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                CATALOG & PRICING
-              </span>
-              <button
-                onClick={() => setActiveTab('products')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'products' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'products' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'products' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'products' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                🏺 Guild Master Catalog
-              </button>
-            </div>
+        {sectionLabel('Finance')}
+        {navItem('financial-ledger', 'Financial Ledger', '📊')}
 
-            {/* SECTION 4: COMMUNICATIONS & GMAIL */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                CLIENT COMMUNICATIONS
-              </span>
-              <button
-                onClick={() => setActiveTab('inquiries')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'inquiries' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'inquiries' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'inquiries' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'inquiries' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                <span>📬 Contact Inquiries</span>
-                {unreadCount > 0 && (
-                  <span style={{ backgroundColor: '#D4AF37', color: '#0A0A0C', fontSize: '0.62rem', fontWeight: 800, padding: '2px 7px', borderRadius: '10px' }}>
-                    {unreadCount}
-                  </span>
-                )}
-              </button>
-            </div>
+        {sectionLabel('Operations')}
+        {navItem('communications', 'Communications', '✉️', kpis?.openInquiries)}
+        {navItem('reporting', 'Reporting', '📈')}
+      </div>
 
-            {/* SECTION 5: FINANCIAL ESCROW & MARGINS */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                FINANCE & ESCROW
-              </span>
-              <button
-                onClick={() => setActiveTab('financials')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'financials' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'financials' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'financials' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'financials' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                💰 Financial Escrow & Margin
-              </button>
-            </div>
+      <div style={{ padding: '16px 20px', borderTop: '1px solid #1e1c18' }}>
+        <a href="/" style={{ display: 'block', textAlign: 'center', padding: '8px 0', color: '#8a7a6a', fontSize: 12, fontFamily: 'var(--font-outfit)', textDecoration: 'none', border: '1px solid #2a2520', borderRadius: 6 }}>
+          ← Public Atelier Market
+        </a>
+      </div>
+    </div>
+  );
+}
 
-            {/* SECTION 6: EXECUTIVE REPORTS */}
-            <div>
-              <span style={{ fontSize: '0.58rem', letterSpacing: '2.5px', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', fontWeight: 700, display: 'block', marginBottom: '0.6rem', paddingLeft: '0.6rem' }}>
-                EXECUTIVE REPORTS
-              </span>
-              <button
-                onClick={() => setActiveTab('reports')}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  padding: '0.75rem 0.8rem',
-                  backgroundColor: activeTab === 'reports' ? 'rgba(212, 175, 55, 0.12)' : 'transparent',
-                  borderLeft: activeTab === 'reports' ? '3px solid #D4AF37' : '3px solid transparent',
-                  borderTop: 'none', borderRight: 'none', borderBottom: 'none',
-                  color: activeTab === 'reports' ? '#D4AF37' : 'rgba(255,255,255,0.7)',
-                  fontSize: '0.78rem',
-                  fontWeight: activeTab === 'reports' ? 700 : 400,
-                  cursor: 'pointer',
-                  textAlign: 'left',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                📈 Intelligence Exporter
-              </button>
-            </div>
+// ══════════════════════════════════════════════════════════════════════════════
+// COMMAND CENTER
+// ══════════════════════════════════════════════════════════════════════════════
+function CommandCenterSection({ kpis, pipeline, makers, onOpenMaker, onNavigate, fmt }: any) {
+  const pendingMakers = makers.filter((m: any) => ['PENDING_AUDIT', 'UNDER_REVIEW'].includes(m.verificationStatus)).slice(0, 5);
 
-          </nav>
-        </div>
+  return (
+    <div>
+      <div style={{ marginBottom: 32 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Executive Dashboard</p>
+        <h1 style={{ fontFamily: 'var(--font-playfair)', fontSize: 26, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Guild Secretariat Command Center</h1>
+      </div>
 
-        {/* Bottom User Info & Store Link */}
-        <div style={{ paddingTop: '1.2rem', borderTop: '1px solid rgba(212, 175, 55, 0.15)' }}>
-          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: '#FFFFFF', marginBottom: '0.2rem' }}>
-            Chief Executive Officer
-          </div>
-          <div style={{ fontSize: '0.65rem', opacity: 0.6, marginBottom: '1rem' }}>
-            admin@nobleshop.co.uk
-          </div>
-          <Link
-            href="/"
-            style={{
-              display: 'block',
-              textAlign: 'center',
-              padding: '0.55rem',
-              backgroundColor: 'rgba(212, 175, 55, 0.1)',
-              border: '1px solid #D4AF37',
-              color: '#D4AF37',
-              fontSize: '0.7rem',
-              fontWeight: 700,
-              letterSpacing: '1.5px',
-              textTransform: 'uppercase',
-              textDecoration: 'none'
-            }}
-          >
-            ← Public Atelier Store
-          </Link>
-        </div>
-      </aside>
+      {/* KPI Row */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14, marginBottom: 32 }}>
+        <KpiCard label="Platform GMV" value={fmt(kpis?.gmv || 0)} sub="Gross merchandise value" accent="#c9a84c" />
+        <KpiCard label="Platform Revenue" value={fmt(kpis?.platformRevenue || 0)} sub="Commission earned" accent="#4ade80" />
+        <KpiCard label="Escrow Held" value={fmt(kpis?.escrowHeld || 0)} sub="Pending settlement" accent="#6ab4f5" />
+        <KpiCard label="Active Studios" value={kpis?.activeStudios || 0} sub={`of ${kpis?.totalStudios || 0} registered`} accent="#a78bfa" />
+        <KpiCard label="Royal Charter" value={kpis?.royalCharterStudios || 0} sub="Elite studios" accent="#c9a84c" />
+      </div>
 
-      {/* ════════════════════════════════════════════════════════════════ */}
-      {/* MAIN EXECUTIVE DASHBOARD CONTENT WORKSPACE (FULL WIDTH)          */}
-      {/* ════════════════════════════════════════════════════════════════ */}
-      <main style={{ padding: '2.5rem 3rem', backgroundColor: '#0A0A0C', minHeight: '100vh', overflowY: 'auto' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 32 }}>
+        <KpiCard label="Pending Audit" value={kpis?.pendingAuditCount || 0} sub="Awaiting review" accent="#6ab4f5" />
+        <KpiCard label="Active Products" value={kpis?.activeProducts || 0} sub="Approved / Published" accent="#c9a84c" />
+        <KpiCard label="Pending Review" value={kpis?.pendingReview || 0} sub="Products for catalog" accent="#f59e6a" />
+        <KpiCard label="Total Orders" value={kpis?.totalOrders || 0} sub="All time" accent="#8a7a6a" />
+      </div>
 
-        {/* TOP STATUS BAR */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2.5rem', borderBottom: '1px solid rgba(212, 175, 55, 0.15)', paddingBottom: '1.8rem' }}>
-          <div>
-            <span style={{ fontSize: '0.62rem', letterSpacing: '3px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 800, display: 'block', marginBottom: '0.3rem' }}>
-              SYSTEM LEVEL ACCREDITATION CONTROL
-            </span>
-            <h1 style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-              {activeTab === 'dashboard' && 'Executive Intelligence Overview'}
-              {activeTab === 'audits' && 'Artisan Atelier Accreditation Panel'}
-              {activeTab === 'products' && 'Guild Master Catalog & Inventory'}
-              {activeTab === 'inquiries' && 'Client Communications & Gmail Desk'}
-              {activeTab === 'financials' && 'Financial Escrow & Margin Control'}
-              {activeTab === 'reports' && 'Executive Data Exporter'}
-            </h1>
-          </div>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1.2rem' }}>
-            <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.6)', padding: '0.5rem 1rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-              🟢 Network Status: <strong>LIVE (London W1K)</strong>
-            </span>
-          </div>
-        </div>
-
-        {/* TAB 1: COMMAND DASHBOARD OVERVIEW */}
-        {activeTab === 'dashboard' && (
-          <div>
-            {/* KPI METRIC CARDS */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '3rem' }}>
-              <div style={{ padding: '1.8rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <span style={{ fontSize: '0.64rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
-                  TOTAL PLATFORM REVENUE
-                </span>
-                <span style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, color: '#FFFFFF' }}>
-                  £{analyticsData?.kpis?.totalRevenue?.toLocaleString('en-GB', { minimumFractionDigits: 2 }) || '124,500.00'}
-                </span>
-                <span style={{ fontSize: '0.7rem', color: '#2E7D32', display: 'block', marginTop: '0.4rem', fontWeight: 600 }}>↑ +18.4% this quarter</span>
-              </div>
-
-              <div style={{ padding: '1.8rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <span style={{ fontSize: '0.64rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
-                  ESCROW HELD FUNDS
-                </span>
-                <span style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, color: '#FFFFFF' }}>
-                  £{analyticsData?.kpis?.escrowBalance?.toLocaleString('en-GB', { minimumFractionDigits: 2 }) || '48,200.00'}
-                </span>
-                <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.5)', display: 'block', marginTop: '0.4rem' }}>Protected in Guild Escrow</span>
-              </div>
-
-              <div style={{ padding: '1.8rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <span style={{ fontSize: '0.64rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
-                  NET BRITSYNC MARGIN
-                </span>
-                <span style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, color: '#FFFFFF' }}>
-                  £{analyticsData?.kpis?.netMargin?.toLocaleString('en-GB', { minimumFractionDigits: 2 }) || '18,675.00'}
-                </span>
-                <span style={{ fontSize: '0.7rem', color: '#2E7D32', display: 'block', marginTop: '0.4rem', fontWeight: 600 }}>15% Commission Rate</span>
-              </div>
-
-              <div style={{ padding: '1.8rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <span style={{ fontSize: '0.64rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block', marginBottom: '0.6rem' }}>
-                  PENDING AUDITS
-                </span>
-                <span style={{ fontSize: '2.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, color: '#FFFFFF' }}>
-                  {pendingMakersCount || 2}
-                </span>
-                <span style={{ fontSize: '0.7rem', color: '#D4AF37', display: 'block', marginTop: '0.4rem', fontWeight: 600 }}>Requires CEO Accreditation</span>
-              </div>
-            </div>
-
-            {/* LIVE REGISTRY ACTIVITY & QUICK ACTIONS */}
-            <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
-              
-              <div style={{ padding: '2rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, marginTop: 0, marginBottom: '1.5rem', color: '#FFFFFF' }}>
-                  Recent Artisan Accreditation Activity
-                </h3>
-                {makersList.slice(0, 5).map((maker) => (
-                  <div key={maker.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                    <div>
-                      <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#FFFFFF', display: 'block' }}>{maker.businessName}</span>
-                      <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{maker.founderName} • {maker.country}</span>
-                    </div>
-                    <div>
-                      <span style={{
-                        padding: '0.35rem 0.8rem',
-                        fontSize: '0.68rem',
-                        fontWeight: 700,
-                        letterSpacing: '1px',
-                        textTransform: 'uppercase',
-                        backgroundColor: maker.verificationStatus === 'GUILD_VERIFIED' ? 'rgba(46,125,50,0.15)' : 'rgba(212,175,55,0.15)',
-                        color: maker.verificationStatus === 'GUILD_VERIFIED' ? '#2E7D32' : '#D4AF37',
-                        border: maker.verificationStatus === 'GUILD_VERIFIED' ? '1px solid #2E7D32' : '1px solid #D4AF37'
-                      }}>
-                        {maker.verificationStatus}
-                      </span>
-                    </div>
+      {/* Accreditation Pipeline */}
+      <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24, marginBottom: 28 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 20px', fontWeight: 700 }}>Accreditation Pipeline</p>
+        <div style={{ display: 'flex', alignItems: 'center', overflowX: 'auto', paddingBottom: 4, gap: 0 }}>
+          {['GENERAL', 'INCOMPLETE', 'PENDING_AUDIT', 'UNDER_REVIEW', 'REVISION_REQUIRED', 'GUILD_VERIFIED', 'ROYAL_CHARTER'].map((s, i) => {
+            const meta = STATUS_META[s];
+            const count = pipeline[s] || 0;
+            return (
+              <div key={s} style={{ display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <button
+                  onClick={() => onNavigate('studio-applications')}
+                  style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, cursor: 'pointer', background: 'none', border: 'none', padding: '0 8px', textAlign: 'center' }}
+                >
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: `${meta.color}18`, border: `2px solid ${meta.color}40`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ color: meta.color, fontSize: 16, fontWeight: 700, fontFamily: 'var(--font-outfit)' }}>{count}</span>
                   </div>
+                  <p style={{ color: meta.color, fontSize: 9, fontFamily: 'var(--font-outfit)', letterSpacing: 0.5, margin: 0, maxWidth: 70, lineHeight: 1.3 }}>{meta.label}</p>
+                </button>
+                {i < 6 && <div style={{ width: 16, height: 1, background: '#2a2520' }} />}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Pending Accreditations */}
+      {pendingMakers.length > 0 && (
+        <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+            <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', fontWeight: 700, margin: 0 }}>Applications Requiring Review</p>
+            <button onClick={() => onNavigate('studio-applications')} style={btnGhostStyle}>View All →</button>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+            {pendingMakers.map((m: any) => (
+              <div key={m.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid #1a1810', flexWrap: 'wrap', gap: 12 }}>
+                <div>
+                  <p style={{ color: '#f5f0e8', fontSize: 14, fontFamily: 'var(--font-outfit)', fontWeight: 600, margin: '0 0 2px' }}>{m.businessName}</p>
+                  <p style={{ color: '#8a7a6a', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: 0 }}>{m.founderName} · {m.country}</p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <StatusBadge status={m.verificationStatus} />
+                  <button onClick={() => onOpenMaker(m.id)} style={btnGoldStyle}>Review →</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// STUDIO APPLICATIONS REGISTRY
+// ══════════════════════════════════════════════════════════════════════════════
+function StudioApplicationsSection({ makers, allMakers, search, setSearch, statusFilter, setStatusFilter, onOpenMaker }: any) {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Guild Registry</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Studio Applications ({allMakers.length})</h2>
+      </div>
+
+      {/* Filters */}
+      <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+        <input
+          type="text" placeholder="Search studio, artisan, email..."
+          value={search} onChange={e => setSearch(e.target.value)}
+          style={{ ...inputStyle, flex: 1, minWidth: 200 }}
+        />
+        <select value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ ...inputStyle, width: 180 }}>
+          <option value="ALL">All Statuses</option>
+          {Object.entries(STATUS_META).map(([code, m]) => (
+            <option key={code} value={code}>{m.label}</option>
+          ))}
+        </select>
+      </div>
+
+      {/* Table */}
+      <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, overflow: 'hidden' }}>
+        <div style={{ overflowX: 'auto' }}>
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'var(--font-outfit)' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #2a2520', background: '#0a0908' }}>
+                {['Studio', 'Artisan', 'Category', 'Registered', 'Status', 'Products', 'Actions'].map(h => (
+                  <th key={h} style={{ padding: '12px 16px', textAlign: 'left', fontSize: 10, color: '#4a4030', letterSpacing: 2, textTransform: 'uppercase', fontWeight: 700, whiteSpace: 'nowrap' }}>{h}</th>
                 ))}
-              </div>
+              </tr>
+            </thead>
+            <tbody>
+              {makers.length === 0 ? (
+                <tr>
+                  <td colSpan={7} style={{ padding: 40, textAlign: 'center', color: '#4a4030', fontSize: 13 }}>No studios found</td>
+                </tr>
+              ) : makers.map((m: any) => (
+                <tr key={m.id} style={{ borderBottom: '1px solid #1a1810', transition: 'background 0.15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = '#100f0c')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <td style={{ padding: '14px 16px' }}>
+                    <p style={{ color: '#f5f0e8', fontSize: 13, fontWeight: 600, margin: 0 }}>{m.businessName}</p>
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <p style={{ color: '#c8bfa8', fontSize: 12, margin: 0 }}>{m.founderName}</p>
+                    <p style={{ color: '#4a4030', fontSize: 11, margin: '2px 0 0' }}>{m.email}</p>
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <p style={{ color: '#8a7a6a', fontSize: 12, margin: 0 }}>{m.craftCategory || '—'}</p>
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <p style={{ color: '#4a4030', fontSize: 12, margin: 0 }}>
+                      {m.createdAt ? new Date(m.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: '2-digit' }) : '—'}
+                    </p>
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <StatusBadge status={m.verificationStatus} />
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <p style={{ color: '#8a7a6a', fontSize: 12, margin: 0 }}>{m.productCount || 0}/5</p>
+                  </td>
+                  <td style={{ padding: '14px 16px' }}>
+                    <button onClick={() => onOpenMaker(m.id)} style={btnGoldStyle}>Audit Profile →</button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}
 
-              <div style={{ padding: '2rem', backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <h3 style={{ fontSize: '1.2rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 400, marginTop: 0, marginBottom: '1.5rem', color: '#FFFFFF' }}>
-                  Secretariat Quick Actions
-                </h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <button
-                    onClick={() => setActiveTab('audits')}
-                    style={{
-                      width: '100%',
-                      padding: '0.9rem',
-                      backgroundColor: '#D4AF37',
-                      color: '#0A0A0C',
-                      fontWeight: 800,
-                      fontSize: '0.75rem',
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase',
-                      border: 'none',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Accredit Pending Studios ({pendingMakersCount})
-                  </button>
+// ══════════════════════════════════════════════════════════════════════════════
+// STUDIO AUDIT PROFILE
+// ══════════════════════════════════════════════════════════════════════════════
+function StudioAuditSection({ maker, loading, auditAction, setAuditAction, auditReason, setAuditReason, auditNote, setAuditNote, auditMsg, actionLoading, submitAction, onBack, fmt }: any) {
+  if (loading) return <div style={{ padding: 40, textAlign: 'center', color: '#8a7a6a', fontFamily: 'var(--font-outfit)' }}>Loading studio profile…</div>;
+  if (!maker) return <div style={{ padding: 40, textAlign: 'center', color: '#8a7a6a', fontFamily: 'var(--font-outfit)' }}>No studio selected.</div>;
 
-                  <button
-                    onClick={() => setActiveTab('inquiries')}
-                    style={{
-                      width: '100%',
-                      padding: '0.9rem',
-                      backgroundColor: 'transparent',
-                      color: '#D4AF37',
-                      fontWeight: 700,
-                      fontSize: '0.75rem',
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase',
-                      border: '1px solid #D4AF37',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    View Unread Inquiries ({unreadCount})
-                  </button>
+  const isRoyalCharter = maker.verificationStatus === 'ROYAL_CHARTER';
+  const isVerified = ['GUILD_VERIFIED', 'ROYAL_CHARTER'].includes(maker.verificationStatus);
 
-                  <button
-                    onClick={() => setActiveTab('reports')}
-                    style={{
-                      width: '100%',
-                      padding: '0.9rem',
-                      backgroundColor: 'transparent',
-                      color: '#FAF9F6',
-                      fontWeight: 700,
-                      fontSize: '0.75rem',
-                      letterSpacing: '2px',
-                      textTransform: 'uppercase',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Download Financial Statement
-                  </button>
-                </div>
-              </div>
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 28 }}>
+        <button onClick={onBack} style={btnGhostStyle}>← Back to Registry</button>
+        <div>
+          <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 4px' }}>Studio Audit Profile</p>
+          <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 20, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>
+            {maker.businessName}
+            {isRoyalCharter && <span style={{ marginLeft: 12 }}>👑</span>}
+          </h2>
+        </div>
+        <StatusBadge status={maker.verificationStatus} />
+      </div>
 
-            </div>
-          </div>
-        )}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20, marginBottom: 24 }}>
+        {/* Identity */}
+        <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24 }}>
+          <SectionLabel>Studio Identity</SectionLabel>
+          <InfoRow label="Business Name" value={maker.businessName} />
+          <InfoRow label="Founder" value={maker.founderName} />
+          <InfoRow label="Email" value={maker.email} />
+          <InfoRow label="Category" value={maker.craftCategory} />
+          <InfoRow label="Country" value={maker.country} />
+          <InfoRow label="Years Active" value={maker.yearsInBusiness} />
+          <InfoRow label="Craftsmen" value={maker.employeeCount} />
+          <InfoRow label="Registered" value={maker.registeredAt ? new Date(maker.registeredAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : '—'} />
+          <InfoRow label="Email Verified" value={maker.isEmailVerified ? '✓ Yes' : '✗ No'} />
+          <InfoRow label="Submitted" value={maker.submittedAt ? new Date(maker.submittedAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' }) : 'Not yet submitted'} />
+        </div>
 
-        {/* TAB 2: MAKER ACCREDITATION AUDITS */}
-        {activeTab === 'audits' && (
-          <div>
-            {auditFeedback && (
-              <div style={{
-                backgroundColor: auditFeedback.success ? 'rgba(46,125,50,0.15)' : 'rgba(211,47,47,0.15)',
-                border: auditFeedback.success ? '1px solid #2E7D32' : '1px solid #D32F2F',
-                color: auditFeedback.success ? '#2E7D32' : '#D32F2F',
-                padding: '1rem',
-                marginBottom: '2rem',
-                fontSize: '0.82rem',
-                fontWeight: 600
-              }}>
-                {auditFeedback.msg}
-              </div>
+        {/* Heritage */}
+        <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24 }}>
+          <SectionLabel>Heritage & Craftsmanship</SectionLabel>
+          <InfoRow label="Origin Story" value={maker.heritageOriginStory} multiline />
+          <InfoRow label="Founder Bio" value={maker.founderBiography} multiline />
+          <InfoRow label="Traditional Tools" value={maker.craftTools} multiline />
+          <InfoRow label="Techniques" value={maker.craftTechniques} multiline />
+          <InfoRow label="Philosophy" value={maker.craftPhilosophy} multiline />
+        </div>
+
+        {/* Media gallery */}
+        <div style={{ gridColumn: '1 / -1', background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24 }}>
+          <SectionLabel>Workshop Media</SectionLabel>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 12 }}>
+            {[maker.coverImageUrl, maker.founderPhotoUrl, maker.workshopPhoto1, maker.workshopPhoto2, maker.workshopPhoto3].filter(Boolean).map((url: string, i: number) => (
+              <img key={i} src={url} alt={`Media ${i}`} onError={(e) => { (e.target as any).style.display = 'none'; }} style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 8, border: '1px solid #2a2520' }} />
+            ))}
+            {![maker.coverImageUrl, maker.founderPhotoUrl, maker.workshopPhoto1, maker.workshopPhoto2, maker.workshopPhoto3].filter(Boolean).length && (
+              <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)', gridColumn: '1 / -1' }}>No media submitted yet</p>
             )}
-
-            <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: 0, marginBottom: '1.8rem', color: '#FFFFFF' }}>
-                Pending & Registered Master Artisan Studios ({makersList.length})
-              </h2>
-
-              <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(212, 175, 55, 0.2)', fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37' }}>
-                      <th style={{ padding: '1rem' }}>Studio & Founder</th>
-                      <th style={{ padding: '1rem' }}>Location</th>
-                      <th style={{ padding: '1rem' }}>Craft Experience</th>
-                      <th style={{ padding: '1rem' }}>Current Status</th>
-                      <th style={{ padding: '1rem', textAlign: 'right' }}>Accreditation Action</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {makersList.map((maker) => (
-                      <tr key={maker.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                        <td style={{ padding: '1.2rem 1rem' }}>
-                          <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#FFFFFF', display: 'block' }}>{maker.businessName}</span>
-                          <span style={{ fontSize: '0.78rem', opacity: 0.6 }}>{maker.founderName} ({maker.email})</span>
-                        </td>
-                        <td style={{ padding: '1.2rem 1rem', fontSize: '0.85rem' }}>
-                          {maker.country || 'United Kingdom'}
-                        </td>
-                        <td style={{ padding: '1.2rem 1rem', fontSize: '0.85rem' }}>
-                          {maker.yearsInBusiness} Years • {maker.employeeCount} Craftsmen
-                        </td>
-                        <td style={{ padding: '1.2rem 1rem' }}>
-                          <span style={{
-                            padding: '0.3rem 0.7rem',
-                            fontSize: '0.65rem',
-                            fontWeight: 700,
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                            backgroundColor: maker.verificationStatus === 'GUILD_VERIFIED' ? 'rgba(46,125,50,0.15)' : 'rgba(212,175,55,0.15)',
-                            color: maker.verificationStatus === 'GUILD_VERIFIED' ? '#2E7D32' : '#D4AF37',
-                            border: maker.verificationStatus === 'GUILD_VERIFIED' ? '1px solid #2E7D32' : '1px solid #D4AF37'
-                          }}>
-                            {maker.verificationStatus}
-                          </span>
-                        </td>
-                        <td style={{ padding: '1.2rem 1rem', textAlign: 'right' }}>
-                          <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'flex-end' }}>
-                            <button
-                              disabled={approvingMakerId === maker.id}
-                              onClick={() => handleMakerAction(maker.id, 'GUILD_VERIFIED')}
-                              style={{
-                                padding: '0.5rem 0.9rem',
-                                backgroundColor: '#D4AF37',
-                                color: '#0A0A0C',
-                                fontSize: '0.68rem',
-                                fontWeight: 800,
-                                border: 'none',
-                                cursor: 'pointer',
-                                letterSpacing: '1px',
-                                textTransform: 'uppercase'
-                              }}
-                            >
-                              Approve Guild
-                            </button>
-                            <button
-                              disabled={approvingMakerId === maker.id}
-                              onClick={() => handleMakerAction(maker.id, 'ROYAL_CHARTER')}
-                              style={{
-                                padding: '0.5rem 0.9rem',
-                                backgroundColor: 'transparent',
-                                color: '#D4AF37',
-                                fontSize: '0.68rem',
-                                fontWeight: 700,
-                                border: '1px solid #D4AF37',
-                                cursor: 'pointer',
-                                letterSpacing: '1px',
-                                textTransform: 'uppercase'
-                              }}
-                            >
-                              Grant Royal Charter
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
           </div>
-        )}
+        </div>
 
-        {/* TAB 3: GUILD MASTER CATALOG */}
-        {activeTab === 'products' && (
-          <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: 0, marginBottom: '1.8rem', color: '#FFFFFF' }}>
-              Registered Handcrafted Guild Items
-            </h2>
+        {/* Payout (admin-only) */}
+        <div style={{ background: 'rgba(248,113,113,0.04)', border: '1px solid rgba(248,113,113,0.2)', borderRadius: 10, padding: 24 }}>
+          <SectionLabel color="#f87171">🔒 Financial Information (Admin Only)</SectionLabel>
+          <InfoRow label="Payout Method" value={maker.payoutMethod} />
+          <InfoRow label="Account Details" value={maker.payoutAccountDetails || '—'} multiline />
+          <InfoRow label="Cleared Balance" value={fmt(maker.clearedBalance)} />
+          <InfoRow label="Escrow Held" value={fmt(maker.escrowBalance)} />
+        </div>
 
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(212, 175, 55, 0.2)', fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37' }}>
-                    <th style={{ padding: '1rem' }}>Item Name</th>
-                    <th style={{ padding: '1rem' }}>Atelier Maker</th>
-                    <th style={{ padding: '1rem' }}>Category</th>
-                    <th style={{ padding: '1rem' }}>Selling Price</th>
-                    <th style={{ padding: '1rem' }}>Stock</th>
-                    <th style={{ padding: '1rem' }}>Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {adminProducts.map((prod) => (
-                    <tr key={prod.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <td style={{ padding: '1.2rem 1rem', fontWeight: 700, fontSize: '0.9rem', color: '#FFFFFF' }}>
-                        {prod.name}
-                      </td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.85rem' }}>{prod.maker}</td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.85rem' }}>{prod.category}</td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.9rem', color: '#D4AF37', fontWeight: 700 }}>£{prod.price.toFixed(2)}</td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.85rem' }}>{prod.stock} units</td>
-                      <td style={{ padding: '1.2rem 1rem' }}>
-                        <span style={{ padding: '0.3rem 0.7rem', fontSize: '0.65rem', fontWeight: 700, backgroundColor: 'rgba(212,175,55,0.15)', color: '#D4AF37', border: '1px solid #D4AF37' }}>
-                          {prod.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 4: CLIENT COMMUNICATIONS & GMAIL */}
-        {activeTab === 'inquiries' && (
-          <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.8rem' }}>
-              <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-                Client Inquiries & Gmail Desk ({inquiries.length})
-              </h2>
-
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                {['ALL', 'GENERAL', 'CUSTOM', 'B2B'].map((cat) => (
-                  <button
-                    key={cat}
-                    onClick={() => setCategoryFilter(cat)}
-                    style={{
-                      padding: '0.45rem 0.9rem',
-                      backgroundColor: categoryFilter === cat ? '#D4AF37' : 'transparent',
-                      color: categoryFilter === cat ? '#0A0A0C' : '#FAF9F6',
-                      border: '1px solid #D4AF37',
-                      fontSize: '0.68rem',
-                      fontWeight: 700,
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {cat}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid rgba(212, 175, 55, 0.2)', fontSize: '0.65rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37' }}>
-                    <th style={{ padding: '1rem' }}>Client</th>
-                    <th style={{ padding: '1rem' }}>Category</th>
-                    <th style={{ padding: '1rem' }}>Message Snippet</th>
-                    <th style={{ padding: '1rem' }}>Status</th>
-                    <th style={{ padding: '1rem', textAlign: 'right' }}>Gmail Action</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredInquiries.map((inq) => (
-                    <tr key={inq.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
-                      <td style={{ padding: '1.2rem 1rem' }}>
-                        <span style={{ fontWeight: 700, fontSize: '0.88rem', color: '#FFFFFF', display: 'block' }}>{inq.name}</span>
-                        <span style={{ fontSize: '0.75rem', opacity: 0.6 }}>{inq.email}</span>
-                      </td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.82rem' }}>{inq.category}</td>
-                      <td style={{ padding: '1.2rem 1rem', fontSize: '0.82rem', opacity: 0.8, maxWidth: '300px' }}>
-                        {inq.message.length > 70 ? `${inq.message.substring(0, 70)}...` : inq.message}
-                      </td>
-                      <td style={{ padding: '1.2rem 1rem' }}>
-                        <span style={{
-                          padding: '0.3rem 0.7rem',
-                          fontSize: '0.65rem',
-                          fontWeight: 700,
-                          backgroundColor: inq.status === 'REPLIED' ? 'rgba(46,125,50,0.15)' : 'rgba(212,175,55,0.15)',
-                          color: inq.status === 'REPLIED' ? '#2E7D32' : '#D4AF37',
-                          border: inq.status === 'REPLIED' ? '1px solid #2E7D32' : '1px solid #D4AF37'
-                        }}>
-                          {inq.status}
-                        </span>
-                      </td>
-                      <td style={{ padding: '1.2rem 1rem', textAlign: 'right' }}>
-                        <button
-                          onClick={() => openReplyModal(inq)}
-                          style={{
-                            padding: '0.5rem 1rem',
-                            backgroundColor: '#D4AF37',
-                            color: '#0A0A0C',
-                            fontSize: '0.68rem',
-                            fontWeight: 800,
-                            border: 'none',
-                            cursor: 'pointer',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase'
-                          }}
-                        >
-                          Reply via Gmail
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 5: FINANCIAL ESCROW & MARGIN CONTROL */}
-        {activeTab === 'financials' && (
-          <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2rem' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: 0, marginBottom: '1.8rem', color: '#FFFFFF' }}>
-              Double-Entry Financial Escrow & Ledger Accounts
-            </h2>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
-              <div style={{ padding: '1.5rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#D4AF37', marginTop: 0, marginBottom: '1rem' }}>Escrow Vault Status</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span>Active Escrow Hold Balance</span>
-                  <strong style={{ color: '#D4AF37' }}>£48,200.00</strong>
+        {/* Products in application */}
+        <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24 }}>
+          <SectionLabel>Products ({maker.productCount || 0}/5)</SectionLabel>
+          {maker.products?.length === 0 ? (
+            <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)' }}>No products submitted yet</p>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {maker.products?.map((p: any) => (
+                <div key={p.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '6px 0', borderBottom: '1px solid #1a1810' }}>
+                  <p style={{ color: '#c8bfa8', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: 0 }}>{p.name}</p>
+                  <span style={{ fontSize: 10, color: PRODUCT_STATUS_META[p.status]?.color || '#8a7a6a', fontFamily: 'var(--font-outfit)' }}>
+                    {PRODUCT_STATUS_META[p.status]?.label || p.status}
+                  </span>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span>Cleared Payout Balance</span>
-                  <strong>£76,300.00</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0' }}>
-                  <span>Net Britsync Commission (15%)</span>
-                  <strong style={{ color: '#2E7D32' }}>£18,675.00</strong>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Audit log */}
+      {maker.auditLog?.length > 0 && (
+        <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 24, marginBottom: 24 }}>
+          <SectionLabel>Application Timeline</SectionLabel>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {maker.auditLog.map((entry: any, idx: number) => (
+              <div key={idx} style={{ display: 'flex', gap: 16, alignItems: 'flex-start', padding: '8px 0', borderBottom: '1px solid #1a1810' }}>
+                <p style={{ color: '#4a4030', fontSize: 11, fontFamily: 'var(--font-outfit)', margin: 0, minWidth: 100 }}>
+                  {new Date(entry.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}
+                </p>
+                <div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 2 }}>
+                    <StatusBadge status={entry.previousStatus} small />
+                    <span style={{ color: '#4a4030', fontSize: 10 }}>→</span>
+                    <StatusBadge status={entry.newStatus} small />
+                  </div>
+                  {entry.reason && <p style={{ color: '#8a7a6a', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: 0, fontStyle: 'italic' }}>"{entry.reason}"</p>}
                 </div>
               </div>
-
-              <div style={{ padding: '1.5rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.2)' }}>
-                <h3 style={{ fontSize: '1.1rem', color: '#D4AF37', marginTop: 0, marginBottom: '1rem' }}>Markup Pricing Rules</h3>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span>Standard Guild Markup</span>
-                  <strong>15.0%</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
-                  <span>Royal Charter Tier</span>
-                  <strong>12.5%</strong>
-                </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '0.8rem 0' }}>
-                  <span>Currency Conversion Rate</span>
-                  <strong>1 GBP = 1.27 USD</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* TAB 6: EXECUTIVE DATA EXPORTER */}
-        {activeTab === 'reports' && (
-          <div style={{ backgroundColor: '#121216', border: '1px solid rgba(212, 175, 55, 0.2)', padding: '2.5rem', maxWidth: '650px' }}>
-            <h2 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, marginTop: 0, marginBottom: '1.5rem', color: '#FFFFFF' }}>
-              Generate Executive Financial & Audit Statement
-            </h2>
-
-            {downloadSuccess && (
-              <div style={{ backgroundColor: 'rgba(46,125,50,0.15)', border: '1px solid #2E7D32', color: '#2E7D32', padding: '1rem', marginBottom: '1.5rem', fontSize: '0.82rem', fontWeight: 600 }}>
-                Successfully generated and downloaded {downloadSuccess}
-              </div>
-            )}
-
-            <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.5rem' }}>
-                Reporting Frequency
-              </label>
-              <select
-                value={reportFreq}
-                onChange={(e: any) => setReportFreq(e.target.value)}
-                style={{ width: '100%', padding: '0.85rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.9rem', outline: 'none' }}
-              >
-                <option value="daily">Daily Statement</option>
-                <option value="weekly">Weekly Statement</option>
-                <option value="monthly">Monthly Executive Report</option>
-                <option value="quarterly">Quarterly C-Suite Audit</option>
-                <option value="yearly">Annual Fiscal Balance</option>
-              </select>
-            </div>
-
-            <div style={{ marginBottom: '2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.68rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.5rem' }}>
-                Export File Format
-              </label>
-              <div style={{ display: 'flex', gap: '1rem' }}>
-                {['csv', 'excel', 'pdf'].map((fmt) => (
-                  <button
-                    key={fmt}
-                    onClick={() => setReportFormat(fmt as any)}
-                    style={{
-                      flex: 1,
-                      padding: '0.8rem',
-                      backgroundColor: reportFormat === fmt ? '#D4AF37' : '#0A0A0C',
-                      color: reportFormat === fmt ? '#0A0A0C' : '#FFFFFF',
-                      border: '1px solid #D4AF37',
-                      fontSize: '0.75rem',
-                      fontWeight: 800,
-                      cursor: 'pointer',
-                      textTransform: 'uppercase'
-                    }}
-                  >
-                    {fmt.toUpperCase()}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <button
-              disabled={simulatingDownload}
-              onClick={handleDownloadReport}
-              style={{
-                width: '100%',
-                padding: '1.1rem',
-                backgroundColor: '#D4AF37',
-                color: '#0A0A0C',
-                fontSize: '0.78rem',
-                fontWeight: 800,
-                letterSpacing: '2.5px',
-                textTransform: 'uppercase',
-                border: 'none',
-                cursor: 'pointer'
-              }}
-            >
-              {simulatingDownload ? 'Generating Executive Report...' : 'Download Statement Now'}
-            </button>
-          </div>
-        )}
-
-      </main>
-
-      {/* GMAIL REPLY MODAL POPUP */}
-      {replyModalInquiry && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          backgroundColor: 'rgba(0,0,0,0.85)',
-          backdropFilter: 'blur(8px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 1000,
-          padding: '1.5rem'
-        }}>
-          <div style={{
-            width: '100%',
-            maxWidth: '580px',
-            backgroundColor: '#121216',
-            border: '1px solid #D4AF37',
-            padding: '2.2rem',
-            boxShadow: '0 25px 70px rgba(0,0,0,0.9)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid rgba(212, 175, 55, 0.2)', paddingBottom: '1rem' }}>
-              <div>
-                <span style={{ fontSize: '0.62rem', letterSpacing: '2px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, display: 'block' }}>
-                  SECRETARIAT GMAIL DESK
-                </span>
-                <h3 style={{ fontSize: '1.4rem', fontFamily: 'var(--font-playfair), Georgia, serif', fontWeight: 300, margin: 0, color: '#FFFFFF' }}>
-                  Reply to {replyModalInquiry.name}
-                </h3>
-              </div>
-              <button onClick={() => setReplyModalInquiry(null)} style={{ background: 'none', border: 'none', color: '#FFFFFF', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-            </div>
-
-            {replyFeedback && (
-              <div style={{
-                backgroundColor: replyFeedback.success ? 'rgba(46,125,50,0.15)' : 'rgba(211,47,47,0.15)',
-                border: replyFeedback.success ? '1px solid #2E7D32' : '1px solid #D32F2F',
-                color: replyFeedback.success ? '#2E7D32' : '#D32F2F',
-                padding: '0.8rem',
-                marginBottom: '1.2rem',
-                fontSize: '0.8rem',
-                fontWeight: 600
-              }}>
-                {replyFeedback.msg}
-              </div>
-            )}
-
-            <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                Recipient Gmail
-              </label>
-              <input
-                type="text"
-                readOnly
-                value={`${replyModalInquiry.name} <${replyModalInquiry.email}>`}
-                style={{ width: '100%', padding: '0.75rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.2rem' }}>
-              <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                Email Subject
-              </label>
-              <input
-                type="text"
-                value={replySubject}
-                onChange={(e) => setReplySubject(e.target.value)}
-                style={{ width: '100%', padding: '0.75rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none' }}
-              />
-            </div>
-
-            <div style={{ marginBottom: '1.8rem' }}>
-              <label style={{ display: 'block', fontSize: '0.62rem', letterSpacing: '1.5px', textTransform: 'uppercase', color: '#D4AF37', fontWeight: 700, marginBottom: '0.3rem' }}>
-                Official Reply Message
-              </label>
-              <textarea
-                rows={6}
-                value={replyText}
-                onChange={(e) => setReplyText(e.target.value)}
-                style={{ width: '100%', padding: '0.8rem', backgroundColor: '#0A0A0C', border: '1px solid rgba(212, 175, 55, 0.3)', color: '#FFFFFF', fontSize: '0.88rem', outline: 'none', resize: 'vertical' }}
-              />
-            </div>
-
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <button
-                disabled={sendingReply}
-                onClick={handleSendReply}
-                style={{
-                  flex: 1,
-                  padding: '0.95rem',
-                  backgroundColor: '#D4AF37',
-                  color: '#0A0A0C',
-                  fontSize: '0.75rem',
-                  fontWeight: 800,
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}
-              >
-                {sendingReply ? 'Dispatching via Gmail...' : 'Send Gmail Reply'}
-              </button>
-              <button
-                onClick={() => setReplyModalInquiry(null)}
-                style={{
-                  padding: '0.95rem 1.5rem',
-                  backgroundColor: 'transparent',
-                  color: '#FFFFFF',
-                  fontSize: '0.75rem',
-                  fontWeight: 700,
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  cursor: 'pointer'
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-
+            ))}
           </div>
         </div>
       )}
 
+      {/* CEO Action Panel */}
+      <div style={{ background: '#0f0e0b', border: '1px solid #c9a84c40', borderRadius: 10, padding: 28 }}>
+        <p style={{ fontSize: 11, color: '#c9a84c', letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', fontWeight: 700, margin: '0 0 20px' }}>Guild Secretariat Action</p>
+
+        {auditMsg && (
+          <div style={{ background: auditMsg.ok ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)', border: `1px solid ${auditMsg.ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)'}`, borderRadius: 8, padding: '12px 16px', marginBottom: 20 }}>
+            <p style={{ color: auditMsg.ok ? '#4ade80' : '#f87171', fontSize: 13, fontFamily: 'var(--font-outfit)', margin: 0 }}>{auditMsg.text}</p>
+          </div>
+        )}
+
+        <div style={{ display: 'flex', gap: 12, marginBottom: 20, flexWrap: 'wrap' }}>
+          {[
+            { id: 'SET_UNDER_REVIEW', label: '🔍 Begin Review', color: '#a78bfa' },
+            { id: 'APPROVE_GUILD', label: '✅ Approve Guild', color: '#4ade80' },
+            { id: 'GRANT_ROYAL_CHARTER', label: '👑 Royal Charter', color: '#c9a84c' },
+            { id: 'REQUEST_REVISION', label: '📝 Request Revision', color: '#f59e6a' },
+            { id: 'REJECT', label: '❌ Reject', color: '#f87171' },
+          ].map(btn => (
+            <button
+              key={btn.id}
+              onClick={() => setAuditAction(btn.id)}
+              style={{
+                padding: '10px 18px', borderRadius: 6, cursor: 'pointer',
+                background: auditAction === btn.id ? `${btn.color}18` : 'transparent',
+                border: `1px solid ${auditAction === btn.id ? btn.color : '#2a2520'}`,
+                color: auditAction === btn.id ? btn.color : '#8a7a6a',
+                fontSize: 13, fontFamily: 'var(--font-outfit)', fontWeight: auditAction === btn.id ? 600 : 400,
+                transition: 'all 0.15s',
+              }}
+            >{btn.label}</button>
+          ))}
+        </div>
+
+        {auditAction && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {['REQUEST_REVISION', 'REJECT'].includes(auditAction) && (
+              <div>
+                <label style={labelStyle}>Reason / Instructions *</label>
+                <textarea
+                  value={auditReason} onChange={e => setAuditReason(e.target.value)} rows={3}
+                  placeholder="Explain what needs to be corrected or why the application is rejected..."
+                  style={{ ...inputStyle, width: '100%', resize: 'vertical' }}
+                />
+              </div>
+            )}
+            <div>
+              <label style={labelStyle}>Internal Note (optional, not sent to maker)</label>
+              <textarea
+                value={auditNote} onChange={e => setAuditNote(e.target.value)} rows={2}
+                placeholder="Internal administrative note..."
+                style={{ ...inputStyle, width: '100%', resize: 'vertical' }}
+              />
+            </div>
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button onClick={submitAction} disabled={actionLoading} style={btnGoldStyle}>
+                {actionLoading ? 'Processing…' : `Confirm: ${auditAction.replace(/_/g, ' ')}`}
+              </button>
+              <button onClick={() => { setAuditAction(''); setAuditReason(''); setAuditNote(''); }} style={btnGhostStyle}>Cancel</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
+
+// ══════════════════════════════════════════════════════════════════════════════
+// MASTER CATALOG
+// ══════════════════════════════════════════════════════════════════════════════
+function MasterCatalogSection({ products, statusCounts, productFilter, setProductFilter, catalogMsg, catalogActionLoading, submitCatalogAction, fmt }: any) {
+  const [localReason, setLocalReason] = useState('');
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedAction, setSelectedAction] = useState('');
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Catalog</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Master Catalog ({products.length})</h2>
+      </div>
+
+      {/* Status filter pills */}
+      <div style={{ display: 'flex', gap: 8, marginBottom: 20, flexWrap: 'wrap' }}>
+        {['ALL', 'SUBMITTED_FOR_REVIEW', 'CATALOG_REVIEW', 'APPROVED', 'PUBLISHED', 'DRAFT', 'REVISION_REQUIRED', 'REJECTED'].map(s => (
+          <button
+            key={s}
+            onClick={() => setProductFilter(s)}
+            style={{
+              padding: '6px 14px', borderRadius: 6, cursor: 'pointer', fontSize: 11,
+              background: productFilter === s ? 'rgba(201,168,76,0.15)' : 'transparent',
+              border: `1px solid ${productFilter === s ? '#c9a84c' : '#2a2520'}`,
+              color: productFilter === s ? '#c9a84c' : '#8a7a6a',
+              fontFamily: 'var(--font-outfit)', fontWeight: productFilter === s ? 600 : 400,
+            }}
+          >
+            {PRODUCT_STATUS_META[s]?.label || 'All'}
+            {statusCounts[s] && ` (${statusCounts[s]})`}
+          </button>
+        ))}
+      </div>
+
+      {catalogMsg && (
+        <div style={{ background: catalogMsg.ok ? 'rgba(74,222,128,0.08)' : 'rgba(248,113,113,0.08)', border: `1px solid ${catalogMsg.ok ? 'rgba(74,222,128,0.3)' : 'rgba(248,113,113,0.3)'}`, borderRadius: 8, padding: '12px 16px', marginBottom: 16 }}>
+          <p style={{ color: catalogMsg.ok ? '#4ade80' : '#f87171', fontSize: 13, fontFamily: 'var(--font-outfit)', margin: 0 }}>{catalogMsg.text}</p>
+        </div>
+      )}
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {products.length === 0 && (
+          <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 40, textAlign: 'center' }}>
+            <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)' }}>No products in this status</p>
+          </div>
+        )}
+        {products.map((p: any) => (
+          <div key={p.id} style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 20 }}>
+            <div style={{ display: 'flex', gap: 16, alignItems: 'flex-start' }}>
+              {p.primaryImageUrl && (
+                <img src={p.primaryImageUrl} alt={p.name} onError={(e) => { (e.target as any).style.display = 'none'; }} style={{ width: 80, height: 80, objectFit: 'cover', borderRadius: 8, border: '1px solid #2a2520', flexShrink: 0 }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6, flexWrap: 'wrap', gap: 8 }}>
+                  <div>
+                    <p style={{ color: '#f5f0e8', fontSize: 14, fontFamily: 'var(--font-outfit)', fontWeight: 600, margin: '0 0 2px' }}>{p.name}</p>
+                    <p style={{ color: '#8a7a6a', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: 0 }}>
+                      {p.studioName} · {p.craftCategory}
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+                    <span style={{ color: '#c9a84c', fontSize: 15, fontFamily: 'var(--font-outfit)', fontWeight: 700 }}>{fmt(p.desiredPrice)}</span>
+                    <span style={{ fontSize: 10, fontFamily: 'var(--font-outfit)', padding: '2px 8px', borderRadius: 4, background: `${PRODUCT_STATUS_META[p.status]?.color || '#8a7a6a'}18`, color: PRODUCT_STATUS_META[p.status]?.color || '#8a7a6a', border: `1px solid ${PRODUCT_STATUS_META[p.status]?.color || '#8a7a6a'}40` }}>{PRODUCT_STATUS_META[p.status]?.label || p.status}</span>
+                  </div>
+                </div>
+                {p.description && <p style={{ color: '#6a6050', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: '0 0 10px', lineHeight: 1.5 }}>{p.description.slice(0, 150)}{p.description.length > 150 ? '…' : ''}</p>}
+
+                {/* Action buttons */}
+                <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+                  {p.status === 'SUBMITTED_FOR_REVIEW' && (
+                    <>
+                      <button onClick={() => submitCatalogAction(p.id, 'SET_CATALOG_REVIEW')} disabled={catalogActionLoading} style={btnGhostStyle}>Begin Review</button>
+                      <button onClick={() => { setSelectedId(p.id); setSelectedAction('APPROVE'); }} style={{ ...btnGoldStyle }}>Approve</button>
+                      <button onClick={() => { setSelectedId(p.id); setSelectedAction('REQUEST_REVISION'); }} style={btnGhostStyle}>Request Revision</button>
+                      <button onClick={() => { setSelectedId(p.id); setSelectedAction('REJECT'); }} style={{ ...btnGhostStyle, color: '#f87171', borderColor: '#f8717140' }}>Reject</button>
+                    </>
+                  )}
+                  {p.status === 'APPROVED' && (
+                    <button onClick={() => submitCatalogAction(p.id, 'PUBLISH')} disabled={catalogActionLoading} style={btnGoldStyle}>Publish to Market →</button>
+                  )}
+                </div>
+
+                {/* Reason input for selected action */}
+                {selectedId === p.id && ['REQUEST_REVISION', 'REJECT'].includes(selectedAction) && (
+                  <div style={{ marginTop: 12, display: 'flex', gap: 8 }}>
+                    <input
+                      type="text" placeholder="Enter reason..." value={localReason} onChange={e => setLocalReason(e.target.value)}
+                      style={{ ...inputStyle, flex: 1 }}
+                    />
+                    <button onClick={() => { submitCatalogAction(p.id, selectedAction, localReason); setSelectedId(null); setLocalReason(''); }} style={btnGoldStyle}>Confirm</button>
+                    <button onClick={() => { setSelectedId(null); setLocalReason(''); }} style={btnGhostStyle}>Cancel</button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// FINANCIAL LEDGER
+// ══════════════════════════════════════════════════════════════════════════════
+function FinancialLedgerSection({ kpis, fmt }: any) {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Finance</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Financial Ledger</h2>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+        <KpiCard label="Gross GMV" value={fmt(kpis?.gmv || 0)} sub="Total sales value" accent="#c9a84c" large />
+        <KpiCard label="Platform Revenue" value={fmt(kpis?.platformRevenue || 0)} sub="Commission collected" accent="#4ade80" large />
+        <KpiCard label="Escrow Held" value={fmt(kpis?.escrowHeld || 0)} sub="Pending payout release" accent="#6ab4f5" large />
+      </div>
+      <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 40, textAlign: 'center' }}>
+        <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)', margin: 0 }}>Detailed transaction ledger will populate as orders are processed</p>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// COMMUNICATIONS
+// ══════════════════════════════════════════════════════════════════════════════
+function CommunicationsSection() {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Operations</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Communications</h2>
+      </div>
+      <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 40, textAlign: 'center' }}>
+        <div style={{ fontSize: 40, marginBottom: 16 }}>✉️</div>
+        <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)', margin: 0 }}>Contact inquiries, B2B commissions, and custom order requests will appear here</p>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// REPORTING
+// ══════════════════════════════════════════════════════════════════════════════
+function ReportingSection({ kpis, fmt }: any) {
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <p style={{ fontSize: 11, color: '#4a4030', letterSpacing: 3, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>Operations</p>
+        <h2 style={{ fontFamily: 'var(--font-playfair)', fontSize: 22, fontWeight: 400, color: '#f5f0e8', margin: 0 }}>Platform Reporting</h2>
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 16, marginBottom: 28 }}>
+        <KpiCard label="GMV" value={fmt(kpis?.gmv || 0)} sub="All time gross" accent="#c9a84c" />
+        <KpiCard label="Studios" value={kpis?.totalStudios || 0} sub="Total registered" accent="#a78bfa" />
+        <KpiCard label="Products" value={kpis?.totalProducts || 0} sub="Total in catalog" accent="#c9a84c" />
+      </div>
+      <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 10, padding: 40, textAlign: 'center' }}>
+        <p style={{ color: '#4a4030', fontSize: 13, fontFamily: 'var(--font-outfit)', margin: 0 }}>Financial statements and data exports will be available here</p>
+      </div>
+    </div>
+  );
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// SHARED COMPONENTS
+// ══════════════════════════════════════════════════════════════════════════════
+function KpiCard({ label, value, sub, accent = '#c9a84c', large }: any) {
+  return (
+    <div style={{ background: '#0f0e0b', border: '1px solid #1e1c18', borderRadius: 8, padding: large ? '22px 24px' : '16px 20px' }}>
+      <p style={{ fontSize: 10, color: '#4a4030', letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', margin: '0 0 8px' }}>{label}</p>
+      <p style={{ fontSize: large ? 26 : 20, fontFamily: 'var(--font-outfit)', fontWeight: 700, color: accent, margin: '0 0 4px' }}>{value}</p>
+      {sub && <p style={{ fontSize: 11, color: '#4a4030', fontFamily: 'var(--font-outfit)', margin: 0 }}>{sub}</p>}
+    </div>
+  );
+}
+
+function StatusBadge({ status, small }: any) {
+  const meta = STATUS_META[status] || { label: status || '—', color: '#8a7a6a', bg: '#1a1810' };
+  return (
+    <span style={{
+      fontSize: small ? 10 : 11, fontFamily: 'var(--font-outfit)', fontWeight: 600, letterSpacing: 0.8,
+      padding: small ? '2px 6px' : '3px 10px', borderRadius: 4,
+      background: meta.bg, color: meta.color, border: `1px solid ${meta.color}40`,
+      textTransform: 'uppercase' as const, whiteSpace: 'nowrap' as const,
+    }}>{meta.label}</span>
+  );
+}
+
+function SectionLabel({ children, color = '#c9a84c' }: any) {
+  return <p style={{ fontSize: 11, color, letterSpacing: 2, textTransform: 'uppercase', fontFamily: 'var(--font-outfit)', fontWeight: 700, margin: '0 0 16px' }}>{children}</p>;
+}
+
+function InfoRow({ label, value, multiline }: any) {
+  if (!value && value !== 0) return null;
+  return (
+    <div style={{ display: 'flex', gap: 12, marginBottom: 8, alignItems: multiline ? 'flex-start' : 'center' }}>
+      <p style={{ color: '#4a4030', fontSize: 11, fontFamily: 'var(--font-outfit)', width: 110, flexShrink: 0, margin: 0, lineHeight: 1.4 }}>{label}</p>
+      <p style={{ color: '#c8bfa8', fontSize: 12, fontFamily: 'var(--font-outfit)', margin: 0, lineHeight: 1.5 }}>{value}</p>
+    </div>
+  );
+}
+
+// Styles
+const inputStyle: React.CSSProperties = {
+  background: '#0a0908',
+  border: '1px solid #2a2520',
+  borderRadius: 6,
+  padding: '10px 14px',
+  color: '#f5f0e8',
+  fontSize: 13,
+  fontFamily: 'var(--font-outfit)',
+  outline: 'none',
+  boxSizing: 'border-box',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: 11,
+  color: '#8a7a6a',
+  fontFamily: 'var(--font-outfit)',
+  letterSpacing: 1,
+  textTransform: 'uppercase',
+  marginBottom: 8,
+};
+
+const btnGoldStyle: React.CSSProperties = {
+  background: 'transparent',
+  border: '1px solid #c9a84c',
+  color: '#c9a84c',
+  padding: '9px 18px',
+  borderRadius: 6,
+  fontSize: 12,
+  fontFamily: 'var(--font-outfit)',
+  fontWeight: 600,
+  cursor: 'pointer',
+  letterSpacing: 0.3,
+  transition: 'all 0.15s',
+  whiteSpace: 'nowrap' as const,
+};
+
+const btnGhostStyle: React.CSSProperties = {
+  background: 'transparent',
+  border: '1px solid #2a2520',
+  color: '#8a7a6a',
+  padding: '9px 18px',
+  borderRadius: 6,
+  fontSize: 12,
+  fontFamily: 'var(--font-outfit)',
+  cursor: 'pointer',
+  whiteSpace: 'nowrap' as const,
+};

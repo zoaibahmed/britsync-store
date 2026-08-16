@@ -84,18 +84,26 @@ export default function LoginPage() {
       setLoading(false);
 
       if (!res.ok) {
-        setErrorMsg(data.error || 'Authentication failed.');
+        if (data.requiresOtp) {
+          setErrorMsg('Your email address is not yet verified. If you just registered, please check your inbox for the 6-digit OTP code and use it to verify your account.');
+        } else {
+          setErrorMsg(data.error || 'Authentication failed.');
+        }
         return;
       }
 
       const user = data.user;
       localStorage.setItem('britsync_user', JSON.stringify(user));
 
-      if (user.role === 'ADMIN') {
-        window.location.href = '/dashboard/ceo';
-      } else if (user.role === 'INSPECTOR') {
-        window.location.href = '/dashboard/inspector';
-      } else if (user.role === 'MAKER') {
+      const staffRoles = [
+        'CEO', 'SUPER_ADMIN', 'ADMIN', 'ACCREDITATION_OFFICER', 'INSPECTOR',
+        'CATALOG_CURATOR', 'FINANCE_OFFICER', 'FULFILLMENT_OFFICER', 'CONCIERGE',
+        'PROVENANCE_OFFICER', 'BI_OFFICER', 'PLATFORM_ADMIN', 'INTERNAL_AUDITOR'
+      ];
+
+      if (staffRoles.includes(user.role)) {
+        window.location.href = '/dashboard/operations';
+      } else if (user.role === 'MAKER' || user.role === 'STUDIO_MANAGER') {
         window.location.href = '/dashboard/maker';
       } else {
         window.location.href = '/dashboard/buyer';
@@ -183,7 +191,7 @@ export default function LoginPage() {
       const vRes = await fetch('/api/auth/verify-otp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, code }),
+        body: JSON.stringify({ email, code, otp: code }),
       });
       const vData = await vRes.json();
 

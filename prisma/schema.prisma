@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -191,7 +191,7 @@ model MakerProfile {
   statusLookup       VerificationTierLookup @relation(fields: [verificationStatus], references: [code])
   yearsInBusiness    Int                    @default(0)
   employeeCount      Int                    @default(1)
-  geofence           String?                @db.Text // JSON string boundary of coordinates
+  geofence           String?                @db.Text
   coverMediaId       String?
   coverMedia         Media?                 @relation("MakerCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
   founderMediaId     String?
@@ -199,6 +199,25 @@ model MakerProfile {
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   deletedAt          DateTime?
+
+  // ── Accreditation Wizard Fields ──────────────────────────────────────────
+  craftCategory       String?   @db.VarChar(100)  // Ceramics, Textiles, Jewelry, Woodwork, Leather, Home Decor
+  founderName         String?   @db.VarChar(255)
+  heritageOriginStory String?   @db.Text
+  founderBiography    String?   @db.Text
+  craftTools          String?   @db.Text
+  craftTechniques     String?   @db.Text
+  craftPhilosophy     String?   @db.Text
+  coverImageUrl       String?   @db.VarChar(512)
+  founderPhotoUrl     String?   @db.VarChar(512)
+  workshopPhoto1      String?   @db.VarChar(512)
+  workshopPhoto2      String?   @db.VarChar(512)
+  workshopPhoto3      String?   @db.VarChar(512)
+  payoutMethod        String?   @db.VarChar(50)   // STRIPE_CONNECT, WISE, BANK_WIRE
+  payoutAccountDetails String?  @db.Text
+  accreditationStep   Int       @default(0)        // 0=not started, 1-4=in progress, 5=submitted
+  submittedAt         DateTime?
+  revisionNote        String?   @db.Text
 
   products             Product[]
   verificationRequests VerificationRequest[]
@@ -209,6 +228,7 @@ model MakerProfile {
   makerMetrics         MakerMetrics?
   inspectionReports    InspectionReport[]
   SavedMaker           SavedMaker[]
+  accreditationLogs    AccreditationAuditLog[]
 }
 
 model InspectorProfile {
@@ -223,6 +243,22 @@ model InspectorProfile {
   verificationRequests VerificationRequest[]
   inspections          InspectionReport[]
 }
+
+// Tracks every accreditation status change with reason and actor
+model AccreditationAuditLog {
+  id               String       @id @default(uuid())
+  makerProfileId   String
+  maker            MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  previousStatus   String       @db.VarChar(50)
+  newStatus        String       @db.VarChar(50)
+  changedByUserId  String?
+  reason           String?      @db.Text
+  internalNote     String?      @db.Text
+  createdAt        DateTime     @default(now())
+
+  @@index([makerProfileId])
+}
+
 
 // =========================================================================
 // 4. CATEGORIES, PRODUCTS & PRICING ENGINE
@@ -256,7 +292,7 @@ model Product {
   categoryId         String
   category           Category               @relation(fields: [categoryId], references: [id])
   locationId         String
-  location           Location               @relation(fields: [locationId], references: [id]) // village node
+  location           Location               @relation(fields: [locationId], references: [id])
   desiredPrice       Float
   inventory          Int                    @default(0)
   verificationStatus String                 @default("GENERAL") @db.VarChar(50)
@@ -269,6 +305,17 @@ model Product {
   createdAt          DateTime               @default(now())
   updatedAt          DateTime               @updatedAt
   deletedAt          DateTime?
+
+  // ── Craft Metadata ───────────────────────────────────────────────────────
+  primaryImageUrl     String?  @db.VarChar(512)
+  additionalImagesJson String? @db.Text           // JSON array of image URLs
+  materials           String?  @db.Text
+  dimensions          String?  @db.VarChar(255)
+  weight              String?  @db.VarChar(100)
+  craftingTimeWeeks   Int?
+  isMadeToOrder       Boolean  @default(false)
+  isOneOfOne          Boolean  @default(false)
+  isReadyToShip       Boolean  @default(true)
 
   translations      ProductTranslation[]
   mediaMaps         ProductMediaMap[]
@@ -1197,3 +1244,93 @@ model ReviewReport {
 
   @@unique([reviewId, userId])
 }
+
+// =========================================================================
+// 12. MANAGED COMMERCE OPERATIONS & BESPOKE ECOSYSTEM
+// =========================================================================
+
+model CustomCommission {
+  id                    String    @id @default(uuid())
+  patronUserId          String
+  categoryId            String?
+  assignedMakerProfileId String?
+  title                 String    @db.VarChar(255)
+  description           String    @db.Text
+  budgetGbp             Float?
+  dimensions            String?   @db.VarChar(255)
+  materials             String?   @db.Text
+  deadline              DateTime?
+  status                String    @default("SUBMITTED") @db.VarChar(50) // SUBMITTED, CONCIERGE_REVIEW, STUDIO_ROUTED, QUOTED, ACCEPTED, REJECTED, IN_PRODUCTION, COMPLETED
+  quoteAmountGbp        Float?
+  orderId               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([patronUserId])
+  @@index([assignedMakerProfileId])
+  @@index([status])
+}
+
+model PayoutRequest {
+  id                     String    @id @default(uuid())
+  makerProfileId         String
+  amount                 Float
+  status                 String    @default("REQUESTED") @db.VarChar(50) // REQUESTED, PROCESSING, PAID, REJECTED
+  payoutMethod           String    @db.VarChar(50) // STRIPE_CONNECT, WISE, BANK_WIRE
+  accountDetailsEncrypted String?  @db.Text
+  rejectionReason        String?   @db.Text
+  requestedAt            DateTime  @default(now())
+  processedAt            DateTime?
+  processedByUserId      String?
+
+  @@index([makerProfileId])
+  @@index([status])
+}
+
+model OperationTask {
+  id             String    @id @default(uuid())
+  taskType       String    @db.VarChar(50) // ACCREDITATION_REVIEW, INSPECTION_ASSIGNED, CATALOG_MODERATION, PAYOUT_APPROVAL, DISPATCH_OVERDUE, DISPUTE_OPEN, COMMISSION_REQUEST
+  targetRole     String    @db.VarChar(50) // CEO, ACCREDITATION_OFFICER, INSPECTOR, CATALOG_CURATOR, FINANCE_OFFICER, FULFILLMENT_OFFICER, CONCIERGE, PROVENANCE_OFFICER, BI_OFFICER
+  referenceId    String    @db.VarChar(255)
+  title          String    @db.VarChar(255)
+  description    String?   @db.Text
+  priority       String    @default("MEDIUM") @db.VarChar(20) // LOW, MEDIUM, HIGH, URGENT
+  status         String    @default("OPEN") @db.VarChar(20) // OPEN, IN_PROGRESS, RESOLVED
+  dueDate        DateTime?
+  assignedUserId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([targetRole, status])
+  @@index([priority])
+}
+
+model InternalNote {
+  id           String   @id @default(uuid())
+  targetType   String   @db.VarChar(50) // MAKER, PRODUCT, ORDER, PATRON, DISPUTE, APPLICATION
+  targetId     String   @db.VarChar(255)
+  authorUserId String
+  authorRole   String   @db.VarChar(50)
+  noteText     String   @db.Text
+  createdAt    DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+model OrderDispute {
+  id                String    @id @default(uuid())
+  orderId           String
+  raisedByUserId    String
+  issueType         String    @db.VarChar(50) // DAMAGED, NOT_RECEIVED, DIFFERENT_THAN_LISTED, SHIPPING_DELAY, REFUND_REQUEST
+  description       String    @db.Text
+  status            String    @default("OPEN") @db.VarChar(50) // OPEN, UNDER_REVIEW, RESOLUTION_PROPOSED, RESOLVED, CLOSED
+  resolutionSummary String?   @db.Text
+  refundAmount      Float?
+  resolvedAt        DateTime?
+  resolvedByUserId  String?
+  createdAt         DateTime  @default(now())
+
+  @@index([orderId])
+  @@index([status])
+}
+

@@ -6,7 +6,7 @@ import { verifyPassword } from '@/lib/crypto';
 export async function POST(request: Request) {
   try {
     const { email, password } = await request.json();
-    
+
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
@@ -23,7 +23,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid email or password' }, { status: 401 });
     }
 
-    // Set session cookie
+    // Block unverified users — direct them to OTP flow
+    if (!user.isEmailVerified) {
+      return NextResponse.json({
+        error: 'Email not verified',
+        requiresOtp: true,
+        email: user.email,
+      }, { status: 403 });
+    }
+
     const response = NextResponse.json({
       success: true,
       user: {
