@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
 import CustomCursor from '@/components/CustomCursor';
@@ -393,33 +394,9 @@ export default function LoginPage() {
         </button>
 
         {/* Top-Center: Minimal Brand Mark with Theme Logo */}
-        <div style={{ textAlign: 'center', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <Link href="/" style={{ textAlign: 'center', display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
           <ThemeLogo height="36px" />
-          <div>
-            <h1 style={{
-              fontFamily: 'var(--font-playfair), Georgia, serif',
-              fontSize: '1.05rem',
-              fontWeight: 400,
-              letterSpacing: '4px',
-              color: textPrimary,
-              margin: 0,
-              textTransform: 'uppercase'
-            }}>
-              NOBLESHOP.CO.UK
-            </h1>
-            <p style={{
-              fontSize: '0.55rem',
-              letterSpacing: '2.5px',
-              textTransform: 'uppercase',
-              color: goldAccent,
-              fontFamily: 'var(--font-outfit)',
-              fontWeight: 700,
-              margin: 0
-            }}>
-              HERITAGE ATELIER REGISTRY
-            </p>
-          </div>
-        </div>
+        </Link>
 
         {/* Top-Right: Discreet Theme Switch */}
         <button

@@ -296,9 +296,25 @@ a:not(.btn-primary):not(.btn-accent):hover {
   color: var(--accent) !important;
 }
 
-/* Scroll behaviour */
-html {
-  scroll-behavior: smooth;
+/* Scroll behaviour & Lenis Integration */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
 }
 
 /* Pulsing Hotspot Map Markers */
