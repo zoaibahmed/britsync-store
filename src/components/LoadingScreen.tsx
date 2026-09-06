@@ -4,7 +4,11 @@ import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import shoppingCartAnimation from '../../Shopping cart.json';
 
-export default function LoadingScreen() {
+interface LoadingScreenProps {
+  progress?: number;
+}
+
+export default function LoadingScreen({ progress = 0 }: LoadingScreenProps) {
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -112,6 +116,42 @@ export default function LoadingScreen() {
       >
         CURATED FOR BETTER LIVING
       </motion.p>
+
+      {/* Discreet 2px Gold Progress Bar */}
+      <div
+        style={{
+          width: '160px',
+          height: '2px',
+          backgroundColor: 'rgba(201, 168, 76, 0.15)',
+          borderRadius: '999px',
+          overflow: 'hidden',
+          marginTop: '1.2rem',
+          position: 'relative'
+        }}
+      >
+        <motion.div
+          style={{
+            height: '100%',
+            backgroundColor: '#C9A84C',
+            width: `${Math.min(100, Math.max(0, progress))}%`,
+            borderRadius: '999px',
+            transition: 'width 0.2s linear'
+          }}
+        />
+      </div>
+
+      <span
+        style={{
+          fontSize: '0.62rem',
+          color: '#8A8578',
+          fontFamily: 'var(--font-outfit)',
+          letterSpacing: '1.5px',
+          marginTop: '0.45rem',
+          fontWeight: 600
+        }}
+      >
+        {Math.min(100, Math.max(0, progress))}%
+      </span>
     </motion.div>
   );
 }

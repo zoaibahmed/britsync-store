@@ -138,18 +138,15 @@ class ParallelPreloader {
     this.checkInitialProgress();
   }
 
-  private async processQueue() {
-    if (this.activeConnections >= this.concurrency || this.queue.length === 0) return;
-    this.activeConnections++;
-    const item = this.queue.shift()!;
-    try {
-      await this.loadFrame(item.cache, item.url, item.index);
-    } catch {
-      // silently fail — keep queue moving
-    } finally {
-      this.activeConnections--;
-      item.resolve();
-      this.processQueue();
+  private processQueue() {
+    while (this.activeConnections < this.concurrency && this.queue.length > 0) {
+      this.activeConnections++;
+      const item = this.queue.shift()!;
+      this.loadFrame(item.cache, item.url, item.index).finally(() => {
+        this.activeConnections--;
+        item.resolve();
+        this.processQueue();
+      });
     }
   }
 

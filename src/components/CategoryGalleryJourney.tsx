@@ -98,19 +98,6 @@ export default function CategoryGalleryJourney() {
   useEffect(() => {
     startGlobalFramePreload();
     setIsLoaded(true);
-
-    // Keyframe prefetcher across all 2400 frames of Section 2
-    if (typeof window !== "undefined") {
-      const cCache = getCategoryCacheMap();
-      for (let i = 0; i < TOTAL_FRAMES; i += 10) {
-        if (!cCache.has(i)) {
-          const img = new Image();
-          img.decoding = "async";
-          img.src = getCategoryFrameUrl(i);
-          img.onload = () => cCache.set(i, img);
-        }
-      }
-    }
   }, []);
 
   const lastDrawnImgRef = useRef<HTMLImageElement | null>(null);
@@ -196,8 +183,8 @@ export default function CategoryGalleryJourney() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Slow, elegant pacing with max speed clamp per tick for majestic unhurried playback
-        const step = Math.sign(diff) * Math.min(Math.abs(diff * 0.02), 0.35);
+        // Fluid, responsive tracking lerp with natural clamp for smooth scrub
+        const step = Math.sign(diff) * Math.min(Math.abs(diff * 0.08), 2.5);
         currentFrameRef.current += step;
         renderFrameOnCanvas(currentFrameRef.current);
       } else if (currentFrameRef.current !== targetFrameRef.current) {
@@ -282,7 +269,7 @@ export default function CategoryGalleryJourney() {
       ref={containerRef}
       style={{
         position: "relative",
-        height: "3600vh",
+        height: "1200vh",
         backgroundColor: "var(--background)",
         color: "var(--text)",
         transition: "background-color 0.4s ease, color 0.4s ease",

@@ -32,7 +32,7 @@ export default function TransitionProvider({ children }: { children: React.React
 
     startGlobalFramePreload();
 
-    const MIN_PRELOAD_TIME = 50000; // 50 seconds preloader duration as requested
+    const MIN_PRELOAD_TIME = 55000; // 55 seconds preloader duration (guarantees 50s-60s on screen)
     const startTime = Date.now();
     let actualLoaded = 0;
     const TOTAL_FRAMES = PRELOADER_QUARTER_FRAMES; // 1852 frames
@@ -46,13 +46,13 @@ export default function TransitionProvider({ children }: { children: React.React
       const timeRatio = Math.min(1, elapsed / MIN_PRELOAD_TIME);
       const actualRatio = Math.min(1, actualLoaded / TOTAL_FRAMES);
 
-      // Smooth progress fills up over the full 50 seconds
+      // Smooth progress fills up over the full 55 seconds
       const currentRatio = Math.max(timeRatio, actualRatio);
       const currentCount = Math.round(currentRatio * TOTAL_FRAMES);
 
       setDisplayCount(currentCount);
 
-      // Transition to ready stage after 50 seconds (50000 ms)
+      // Transition to ready stage after 55 seconds (55000 ms)
       if (elapsed >= MIN_PRELOAD_TIME) {
         clearInterval(interval);
         if (typeof document !== 'undefined') {
@@ -76,11 +76,13 @@ export default function TransitionProvider({ children }: { children: React.React
     };
   }, []);
 
+  const progressPct = Math.min(100, Math.round((displayCount / PRELOADER_QUARTER_FRAMES) * 100));
+
   return (
     <>
       <AnimatePresence mode="wait">
         {stage === 'preloader' && (
-          <LoadingScreen key="preloader" />
+          <LoadingScreen key="preloader" progress={progressPct} />
         )}
       </AnimatePresence>
       
