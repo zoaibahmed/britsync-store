@@ -175,18 +175,18 @@ export default function LuxuryHero() {
 
   /* ── advance / rewind frames smoothly ───────────────────────────────── */
   const moveFrames = useCallback((delta: number) => {
-    // Impulse step for keyboard / programmatic frame movement
-    velocityRef.current += Math.sign(delta) * Math.min(2, Math.abs(delta));
+    // Gentle impulse step for keyboard / programmatic frame movement
+    velocityRef.current += Math.sign(delta) * Math.min(1.0, Math.abs(delta) * 0.4);
   }, []);
 
   // RAF loop for smooth 60fps frame transition with momentum friction physics
   useEffect(() => {
     let animId: number;
     const tick = () => {
-      // Apply momentum friction physics
+      // Apply momentum friction physics with controlled deceleration
       if (Math.abs(velocityRef.current) > 0.001) {
         targetFrameRef.current = Math.max(0, Math.min(TOTAL_FRAMES - 1, targetFrameRef.current + velocityRef.current));
-        velocityRef.current *= 0.88; // Silky smooth deceleration
+        velocityRef.current *= 0.86; // Silky smooth deceleration
       } else {
         velocityRef.current = 0;
       }
@@ -195,8 +195,9 @@ export default function LuxuryHero() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001 || Math.abs(velocityRef.current) > 0.001) {
-        // Slow, majestic tracking lerp at 0.035 speed for unhurried luxury movement
-        frameRef.current += diff * 0.035;
+        // Slow, majestic tracking lerp with max clamp per tick for unhurried luxury movement
+        const step = Math.sign(diff) * Math.min(Math.abs(diff * 0.022), 0.35);
+        frameRef.current += step;
         drawFrame(frameRef.current);
         
         const nextInt = Math.round(frameRef.current);
@@ -266,8 +267,10 @@ export default function LuxuryHero() {
     const onWheel = (e: WheelEvent) => {
       if (!heroActiveRef.current) return;
       e.preventDefault();
-      // Slow, majestic velocity impulse (0.0035 speed for unhurried luxury pacing)
-      velocityRef.current += e.deltaY * 0.0035;
+      // Slower, majestic velocity impulse (reduced from 0.0035 to 0.0012)
+      velocityRef.current += e.deltaY * 0.0012;
+      // Clamp velocity to prevent sudden frame skips
+      velocityRef.current = Math.max(-0.4, Math.min(0.4, velocityRef.current));
     };
 
     /* ── TOUCH ── */
@@ -280,7 +283,9 @@ export default function LuxuryHero() {
       e.preventDefault();
       const dy = touchStartY.current - e.touches[0].clientY;
       touchStartY.current = e.touches[0].clientY;
-      velocityRef.current += dy * 0.04;
+      // Slower touch velocity impulse (reduced from 0.04 to 0.015)
+      velocityRef.current += dy * 0.015;
+      velocityRef.current = Math.max(-0.4, Math.min(0.4, velocityRef.current));
     };
 
     /* ── KEYBOARD ── */
@@ -288,10 +293,10 @@ export default function LuxuryHero() {
       if (!heroActiveRef.current) return;
       if (e.key === "ArrowDown" || e.key === " " || e.key === "PageDown") {
         e.preventDefault();
-        moveFrames(4);
+        moveFrames(1.5);
       } else if (e.key === "ArrowUp" || e.key === "PageUp") {
         e.preventDefault();
-        moveFrames(-4);
+        moveFrames(-1.5);
       }
     };
 

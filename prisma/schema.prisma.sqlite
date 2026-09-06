@@ -1,0 +1,1336 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = "file:./dev.db"
+}
+
+// =========================================================================
+// 1. LOOKUP / REFERENCE MODELS (Replaces Enums for online migrations)
+// =========================================================================
+
+model UserRoleLookup {
+  code        String @id 
+  description String 
+  users       User[]
+}
+
+model VerificationTierLookup {
+  code         String         @id 
+  description  String         
+  makers       MakerProfile[]
+  products     Product[]
+  pricingRules PricingRule[]
+}
+
+model ProductStatusLookup {
+  code        String    @id 
+  description String    
+  products    Product[]
+}
+
+model OrderStatusLookup {
+  code        String  @id 
+  description String  
+  orders      Order[]
+}
+
+// =========================================================================
+// 2. GEOGRAPHY & MEDIA LAYERS (Materialized path ltree alternative for MySQL)
+// =========================================================================
+
+model Location {
+  id           String     @id @default(uuid())
+  parentId     String?
+  parent       Location?  @relation("LocationHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children     Location[] @relation("LocationHierarchy")
+  path         String      // Materialized path, e.g. "globe.europe.uk"
+  locationType String      // CONTINENT, COUNTRY, REGION, PROVINCE, CITY, VILLAGE
+  latitude     Float?
+  longitude    Float?
+  createdAt    DateTime   @default(now())
+
+  translations LocationTranslation[]
+  makers       MakerProfile[]
+  products     Product[]
+  stories      MakerStory[]
+
+  @@index([path])
+}
+
+model LocationTranslation {
+  id           String   @id @default(uuid())
+  locationId   String
+  location     Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+  languageCode String   
+  name         String   
+  description  String?  
+  createdAt    DateTime @default(now())
+
+  @@unique([locationId, languageCode])
+}
+
+model Media {
+  id               String   @id @default(uuid())
+  originalFilename String   
+  mimeType         String   
+  fileSize         Int
+  storageProvider  String   @default("GCS") 
+  storageKey       String   
+  createdAt        DateTime @default(now())
+
+  variants       MediaVariant[]
+  metadata       MediaMetadata[]
+  processingJobs MediaProcessingJob[]
+  makerCovers    MakerProfile[]       @relation("MakerCoverMedia")
+  makerFounders  MakerProfile[]       @relation("MakerFounderMedia")
+  storyHeroes    MakerStory[]         @relation("StoryHeroMedia")
+  productMaps    ProductMediaMap[]
+  reviewMaps     ReviewMedia[]
+  passportMaps   PassportMedia[]
+  StoryMedia     StoryMedia[]
+}
+
+model MediaVariant {
+  id         String   @id @default(uuid())
+  mediaId    String
+  media      Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  width      Int
+  height     Int
+  storageKey String   
+  purpose    String    // THUMBNAIL, HERO, ZOOM
+  createdAt  DateTime @default(now())
+
+  @@index([mediaId, purpose])
+}
+
+model MediaMetadata {
+  id          String   @id @default(uuid())
+  mediaId     String
+  media       Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  altText     String?  
+  credits     String?  
+  cameraModel String?  
+  exposure    String?  
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime @default(now())
+}
+
+model MediaProcessingJob {
+  id           String   @id @default(uuid())
+  mediaId      String
+  media        Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  status       String   @default("PENDING")  // PENDING, PROCESSING, COMPLETED, FAILED
+  errorMessage String?  
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// =========================================================================
+// 3. CORE USERS & ARTISANS
+// =========================================================================
+
+model User {
+  id                 String         @id @default(uuid())
+  email              String         @unique
+  passwordHash       String         
+  name               String         
+  role               String         @default("BUYER") 
+  roleLookup         UserRoleLookup @relation(fields: [role], references: [code])
+  isEmailVerified    Boolean        @default(false)
+  verificationToken  String?        
+  resetToken         String?        
+  resetTokenExpiry   DateTime?
+  languagePreference String         @default("en") 
+  currencyPreference String         @default("GBP") 
+  createdAt          DateTime       @default(now())
+  updatedAt          DateTime       @updatedAt
+  deletedAt          DateTime?
+
+  makerProfile       MakerProfile?
+  inspectorProfile   InspectorProfile?
+  orders             Order[]
+  supportTickets     SupportTicket[]
+  loginHistory       LoginHistory[]
+  securityEvents     SecurityEvent[]
+  apiAccessLogs      ApiAccessLog[]
+  adminActions       AdminAction[]           @relation("AdminUserAction")
+  passportSignatures PassportSignature[]
+  passportHistories  PassportHistory[]
+  storyVersions      StoryVersion[]
+  markupHistories    MarkupHistory[]
+  paymentAccounts    PaymentAccount[]
+  notifications      Notification[]
+  notificationLogs   NotificationLog[]
+  reviews               Review[]
+  wishlists             Wishlist?
+  aiConversations       AiConversation[]
+  aiMemories            AiMemory[]
+  fraudCasesTarget      FraudCase[]             @relation("FraudTargetUser")
+  fraudCasesAnalyst     FraudCase[]             @relation("FraudAnalystUser")
+  fraudDecisions        ExecutedFraudDecision[]
+  SavedMaker            SavedMaker[]
+  ShippingAddress       ShippingAddress[]
+  cartItems             CartItem[]
+  reviewHelpfulVotes    ReviewHelpfulVote[]
+  reviewReports         ReviewReport[]
+  supportTicketReplies  SupportTicketReply[]
+}
+
+model MakerProfile {
+  id                 String                 @id @default(uuid())
+  userId             String                 @unique
+  user               User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  businessName       String                 
+  locationId         String
+  location           Location               @relation(fields: [locationId], references: [id])
+  verificationStatus String                 @default("GENERAL") 
+  statusLookup       VerificationTierLookup @relation(fields: [verificationStatus], references: [code])
+  yearsInBusiness    Int                    @default(0)
+  employeeCount      Int                    @default(1)
+  geofence           String?                
+  coverMediaId       String?
+  coverMedia         Media?                 @relation("MakerCoverMedia", fields: [coverMediaId], references: [id], onDelete: SetNull)
+  founderMediaId     String?
+  founderMedia       Media?                 @relation("MakerFounderMedia", fields: [founderMediaId], references: [id], onDelete: SetNull)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  deletedAt          DateTime?
+
+  // ── Accreditation Wizard Fields ──────────────────────────────────────────
+  craftCategory       String?     // Ceramics, Textiles, Jewelry, Woodwork, Leather, Home Decor
+  founderName         String?   
+  heritageOriginStory String?   
+  founderBiography    String?   
+  craftTools          String?   
+  craftTechniques     String?   
+  craftPhilosophy     String?   
+  coverImageUrl       String?   
+  founderPhotoUrl     String?   
+  workshopPhoto1      String?   
+  workshopPhoto2      String?   
+  workshopPhoto3      String?   
+  payoutMethod        String?      // STRIPE_CONNECT, WISE, BANK_WIRE
+  payoutAccountDetails String?  
+  accreditationStep   Int       @default(0)        // 0=not started, 1-4=in progress, 5=submitted
+  submittedAt         DateTime?
+  revisionNote        String?   
+
+  products             Product[]
+  verificationRequests VerificationRequest[]
+  certificates         Certificate[]
+  wallet               Wallet?
+  stories              MakerStory?
+  sellerResponses      SellerResponse[]
+  makerMetrics         MakerMetrics?
+  inspectionReports    InspectionReport[]
+  SavedMaker           SavedMaker[]
+  accreditationLogs    AccreditationAuditLog[]
+}
+
+model InspectorProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  regionScope String   
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  verificationRequests VerificationRequest[]
+  inspections          InspectionReport[]
+}
+
+// Tracks every accreditation status change with reason and actor
+model AccreditationAuditLog {
+  id               String       @id @default(uuid())
+  makerProfileId   String
+  maker            MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  previousStatus   String       
+  newStatus        String       
+  changedByUserId  String?
+  reason           String?      
+  internalNote     String?      
+  createdAt        DateTime     @default(now())
+
+  @@index([makerProfileId])
+}
+
+
+// =========================================================================
+// 4. CATEGORIES, PRODUCTS & PRICING ENGINE
+// =========================================================================
+
+model Category {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  translations CategoryTranslation[]
+  products     Product[]
+  pricingRules PricingRule[]
+}
+
+model CategoryTranslation {
+  id           String   @id @default(uuid())
+  categoryId   String
+  category     Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  languageCode String   
+  name         String   
+  description  String?  
+  createdAt    DateTime @default(now())
+
+  @@unique([categoryId, languageCode])
+}
+
+model Product {
+  id                 String                 @id @default(uuid())
+  makerProfileId     String
+  maker              MakerProfile           @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  categoryId         String
+  category           Category               @relation(fields: [categoryId], references: [id])
+  locationId         String
+  location           Location               @relation(fields: [locationId], references: [id])
+  desiredPrice       Float
+  inventory          Int                    @default(0)
+  verificationStatus String                 @default("GENERAL") 
+  statusLookup       VerificationTierLookup @relation(fields: [verificationStatus], references: [code])
+  status             String                 @default("DRAFT") 
+  productStatus      ProductStatusLookup    @relation(fields: [status], references: [code])
+  isEcoFriendly      Boolean                @default(false)
+  isWomenLed         Boolean                @default(false)
+  isHandmade         Boolean                @default(true)
+  createdAt          DateTime               @default(now())
+  updatedAt          DateTime               @updatedAt
+  deletedAt          DateTime?
+
+  // ── Craft Metadata ───────────────────────────────────────────────────────
+  primaryImageUrl     String?  
+  additionalImagesJson String?            // JSON array of image URLs
+  materials           String?  
+  dimensions          String?  
+  weight              String?  
+  craftingTimeWeeks   Int?
+  isMadeToOrder       Boolean  @default(false)
+  isOneOfOne          Boolean  @default(false)
+  isReadyToShip       Boolean  @default(true)
+
+  translations      ProductTranslation[]
+  mediaMaps         ProductMediaMap[]
+  inventoryLedgers  InventoryLedger[]
+  stockReservations StockReservation[]
+  pricingSnapshots  PricingSnapshot[]
+  orderItems        OrderItem[]
+  passport          ProductPassport?
+  certificates      Certificate[]
+  reviews           Review[]
+  wishlistItems     WishlistItem[]
+  metrics           ProductMetrics?
+  cartItems         CartItem[]
+}
+
+model ProductTranslation {
+  id               String   @id @default(uuid())
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  languageCode     String   
+  name             String   
+  description      String   
+  story            String?  
+  careInstructions String?  
+  shippingInfo     String?  
+  returnPolicy     String?  
+  createdAt        DateTime @default(now())
+
+  @@unique([productId, languageCode])
+}
+
+model ProductMediaMap {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  isHero    Boolean  @default(false)
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model InventoryLedger {
+  id            String   @id @default(uuid())
+  productId     String
+  product       Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantityDelta Int
+  referenceType String    // STOCK_IN, SALE, RETURN, RESERVATION_EXPIRED
+  referenceId   String?
+  createdAt     DateTime @default(now())
+}
+
+model StockReservation {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity    Int      @default(1)
+  sessionId   String   
+  expiresAt   DateTime
+  isCompleted Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@index([expiresAt])
+}
+
+model PricingRule {
+  id                 String                  @id @default(uuid())
+  ruleName           String                  
+  ruleType           String                   // CATEGORY, COUNTRY, TIER, LUXURY, CAMPAIGN_PROMOTIONAL, CAMPAIGN_SEASONAL
+  markupPercent      Float                   @default(0.00)
+  flatMargin         Float                   @default(0.00)
+  luxuryThreshold    Float?
+  startDate          DateTime?
+  endDate            DateTime?
+  isActive           Boolean                 @default(true)
+  categoryId         String?
+  category           Category?               @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  countryId          String?
+  country            Country?                @relation(fields: [countryId], references: [id], onDelete: SetNull)
+  verificationStatus String?                 
+  tierLookup         VerificationTierLookup? @relation(fields: [verificationStatus], references: [code])
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+
+  markupHistories MarkupHistory[]
+}
+
+model Country {
+  id                    String        @id @default(uuid())
+  name                  String        @unique
+  code                  String        @unique
+  markupModifierPercent Float         @default(0.00)
+  pricingRules          PricingRule[]
+  dailySales            DailySales[]
+}
+
+model PricingSnapshot {
+  id                     String   @id @default(uuid())
+  productId              String
+  product                Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  calculatedSellingPrice Float
+  calculatedMargin       Float
+  appliedRules           String    // JSON string rules details
+  createdAt              DateTime @default(now())
+
+  orderItems OrderItem[]
+}
+
+model MarkupHistory {
+  id               String      @id @default(uuid())
+  pricingRuleId    String
+  pricingRule      PricingRule @relation(fields: [pricingRuleId], references: [id], onDelete: Cascade)
+  oldMarkupPercent Float
+  newMarkupPercent Float
+  oldFlatMargin    Float
+  newFlatMargin    Float
+  modifiedByUserId String?
+  modifiedByUser   User?       @relation(fields: [modifiedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime    @default(now())
+}
+
+// =========================================================================
+// 5. ACCOUNTING & LEDGER (Double-Entry Financial System)
+// =========================================================================
+
+model ExchangeRate {
+  id           String   @id @default(uuid())
+  fromCurrency String   
+  toCurrency   String   
+  rate         Float
+  retrievedAt  DateTime @default(now())
+}
+
+model LedgerAccount {
+  id          String   @id @default(uuid())
+  accountType String    // ASSET, LIABILITY, REVENUE, EXPENSE, EQUITY
+  name        String   
+  currency    String   @default("GBP") 
+  createdAt   DateTime @default(now())
+
+  entries LedgerEntry[]
+}
+
+model LedgerTransaction {
+  id             String   @id @default(uuid())
+  description    String   
+  idempotencyKey String?  
+  createdAt      DateTime @default(now())
+
+  entries LedgerEntry[]
+}
+
+model LedgerEntry {
+  id                  String            @id @default(uuid())
+  ledgerTransactionId String
+  ledgerTransaction   LedgerTransaction @relation(fields: [ledgerTransactionId], references: [id], onDelete: Cascade)
+  ledgerAccountId     String
+  ledgerAccount       LedgerAccount     @relation(fields: [ledgerAccountId], references: [id])
+  amountDebit         Float             @default(0.00)
+  amountCredit        Float             @default(0.00)
+  createdAt           DateTime          @default(now())
+}
+
+// =========================================================================
+// 6. ORDERS, PAYMENTS, LOGISTICS, AND REFUNDS
+// =========================================================================
+
+model Order {
+  id             String            @id @default(uuid())
+  buyerId        String
+  buyer          User              @relation(fields: [buyerId], references: [id])
+  status         String            @default("PENDING") 
+  statusLookup   OrderStatusLookup @relation(fields: [status], references: [code])
+  subtotal       Float
+  vat            Float             @default(0.00)
+  discount       Float             @default(0.00)
+  shippingCost   Float             @default(0.00)
+  totalAmount    Float
+  idempotencyKey String?           
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  orderItems          OrderItem[]
+  paymentTransactions PaymentTransaction[]
+  shipments           Shipment[]
+  returnRequests      ReturnRequest[]
+  refunds             Refund[]
+  fraudCases          FraudCase[]
+}
+
+model OrderItem {
+  id                String           @id @default(uuid())
+  orderId           String
+  order             Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId         String
+  product           Product          @relation(fields: [productId], references: [id])
+  quantity          Int              @default(1)
+  desiredPrice      Float
+  sellingPrice      Float
+  marginEarned      Float
+  pricingSnapshotId String?
+  pricingSnapshot   PricingSnapshot? @relation(fields: [pricingSnapshotId], references: [id], onDelete: SetNull)
+
+  returnItems ReturnItem[]
+}
+
+model PaymentProvider {
+  id       String           @id @default(uuid())
+  name     String            // STRIPE, PAYPAL, ADYEN, WISE
+  isActive Boolean          @default(true)
+  settings String?           // JSON string settings
+  accounts PaymentAccount[]
+}
+
+model PaymentAccount {
+  id                String          @id @default(uuid())
+  userId            String
+  user              User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  paymentProviderId String
+  provider          PaymentProvider @relation(fields: [paymentProviderId], references: [id], onDelete: Cascade)
+  externalAccountId String           // e.g. Stripe Account ID
+  status            String          @default("ACTIVE") 
+  createdAt         DateTime        @default(now())
+}
+
+model PaymentTransaction {
+  id                           String   @id @default(uuid())
+  orderId                      String
+  order                        Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  amount                       Float
+  providerName                 String    // STRIPE, PAYPAL
+  providerTransactionReference String?  
+  status                       String    // PENDING, FUNDS_HELD, COMPLETED, FAILED
+  createdAt                    DateTime @default(now())
+}
+
+model Wallet {
+  id                String       @id @default(uuid())
+  makerProfileId    String       @unique
+  maker             MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  clearedBalance    Float        @default(0.00)
+  payoutHeldBalance Float        @default(0.00)
+  currency          String       @default("GBP") 
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  walletTransactions WalletTransaction[]
+}
+
+model WalletTransaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  amount      Float
+  type        String    // CREDIT, DEBIT
+  description String   
+  status      String   @default("PENDING") 
+  createdAt   DateTime @default(now())
+}
+
+model Shipment {
+  id                   String    @id @default(uuid())
+  orderId              String
+  order                Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  carrierName          String     // DHL_EXPRESS, FEDEX
+  status               String    @default("MANIFESTED")  // MANIFESTED, PICKED_UP, IN_TRANSIT, DELIVERED, EXCEPTION
+  estimatedDelivery    DateTime?
+  actualDelivery       DateTime?
+  customsInvoiceNumber String?   
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  packages  ShipmentPackage[]
+  trackings ShipmentTracking[]
+  events    ShipmentEvent[]
+}
+
+model ShipmentPackage {
+  id                String   @id @default(uuid())
+  shipmentId        String
+  shipment          Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  weightKg          Float
+  widthCm           Float
+  heightCm          Float
+  depthCm           Float
+  isEliteWoodCrated Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
+
+model ShipmentTracking {
+  id             String   @id @default(uuid())
+  shipmentId     String
+  shipment       Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  trackingNumber String   
+  trackingUrl    String?  
+  createdAt      DateTime @default(now())
+}
+
+model ShipmentEvent {
+  id                  String   @id @default(uuid())
+  shipmentId          String
+  shipment            Shipment @relation(fields: [shipmentId], references: [id], onDelete: Cascade)
+  eventTimestamp      DateTime
+  locationDescription String   
+  status              String   
+  details             String?  
+  createdAt           DateTime @default(now())
+}
+
+model ReturnRequest {
+  id         String   @id @default(uuid())
+  orderId    String
+  order      Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  status     String   @default("REQUESTED")  // REQUESTED, APPROVED, SENT, RECEIVED, QC_PASSED, REJECTED, REFUNDED
+  reasonCode String    // e.g. DAMAGED_IN_CRATE, AUTHENTICITY_CLAIM
+  buyerNotes String?  
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  returnItems ReturnItem[]
+  refunds     Refund[]
+}
+
+model ReturnItem {
+  id              String        @id @default(uuid())
+  returnRequestId String
+  returnRequest   ReturnRequest @relation(fields: [returnRequestId], references: [id], onDelete: Cascade)
+  orderItemId     String
+  orderItem       OrderItem     @relation(fields: [orderItemId], references: [id])
+  quantity        Int           @default(1)
+  createdAt       DateTime      @default(now())
+}
+
+model RefundReason {
+  id          String   @id @default(uuid())
+  code        String   @unique 
+  description String   
+  createdAt   DateTime @default(now())
+  refunds     Refund[]
+}
+
+model Refund {
+  id                      String         @id @default(uuid())
+  orderId                 String
+  order                   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  returnRequestId         String?
+  returnRequest           ReturnRequest? @relation(fields: [returnRequestId], references: [id], onDelete: SetNull)
+  refundReasonId          String
+  refundReason            RefundReason   @relation(fields: [refundReasonId], references: [id])
+  amount                  Float
+  providerRefundReference String?        
+  status                  String         @default("PENDING")  // PENDING, COMPLETED, FAILED
+  createdAt               DateTime       @default(now())
+}
+
+// =========================================================================
+// 7. REVIEWS, WISHLIST, AND SOCIAL
+// =========================================================================
+
+model Review {
+  id                 String   @id @default(uuid())
+  productId          String
+  product            Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  buyerUserId        String
+  buyer              User     @relation(fields: [buyerUserId], references: [id], onDelete: Cascade)
+  rating             Int
+  comment            String?  
+  isVerifiedPurchase Boolean  @default(false)
+  moderationStatus   String   @default("PENDING_APPROVAL") 
+  createdAt          DateTime @default(now())
+
+  mediaMaps      ReviewMedia[]
+  sellerResponse SellerResponse?
+  helpfulVotes   ReviewHelpfulVote[]
+  reports        ReviewReport[]
+}
+
+model ReviewMedia {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  mediaId   String
+  media     Media    @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model SellerResponse {
+  id             String       @id @default(uuid())
+  reviewId       String       @unique
+  review         Review       @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  makerProfileId String
+  maker          MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  responseText   String       
+  createdAt      DateTime     @default(now())
+}
+
+model Wishlist {
+  id          String         @id @default(uuid())
+  buyerUserId String         @unique
+  buyer       User           @relation(fields: [buyerUserId], references: [id], onDelete: Cascade)
+  createdAt   DateTime       @default(now())
+  items       WishlistItem[]
+}
+
+model WishlistItem {
+  id         String   @id @default(uuid())
+  wishlistId String
+  wishlist   Wishlist @relation(fields: [wishlistId], references: [id], onDelete: Cascade)
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+
+  @@unique([wishlistId, productId])
+}
+
+// =========================================================================
+// 8. CRYPTOGRAPHIC PROVENANCE PASSPORTS & CERTIFICATES
+// =========================================================================
+
+model ProductPassport {
+  id             String   @id @default(uuid())
+  passportSerial String   @unique 
+  productId      String   @unique
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  events     PassportEvent[]
+  mediaMaps  PassportMedia[]
+  signatures PassportSignature[]
+  histories  PassportHistory[]
+}
+
+model PassportEvent {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  eventType         String           // CREATED, INSPECTED, SEALED_IN_CRATE, CUSTOMS_CLEARED, DELIVERED, TRANSFERRED
+  eventTimestamp    DateTime        @default(now())
+  description       String          
+  latitude          Float?
+  longitude         Float?
+  createdAt         DateTime        @default(now())
+}
+
+model PassportMedia {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  mediaId           String
+  media             Media           @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+}
+
+model PassportSignature {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  signerUserId      String
+  signer            User            @relation(fields: [signerUserId], references: [id])
+  signatureRole     String           // INSPECTOR, MAKER, ADMIN
+  signatureHash     String          
+  signedAt          DateTime        @default(now())
+}
+
+model PassportHistory {
+  id                String          @id @default(uuid())
+  productPassportId String
+  passport          ProductPassport @relation(fields: [productPassportId], references: [id], onDelete: Cascade)
+  fieldChanged      String          
+  oldValue          String?         
+  newValue          String?         
+  modifiedByUserId  String?
+  modifiedByUser    User?           @relation(fields: [modifiedByUserId], references: [id], onDelete: SetNull)
+  createdAt         DateTime        @default(now())
+}
+
+// =========================================================================
+// 9. STORIES LAYER
+// =========================================================================
+
+model MakerStory {
+  id             String       @id @default(uuid())
+  makerProfileId String       @unique
+  maker          MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  villageId      String
+  village        Location     @relation(fields: [villageId], references: [id])
+  heroMediaId    String?
+  heroMedia      Media?       @relation("StoryHeroMedia", fields: [heroMediaId], references: [id], onDelete: SetNull)
+  isPublished    Boolean      @default(false)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  translations StoryTranslation[]
+  mediaMaps    StoryMedia[]
+  versions     StoryVersion[]
+}
+
+model StoryTranslation {
+  id           String     @id @default(uuid())
+  makerStoryId String
+  story        MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  languageCode String     
+  title        String     
+  excerpt      String     
+  content      String     
+  craftType    String     
+  createdAt    DateTime   @default(now())
+
+  @@unique([makerStoryId, languageCode])
+}
+
+model StoryMedia {
+  id           String     @id @default(uuid())
+  makerStoryId String
+  story        MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  mediaId      String
+  media        Media      @relation(fields: [mediaId], references: [id], onDelete: Cascade)
+  sortOrder    Int        @default(0)
+  createdAt    DateTime   @default(now())
+}
+
+model StoryVersion {
+  id              String     @id @default(uuid())
+  makerStoryId    String
+  story           MakerStory @relation(fields: [makerStoryId], references: [id], onDelete: Cascade)
+  versionNumber   Int
+  changedByUserId String?
+  changedByUser   User?      @relation(fields: [changedByUserId], references: [id], onDelete: SetNull)
+  storySnapshot   String      // JSON string representation
+  createdAt       DateTime   @default(now())
+
+  @@unique([makerStoryId, versionNumber])
+}
+
+// =========================================================================
+// 10. NOTIFICATION ENGINE
+// =========================================================================
+
+model NotificationTemplate {
+  id              String   @id @default(uuid())
+  templateCode    String   
+  channel         String    // EMAIL, PUSH, SMS, IN_APP
+  subjectTemplate String?  
+  bodyTemplate    String   
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs NotificationLog[]
+
+  @@unique([templateCode, channel])
+}
+
+model Notification {
+  id              String   @id @default(uuid())
+  recipientUserId String
+  recipient       User     @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+  title           String   
+  message         String   
+  isRead          Boolean  @default(false)
+  createdAt       DateTime @default(now())
+}
+
+model NotificationLog {
+  id                     String                @id @default(uuid())
+  recipientUserId        String
+  recipient              User                  @relation(fields: [recipientUserId], references: [id], onDelete: Cascade)
+  notificationTemplateId String?
+  template               NotificationTemplate? @relation(fields: [notificationTemplateId], references: [id], onDelete: SetNull)
+  channel                String                 // EMAIL, PUSH, SMS, IN_APP
+  destinationAddress     String                
+  subject                String?               
+  body                   String                
+  status                 String                @default("PENDING")  // PENDING, SENT, FAILED
+  errorMessage           String?               
+  createdAt              DateTime              @default(now())
+}
+
+// =========================================================================
+// 11. NOVA AI ENGINE
+// =========================================================================
+
+model AiConversation {
+  id        String   @id @default(uuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  sessionId String   @unique 
+  mode      String    // shopping, support, seller
+  status    String   @default("ACTIVE") 
+  createdAt DateTime @default(now())
+
+  messages AiMessage[]
+}
+
+model AiMessage {
+  id               String         @id @default(uuid())
+  aiConversationId String
+  conversation     AiConversation @relation(fields: [aiConversationId], references: [id], onDelete: Cascade)
+  role             String          // user, assistant, system
+  content          String         
+  createdAt        DateTime       @default(now())
+
+  feedbacks AiFeedback[]
+}
+
+model AiMemory {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  memoryKey       String   
+  memoryValue     String    // JSON value representation
+  confidenceScore Float    @default(1.00)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([userId, memoryKey])
+}
+
+model AiFeedback {
+  id            String    @id @default(uuid())
+  aiMessageId   String
+  message       AiMessage @relation(fields: [aiMessageId], references: [id], onDelete: Cascade)
+  feedbackScore Int
+  feedbackText  String?   
+  createdAt     DateTime  @default(now())
+}
+
+model AiTrainingEvent {
+  id         String   @id @default(uuid())
+  eventType  String   
+  rawPayload String    // JSON payload
+  createdAt  DateTime @default(now())
+}
+
+// =========================================================================
+// 12. FRAUD DETECTION
+// =========================================================================
+
+model FraudCase {
+  id                    String   @id @default(uuid())
+  targetUserId          String?
+  targetUser            User?    @relation("FraudTargetUser", fields: [targetUserId], references: [id], onDelete: SetNull)
+  orderId               String?
+  order                 Order?   @relation(fields: [orderId], references: [id], onDelete: SetNull)
+  score                 Int      @default(0)
+  status                String   @default("UNRESOLVED") 
+  assignedAnalystUserId String?
+  assignedAnalyst       User?    @relation("FraudAnalystUser", fields: [assignedAnalystUserId], references: [id], onDelete: SetNull)
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  signals   FraudSignal[]
+  decisions ExecutedFraudDecision[]
+}
+
+model FraudSignal {
+  id          String    @id @default(uuid())
+  fraudCaseId String
+  fraudCase   FraudCase @relation(fields: [fraudCaseId], references: [id], onDelete: Cascade)
+  signalType  String    
+  weight      Int
+  details     String?    // JSON string details
+  createdAt   DateTime  @default(now()) 
+}
+
+model ExecutedFraudDecision {
+  id               String    @id @default(uuid())
+  fraudCaseId      String
+  fraudCase        FraudCase @relation(fields: [fraudCaseId], references: [id], onDelete: Cascade)
+  decisionTaken    String    
+  notes            String?   
+  executedByUserId String?
+  executedByUser   User?     @relation(fields: [executedByUserId], references: [id], onDelete: SetNull)
+  createdAt        DateTime  @default(now())
+}
+
+// =========================================================================
+// 13. SECURITY LOGS & AUDIT LOGS
+// =========================================================================
+
+model LoginHistory {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ipAddressHash String   
+  userAgent     String?  
+  isSuccess     Boolean
+  failureReason String?  
+  createdAt     DateTime @default(now())
+}
+
+model SecurityEvent {
+  id            String   @id @default(uuid())
+  userId        String?
+  user          User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  severity      String    // LOW, MEDIUM, HIGH, CRITICAL
+  eventType     String   
+  details       String?  
+  ipAddressHash String?  
+  createdAt     DateTime @default(now())
+}
+
+model ApiAccessLog {
+  id             String   @id @default(uuid())
+  userId         String?
+  user           User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  requestPath    String   
+  requestMethod  String   
+  responseStatus Int
+  latencyMs      Int
+  ipAddressHash  String   
+  createdAt      DateTime @default(now())
+}
+
+model AdminAction {
+  id          String   @id @default(uuid())
+  adminUserId String
+  adminUser   User     @relation("AdminUserAction", fields: [adminUserId], references: [id], onDelete: Cascade)
+  action      String   
+  tableName   String?  
+  recordId    String?  
+  beforeState String?   // JSON string before
+  afterState  String?   // JSON string after
+  createdAt   DateTime @default(now())
+}
+
+// =========================================================================
+// 14. EVENTS OUTBOX (CQRS support)
+// =========================================================================
+
+model EventOutbox {
+  id          String   @id @default(uuid())
+  eventType   String   
+  payload     String    // JSON event payload
+  isProcessed Boolean  @default(false)
+  createdAt   DateTime @default(now())
+}
+
+// =========================================================================
+// 15. PERFORMANCE REPORTING & DATA MARTS
+// =========================================================================
+
+model DailySales {
+  id               String   @id @default(uuid())
+  saleDate         DateTime
+  countryId        String
+  country          Country  @relation(fields: [countryId], references: [id])
+  totalSalesAmount Float
+  itemsSold        Int
+  createdAt        DateTime @default(now())
+
+  @@unique([saleDate, countryId])
+}
+
+model DailyRevenue {
+  id              String   @id @default(uuid())
+  revenueDate     DateTime @unique
+  grossRevenue    Float
+  makerPayouts    Float
+  netMarkupEarned Float
+  discountsGiven  Float
+  createdAt       DateTime @default(now())
+}
+
+model ProductMetrics {
+  id             String   @id @default(uuid())
+  productId      String   @unique
+  product        Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  viewsCount     Int      @default(0)
+  wishlistCount  Int      @default(0)
+  purchasedCount Int      @default(0)
+  averageRating  Float    @default(0.00)
+  updatedAt      DateTime @default(now())
+}
+
+model MakerMetrics {
+  id                    String       @id @default(uuid())
+  makerProfileId        String       @unique
+  maker                 MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  totalPayoutsCompleted Float        @default(0.00)
+  successfulDeliveries  Int          @default(0)
+  disputeCount          Int          @default(0)
+  updatedAt             DateTime     @default(now())
+}
+
+// =========================================================================
+// 16. MISC COMPATIBILITY RELATIONS & MIGRATION BLOCKS
+// =========================================================================
+
+model Certificate {
+  id                String       @id @default(uuid())
+  makerProfileId    String
+  maker             MakerProfile @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  productId         String?
+  product           Product?     @relation(fields: [productId], references: [id], onDelete: SetNull)
+  certificateNumber String       @unique
+  certificateType   String       @default("ELITE") 
+  issueDate         DateTime     @default(now())
+  expiryDate        DateTime
+  pdfUrl            String?      
+  createdAt         DateTime     @default(now())
+}
+
+model SavedMaker {
+  id        String       @id @default(uuid())
+  userId    String
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  makerId   String
+  maker     MakerProfile @relation(fields: [makerId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+
+  @@unique([userId, makerId])
+}
+
+model ShippingAddress {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName     String   
+  addressLine1 String   
+  addressLine2 String?  
+  city         String   
+  postcode     String   
+  country      String   
+  isDefault    Boolean  @default(false)
+  createdAt    DateTime @default(now())
+}
+
+model SupportTicket {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subject     String   
+  description String   
+  status      String   @default("OPEN")  // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String   @default("MEDIUM")  // LOW, MEDIUM, HIGH, URGENT
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  replies SupportTicketReply[]
+}
+
+model VerificationRequest {
+  id                 String            @id @default(uuid())
+  makerProfileId     String
+  maker              MakerProfile      @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  inspectorProfileId String?
+  inspector          InspectorProfile? @relation(fields: [inspectorProfileId], references: [id], onDelete: SetNull)
+  status             String            @default("PENDING")  // PENDING, INSPECTOR_ASSIGNED, AUDITED, APPROVED, REJECTED
+  createdAt          DateTime          @default(now())
+  updatedAt          DateTime          @updatedAt
+}
+
+model InspectionReport {
+  id                 String           @id @default(uuid())
+  inspectorProfileId String
+  inspector          InspectorProfile @relation(fields: [inspectorProfileId], references: [id], onDelete: Cascade)
+  makerProfileId     String
+  maker              MakerProfile     @relation(fields: [makerProfileId], references: [id], onDelete: Cascade)
+  notes              String?          
+  qualityScore       Int
+  latitude           Float?
+  longitude          Float?
+  digitalSignature   String           
+  images             String?           // JSON string list of urls
+  videos             String?           // JSON string list of urls
+  status             String           @default("PENDING") 
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
+}
+
+// =========================================================================
+// 17. NEW MODELS FOR MODULES 4-6
+// =========================================================================
+
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, productId])
+  @@index([userId])
+}
+
+model SupportTicketReply {
+  id        String        @id @default(uuid())
+  ticketId  String
+  ticket    SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message   String        
+  isStaff   Boolean       @default(false)
+  createdAt DateTime      @default(now())
+
+  @@index([ticketId])
+}
+
+model ReviewHelpfulVote {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  isHelpful Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
+}
+
+model ReviewReport {
+  id        String   @id @default(uuid())
+  reviewId  String
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reason    String   
+  details   String?  
+  status    String   @default("PENDING")  // PENDING, REVIEWED, DISMISSED
+  createdAt DateTime @default(now())
+
+  @@unique([reviewId, userId])
+}
+
+// =========================================================================
+// 12. MANAGED COMMERCE OPERATIONS & BESPOKE ECOSYSTEM
+// =========================================================================
+
+model CustomCommission {
+  id                    String    @id @default(uuid())
+  patronUserId          String
+  categoryId            String?
+  assignedMakerProfileId String?
+  title                 String    
+  description           String    
+  budgetGbp             Float?
+  dimensions            String?   
+  materials             String?   
+  deadline              DateTime?
+  status                String    @default("SUBMITTED")  // SUBMITTED, CONCIERGE_REVIEW, STUDIO_ROUTED, QUOTED, ACCEPTED, REJECTED, IN_PRODUCTION, COMPLETED
+  quoteAmountGbp        Float?
+  orderId               String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@index([patronUserId])
+  @@index([assignedMakerProfileId])
+  @@index([status])
+}
+
+model PayoutRequest {
+  id                     String    @id @default(uuid())
+  makerProfileId         String
+  amount                 Float
+  status                 String    @default("REQUESTED")  // REQUESTED, PROCESSING, PAID, REJECTED
+  payoutMethod           String     // STRIPE_CONNECT, WISE, BANK_WIRE
+  accountDetailsEncrypted String?  
+  rejectionReason        String?   
+  requestedAt            DateTime  @default(now())
+  processedAt            DateTime?
+  processedByUserId      String?
+
+  @@index([makerProfileId])
+  @@index([status])
+}
+
+model OperationTask {
+  id             String    @id @default(uuid())
+  taskType       String     // ACCREDITATION_REVIEW, INSPECTION_ASSIGNED, CATALOG_MODERATION, PAYOUT_APPROVAL, DISPATCH_OVERDUE, DISPUTE_OPEN, COMMISSION_REQUEST
+  targetRole     String     // CEO, ACCREDITATION_OFFICER, INSPECTOR, CATALOG_CURATOR, FINANCE_OFFICER, FULFILLMENT_OFFICER, CONCIERGE, PROVENANCE_OFFICER, BI_OFFICER
+  referenceId    String    
+  title          String    
+  description    String?   
+  priority       String    @default("MEDIUM")  // LOW, MEDIUM, HIGH, URGENT
+  status         String    @default("OPEN")  // OPEN, IN_PROGRESS, RESOLVED
+  dueDate        DateTime?
+  assignedUserId String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([targetRole, status])
+  @@index([priority])
+}
+
+model InternalNote {
+  id           String   @id @default(uuid())
+  targetType   String    // MAKER, PRODUCT, ORDER, PATRON, DISPUTE, APPLICATION
+  targetId     String   
+  authorUserId String
+  authorRole   String   
+  noteText     String   
+  createdAt    DateTime @default(now())
+
+  @@index([targetType, targetId])
+}
+
+model OrderDispute {
+  id                String    @id @default(uuid())
+  orderId           String
+  raisedByUserId    String
+  issueType         String     // DAMAGED, NOT_RECEIVED, DIFFERENT_THAN_LISTED, SHIPPING_DELAY, REFUND_REQUEST
+  description       String    
+  status            String    @default("OPEN")  // OPEN, UNDER_REVIEW, RESOLUTION_PROPOSED, RESOLVED, CLOSED
+  resolutionSummary String?   
+  refundAmount      Float?
+  resolvedAt        DateTime?
+  resolvedByUserId  String?
+  createdAt         DateTime  @default(now())
+
+  @@index([orderId])
+  @@index([status])
+}
+

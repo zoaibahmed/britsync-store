@@ -196,8 +196,9 @@ export default function CategoryGalleryJourney() {
       const absDiff = Math.abs(diff);
       
       if (absDiff > 0.001) {
-        // Smooth 60fps exponential tracking lerp at 0.035 speed for slow, luxurious pacing
-        currentFrameRef.current += diff * 0.035;
+        // Slow, elegant pacing with max speed clamp per tick for majestic unhurried playback
+        const step = Math.sign(diff) * Math.min(Math.abs(diff * 0.02), 0.35);
+        currentFrameRef.current += step;
         renderFrameOnCanvas(currentFrameRef.current);
       } else if (currentFrameRef.current !== targetFrameRef.current) {
         currentFrameRef.current = targetFrameRef.current;
@@ -254,28 +255,21 @@ export default function CategoryGalleryJourney() {
 
   // Find active step and compute fade-in / fade-out opacity based on range progress
   const getActiveStepDetails = (prog: number) => {
-    // 10 frames out of 2400 total frames is exactly 10 / 2400 = 0.0042 scroll progress
-    const ACTIVE_WINDOW = 0.0042; 
-
     for (let i = 0; i < STEPS.length; i++) {
       const [start, end] = STEPS[i].range;
       if (prog >= start && prog <= end) {
-        // Show category name only at the very beginning of the room entry
-        if (prog <= start + ACTIVE_WINDOW) {
-          const progressInStep = (prog - start) / ACTIVE_WINDOW; // [0, 1]
-          
-          let opacity = 0;
-          if (progressInStep < 0.2) {
-            opacity = progressInStep / 0.2; // Fade in over first 2 frames
-          } else if (progressInStep > 0.7) {
-            opacity = (1 - progressInStep) / 0.3; // Fade out over last 3 frames
-          } else {
-            opacity = 1; // Fully visible in the middle
-          }
-          return { step: STEPS[i], opacity };
+        const stepDuration = end - start;
+        const progressInStep = (prog - start) / stepDuration; // [0, 1]
+        
+        let opacity = 0;
+        if (progressInStep < 0.15) {
+          opacity = progressInStep / 0.15; // Smooth fade in
+        } else if (progressInStep > 0.85) {
+          opacity = (1 - progressInStep) / 0.15; // Smooth fade out
+        } else {
+          opacity = 1; // Fully visible in the middle
         }
-        // Vanish after 10 frames of scroll
-        return { step: null, opacity: 0 };
+        return { step: STEPS[i], opacity };
       }
     }
     return { step: null, opacity: 0 };
@@ -288,7 +282,7 @@ export default function CategoryGalleryJourney() {
       ref={containerRef}
       style={{
         position: "relative",
-        height: "2400vh",
+        height: "3600vh",
         backgroundColor: "var(--background)",
         color: "var(--text)",
         transition: "background-color 0.4s ease, color 0.4s ease",
