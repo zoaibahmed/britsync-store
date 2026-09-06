@@ -56,7 +56,7 @@ class ParallelPreloader {
     index: number;
     resolve: () => void;
   }> = [];
-  private concurrency = 32;
+  private concurrency = 48;
 
   private initialLoadResolver: (() => void) | null = null;
   private initialLoadPromise: Promise<void> | null = null;
@@ -226,13 +226,13 @@ class ParallelPreloader {
     for (let i = 0; i < initialGlobeCount; i++)
       this.addToQueue(getGlobeFrameUrl(i), gCache, i, true);
 
-    setTimeout(() => {
-      for (let i = 0; i < CATEGORY_TOTAL; i++) {
-        if (i % 5 !== 0) this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
-      }
-      for (let i = initialGlobeCount; i < GLOBE_TOTAL; i++)
-        this.addToQueue(getGlobeFrameUrl(i), gCache, i, false);
-    }, 200);
+    // Queue all remaining gallery and globe frames immediately so they cache during the 1-minute preloader
+    for (let i = 0; i < CATEGORY_TOTAL; i++) {
+      if (i % 5 !== 0) this.addToQueue(getCategoryFrameUrl(i), cCache, i, false);
+    }
+    for (let i = initialGlobeCount; i < GLOBE_TOTAL; i++) {
+      this.addToQueue(getGlobeFrameUrl(i), gCache, i, false);
+    }
   }
 }
 
