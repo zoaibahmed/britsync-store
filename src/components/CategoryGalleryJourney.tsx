@@ -11,55 +11,52 @@ import {
 
 const TOTAL_FRAMES = 2400;
 
-// Timeline steps for categories
+const DISPLAY_WINDOW_FRAMES = 50;
+
+// Timeline steps for categories with room opening frame markers
 const STEPS = [
   {
-    range: [0.02, 0.18],
+    startFrame: 48,
     stepNum: "01",
     tag: "CERAMICS & POTTERY",
     title: "Masterwork Ceramics",
     subtitle: "Generational terracotta pottery and hand-glazed Iznik stoneware.",
-    badge: "18 Masterpieces",
     ctaText: "Explore Ceramics",
     ctaHref: "/categories/Ceramics",
   },
   {
-    range: [0.22, 0.38],
+    startFrame: 528,
     stepNum: "02",
     tag: "HERITAGE JEWELRY",
     title: "Heritage Jewelry",
     subtitle: "Exquisite hand-hammered gold filigree and museum-grade heritage gems.",
-    badge: "15 Masterpieces",
     ctaText: "Explore Jewelry",
     ctaHref: "/categories/Jewelry",
   },
   {
-    range: [0.42, 0.58],
+    startFrame: 1008,
     stepNum: "03",
     tag: "LEATHER MASTERPIECES",
     title: "Generational Leather",
     subtitle: "Organic vegetable-tanned hides crafted by master leatherworkers.",
-    badge: "12 Masterpieces",
     ctaText: "Explore Leather",
     ctaHref: "/categories/Leather",
   },
   {
-    range: [0.62, 0.78],
+    startFrame: 1488,
     stepNum: "04",
     tag: "METALWORK & ORNAMENTS",
     title: "Fine Metalwork",
     subtitle: "Hand-poured brass, silver, and copper pieces preserving ancient techniques.",
-    badge: "14 Masterpieces",
     ctaText: "Explore Metalwork",
     ctaHref: "/categories/Home%20Decor",
   },
   {
-    range: [0.82, 0.98],
+    startFrame: 1968,
     stepNum: "05",
     tag: "OTHER DISCIPLINES",
     title: "Explore Other Categories",
     subtitle: "Discover rare textiles, woodwork, miniatures, and historical masterworks.",
-    badge: "50+ Masterpieces",
     ctaText: "Explore All",
     ctaHref: "/collections",
   },
@@ -71,9 +68,7 @@ export default function CategoryGalleryJourney() {
   const canvasDimensions = useRef({ w: 0, h: 0 });
 
   const [scrollProgress, setScrollProgress] = useState(0);
-  const [activeStepIdx, setActiveStepIdx] = useState(0);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
   const currentFrameRef = useRef(0);
   const targetFrameRef = useRef(0);
@@ -220,16 +215,6 @@ export default function CategoryGalleryJourney() {
         Math.max(0, Math.floor(rawProgress * (TOTAL_FRAMES - 1)))
       );
       targetFrameRef.current = targetIndex;
-
-      // Update active step overlay without overlapping boundary flicker
-      const currentStepIdx = STEPS.findIndex(
-        (s, idx) =>
-          rawProgress >= s.range[0] &&
-          (idx === STEPS.length - 1 ? rawProgress <= s.range[1] : rawProgress < s.range[1])
-      );
-      if (currentStepIdx !== -1 && currentStepIdx !== activeStepIdx) {
-        setActiveStepIdx(currentStepIdx);
-      }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
@@ -238,31 +223,42 @@ export default function CategoryGalleryJourney() {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [activeStepIdx]);
+  }, []);
 
-  // Find active step and compute fade-in / fade-out opacity based on range progress
+  // Find active step and compute fade-in / fade-out opacity strictly for 50 frames when the room is opened
   const getActiveStepDetails = (prog: number) => {
+    const currentFrame = Math.round(prog * (TOTAL_FRAMES - 1));
+
     for (let i = 0; i < STEPS.length; i++) {
-      const [start, end] = STEPS[i].range;
-      if (prog >= start && prog <= end) {
-        const stepDuration = end - start;
-        const progressInStep = (prog - start) / stepDuration; // [0, 1]
-        
+      const step = STEPS[i];
+      const frameDiff = currentFrame - step.startFrame;
+
+      // Strictly display for only 50 frames when that category room is opened
+      if (frameDiff >= 0 && frameDiff <= DISPLAY_WINDOW_FRAMES) {
         let opacity = 0;
-        if (progressInStep < 0.15) {
-          opacity = progressInStep / 0.15; // Smooth fade in
-        } else if (progressInStep > 0.85) {
-          opacity = (1 - progressInStep) / 0.15; // Smooth fade out
+        if (frameDiff < 10) {
+          opacity = frameDiff / 10; // Smooth 10-frame fade in
+        } else if (frameDiff > 38) {
+          opacity = Math.max(0, (DISPLAY_WINDOW_FRAMES - frameDiff) / 12); // Smooth 12-frame fade out
         } else {
-          opacity = 1; // Fully visible in the middle
+          opacity = 1; // Fully visible
         }
-        return { step: STEPS[i], opacity };
+        return { step, opacity };
       }
     }
     return { step: null, opacity: 0 };
   };
 
   const { step: currentActiveStep, opacity: cardOpacity } = getActiveStepDetails(scrollProgress);
+
+  // Entrance text visibility: shows briefly at the start and fades out before Room 1 opens
+  const currentFrame = Math.round(scrollProgress * (TOTAL_FRAMES - 1));
+  let introOpacity = 0;
+  if (currentFrame < 22) {
+    introOpacity = 1;
+  } else if (currentFrame <= 36) {
+    introOpacity = Math.max(0, (36 - currentFrame) / 14);
+  }
 
   return (
     <section
@@ -332,27 +328,29 @@ export default function CategoryGalleryJourney() {
               display: "inline-flex",
               alignItems: "center",
               gap: "0.6rem",
-              padding: "0.45rem 1.4rem",
+              padding: "0.35rem 1.2rem",
               borderRadius: "30px",
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--glass-border)",
-              boxShadow: "var(--shadow-md)",
+              backgroundColor: "rgba(0, 0, 0, 0.45)",
+              border: "1px solid rgba(212, 175, 55, 0.3)",
+              backdropFilter: "blur(8px)",
+              WebkitBackdropFilter: "blur(8px)",
             }}
           >
-            <span style={{ width: "18px", height: "1px", backgroundColor: "var(--accent)" }} />
+            <span style={{ width: "16px", height: "1px", backgroundColor: "var(--accent)" }} />
             <span
               style={{
-                fontSize: "0.68rem",
-                letterSpacing: "3.5px",
+                fontSize: "0.65rem",
+                letterSpacing: "3px",
                 textTransform: "uppercase",
                 color: "var(--accent)",
                 fontWeight: 700,
-                fontFamily: "var(--font-playfair), Georgia, serif",
+                fontFamily: "var(--font-outfit), sans-serif",
+                textShadow: "0 1px 4px rgba(0,0,0,0.8)",
               }}
             >
               EXPLORE CRAFT DISCIPLINES
             </span>
-            <span style={{ width: "18px", height: "1px", backgroundColor: "var(--accent)" }} />
+            <span style={{ width: "16px", height: "1px", backgroundColor: "var(--accent)" }} />
           </div>
         </div>
 
@@ -396,166 +394,139 @@ export default function CategoryGalleryJourney() {
           </div>
         )}
 
-        {/* ─── INTRO COVER SCREEN CARD (Shown at entry scroll progress < 0.02) ─── */}
-        {scrollProgress < 0.02 && (
+        {/* Global hover styling for clean editorial links */}
+        <style jsx global>{`
+          .category-explore-link:hover .category-arrow {
+            transform: translateX(5px);
+          }
+          .category-explore-link:hover {
+            color: #F3CD5A !important;
+            border-bottom-color: #F3CD5A !important;
+          }
+        `}</style>
+
+        {/* ─── INTRO ENTRANCE ON LEFT (Shown briefly at entrance, no box) ─── */}
+        {introOpacity > 0.01 && (
           <div
             style={{
               position: "absolute",
               top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
+              left: "clamp(2rem, 7vw, 6.5rem)",
+              transform: "translateY(-50%)",
               zIndex: 8,
-              textAlign: "center",
-              width: "90%",
-              maxWidth: "680px",
-              padding: "3.5rem 3rem",
-              borderRadius: "24px",
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--glass-border)",
-              borderTop: "4px solid var(--accent)",
-              boxShadow: "0 30px 70px rgba(0,0,0,0.3)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              color: "var(--text)",
-              transition: "all 0.4s cubic-bezier(0.16, 1, 0.3, 1)",
+              opacity: introOpacity,
+              transition: "opacity 0.2s ease-out",
+              pointerEvents: introOpacity > 0.1 ? "auto" : "none",
+              maxWidth: "min(460px, 85vw)",
+              textAlign: "left",
             }}
           >
-            <div
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.5rem",
-                padding: "0.4rem 1.2rem",
-                borderRadius: "20px",
-                backgroundColor: "rgba(212,175,55,0.12)",
-                border: "1px solid rgba(212,175,55,0.3)",
-                color: "var(--accent)",
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "2.5px",
-                textTransform: "uppercase",
-                marginBottom: "1.2rem",
-              }}
-            >
-              ✦ THE GUILD COLLECTION REGISTRY
-            </div>
-            <h2
-              style={{
-                fontSize: "clamp(2.2rem, 4.5vw, 3.4rem)",
-                fontFamily: "var(--font-playfair), Georgia, serif",
-                fontWeight: 300,
-                color: "var(--text)",
-                margin: "0 0 1rem",
-                lineHeight: 1.15,
-              }}
-            >
-              Masterwork Craft Disciplines
-            </h2>
-            <p
-              style={{
-                fontSize: "0.95rem",
-                opacity: 0.82,
-                lineHeight: 1.75,
-                marginBottom: "2rem",
-                color: "var(--text-muted)",
-              }}
-            >
-              Scrub through 2,400 authenticated frames documenting generational ceramics, hand-hammered filigree jewelry, organic leather, and fine metalwork.
-            </p>
-            <div
-              style={{
-                display: "flex",
-                gap: "0.8rem",
-                justifyContent: "center",
-                flexWrap: "wrap",
-                fontSize: "0.72rem",
-                letterSpacing: "1.5px",
-                textTransform: "uppercase",
-                opacity: 0.85,
-              }}
-            >
-              {["Ceramics", "Jewelry", "Leather", "Metalwork", "Textiles"].map((cat) => (
-                <span
-                  key={cat}
-                  style={{
-                    padding: "0.4rem 0.9rem",
-                    borderRadius: "15px",
-                    border: "1px solid var(--glass-border)",
-                    backgroundColor: "var(--background)",
-                    color: "var(--text)",
-                  }}
-                >
-                  {cat}
-                </span>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* ─── LUXURY GLASSMORPHIC CATEGORY OVERLAY CARD (Shown during scrubbing) ─── */}
-        {currentActiveStep && (
-          <Link
-            href={currentActiveStep.ctaHref}
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 8,
-              opacity: cardOpacity,
-              transition: "opacity 0.2s ease-out, transform 0.3s ease",
-              pointerEvents: cardOpacity > 0.1 ? "auto" : "none",
-              textAlign: "center",
-              textDecoration: "none",
-              width: "90%",
-              maxWidth: "620px",
-              padding: "3.5rem 3rem",
-              borderRadius: "24px",
-              backgroundColor: "var(--surface)",
-              border: "1px solid var(--glass-border)",
-              borderTop: "4px solid var(--accent)",
-              boxShadow: isHovered 
-                ? "0 35px 80px rgba(212,175,55,0.25)" 
-                : "0 25px 60px rgba(0,0,0,0.3)",
-              backdropFilter: "blur(20px)",
-              WebkitBackdropFilter: "blur(20px)",
-              color: "var(--text)",
-            }}
-          >
-            {/* Step Pill */}
             <div
               style={{
                 display: "inline-flex",
                 alignItems: "center",
                 gap: "0.6rem",
-                padding: "0.4rem 1.2rem",
-                borderRadius: "20px",
-                backgroundColor: "rgba(212,175,55,0.12)",
-                border: "1px solid rgba(212,175,55,0.35)",
-                color: "var(--accent)",
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                letterSpacing: "2.5px",
-                textTransform: "uppercase",
-                marginBottom: "1.2rem",
+                marginBottom: "0.85rem",
               }}
             >
-              DISCIPLINE {currentActiveStep.stepNum} &bull; {currentActiveStep.tag}
+              <span style={{ width: "20px", height: "1px", backgroundColor: "#D4AF37" }} />
+              <span
+                style={{
+                  fontFamily: "var(--font-outfit), sans-serif",
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  color: "#D4AF37",
+                  textShadow: "0 2px 8px rgba(0, 0, 0, 0.9)",
+                }}
+              >
+                ✦ THE GUILD COLLECTION REGISTRY
+              </span>
+            </div>
+
+            <h2
+              style={{
+                fontSize: "clamp(2.4rem, 4.5vw, 3.6rem)",
+                fontFamily: "var(--font-playfair), Georgia, serif",
+                fontWeight: 400,
+                color: "#FFFFFF",
+                margin: "0 0 0.85rem",
+                lineHeight: 1.12,
+                letterSpacing: "-0.5px",
+                textShadow: "0 3px 16px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)",
+              }}
+            >
+              Masterwork Craft Disciplines
+            </h2>
+
+            <p
+              style={{
+                fontSize: "clamp(0.9rem, 1.1vw, 1.02rem)",
+                fontFamily: "var(--font-outfit), sans-serif",
+                lineHeight: 1.65,
+                color: "rgba(255, 255, 255, 0.88)",
+                margin: "0 0 1.2rem",
+                textShadow: "0 2px 10px rgba(0, 0, 0, 0.9)",
+              }}
+            >
+              Scrub to explore generational workshops, rare ceramics, filigree jewelry, organic leather, and fine metalwork.
+            </p>
+          </div>
+        )}
+
+        {/* ─── ELEGANT LEFT-ALIGNED CATEGORY TYPOGRAPHY (No Box, 50 Frames only) ─── */}
+        {currentActiveStep && cardOpacity > 0.01 && (
+          <div
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "clamp(2rem, 7vw, 6.5rem)",
+              transform: "translateY(-50%)",
+              zIndex: 8,
+              opacity: cardOpacity,
+              transition: "opacity 0.2s ease-out",
+              pointerEvents: cardOpacity > 0.1 ? "auto" : "none",
+              maxWidth: "min(460px, 85vw)",
+              textAlign: "left",
+            }}
+          >
+            {/* Discipline Tag Eyebrow */}
+            <div
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "0.6rem",
+                marginBottom: "0.85rem",
+              }}
+            >
+              <span style={{ width: "20px", height: "1px", backgroundColor: "#D4AF37" }} />
+              <span
+                style={{
+                  fontFamily: "var(--font-outfit), sans-serif",
+                  fontSize: "0.7rem",
+                  fontWeight: 700,
+                  letterSpacing: "3px",
+                  textTransform: "uppercase",
+                  color: "#D4AF37",
+                  textShadow: "0 2px 8px rgba(0, 0, 0, 0.9)",
+                }}
+              >
+                DISCIPLINE {currentActiveStep.stepNum} &bull; {currentActiveStep.tag}
+              </span>
             </div>
 
             {/* Category Title */}
             <h2
               style={{
-                fontSize: "clamp(2.2rem, 5vw, 3.6rem)",
+                fontSize: "clamp(2.4rem, 4.5vw, 3.6rem)",
                 fontFamily: "var(--font-playfair), Georgia, serif",
-                fontWeight: 300,
-                color: isHovered ? "var(--accent)" : "var(--text)",
-                letterSpacing: "1px",
-                margin: "0 0 0.8rem",
-                lineHeight: 1.15,
-                transition: "color 0.3s ease",
+                fontWeight: 400,
+                color: "#FFFFFF",
+                margin: "0 0 0.85rem",
+                lineHeight: 1.12,
+                letterSpacing: "-0.5px",
+                textShadow: "0 3px 16px rgba(0, 0, 0, 0.95), 0 1px 4px rgba(0, 0, 0, 0.9)",
               }}
             >
               {currentActiveStep.title}
@@ -564,54 +535,44 @@ export default function CategoryGalleryJourney() {
             {/* Category Subtitle */}
             <p
               style={{
-                fontSize: "0.95rem",
-                opacity: 0.85,
-                lineHeight: 1.7,
-                margin: "0 auto 1.8rem",
-                maxWidth: "480px",
-                color: "var(--text-muted)",
+                fontSize: "clamp(0.9rem, 1.1vw, 1.02rem)",
+                fontFamily: "var(--font-outfit), sans-serif",
+                lineHeight: 1.65,
+                color: "rgba(255, 255, 255, 0.88)",
+                margin: "0 0 1.5rem",
+                textShadow: "0 2px 10px rgba(0, 0, 0, 0.9)",
               }}
             >
               {currentActiveStep.subtitle}
             </p>
 
-            {/* Badge & Action Button */}
-            <div style={{ display: "flex", gap: "1rem", justifyContent: "center", alignItems: "center", flexWrap: "wrap" }}>
-              <span
+            {/* Clean Left-Aligned Editorial CTA Link */}
+            <div>
+              <Link
+                href={currentActiveStep.ctaHref}
+                className="category-explore-link"
                 style={{
-                  fontSize: "0.72rem",
-                  letterSpacing: "1.5px",
-                  textTransform: "uppercase",
-                  padding: "0.6rem 1.2rem",
-                  borderRadius: "20px",
-                  border: "1px solid var(--glass-border)",
-                  backgroundColor: "var(--background)",
-                  color: "var(--accent)",
-                  fontWeight: 600,
-                }}
-              >
-                ✓ {currentActiveStep.badge}
-              </span>
-              <span
-                style={{
-                  fontSize: "0.78rem",
-                  letterSpacing: "2px",
-                  textTransform: "uppercase",
-                  padding: "0.7rem 1.8rem",
-                  borderRadius: "8px",
-                  backgroundColor: "var(--accent)",
-                  color: "#000000",
-                  fontWeight: 700,
-                  boxShadow: "0 8px 20px rgba(212,175,55,0.3)",
                   display: "inline-flex",
                   alignItems: "center",
-                  gap: "0.4rem",
+                  gap: "0.6rem",
+                  fontFamily: "var(--font-outfit), sans-serif",
+                  fontSize: "0.78rem",
+                  fontWeight: 600,
+                  letterSpacing: "2.5px",
+                  textTransform: "uppercase",
+                  color: "#D4AF37",
+                  textDecoration: "none",
+                  paddingBottom: "4px",
+                  borderBottom: "1px solid #D4AF37",
+                  textShadow: "0 2px 8px rgba(0, 0, 0, 0.9)",
+                  transition: "all 0.25s ease",
                 }}
               >
-                {currentActiveStep.ctaText} &rarr;
-              </span>
+                <span>{currentActiveStep.ctaText}</span>
+                <span className="category-arrow" style={{ transition: "transform 0.25s ease" }}>&rarr;</span>
+              </Link>
             </div>
-          </Link>
+          </div>
         )}
 
         {/* Scroll Cue Indicator */}
