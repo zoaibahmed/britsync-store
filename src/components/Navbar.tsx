@@ -6,6 +6,8 @@ import { useEffect, useState } from 'react';
 import { Icons } from '@/components/Icons';
 import { ThemeToggle } from '@/components/ThemeToggle';
 
+import ThemeLogo from '@/components/ThemeLogo';
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [visible, setVisible] = useState(true);
@@ -124,7 +126,7 @@ export default function Navbar() {
     };
   }, []);
 
-  if (pathname === '/login' || pathname?.startsWith('/dashboard')) return null;
+  if (pathname?.startsWith('/dashboard') || pathname === '/login' || pathname === '/register') return null;
 
   const isHomepage = pathname === '/';
   const shouldBeSolid = scrolled || !isHomepage;
@@ -176,52 +178,23 @@ export default function Navbar() {
         color: navTextColor,
         boxShadow: navShadow
       }}>
-        {/* Brand Logo & Tag */}
+        {/* Brand Logo */}
         <Link href="/" style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.85rem',
           textDecoration: 'none',
           zIndex: 1001,
         }}>
-          <img 
-            src="/logo.png" 
-            alt="Britsync Logo" 
-            style={{ 
-              height: '44px', 
-              width: 'auto', 
-              objectFit: 'contain',
-              transition: 'transform 0.3s ease',
-              filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))'
-            }}
-          />
-          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <span style={{
-              color: 'var(--text)',
-              fontSize: '1.3rem',
-              fontWeight: '400',
-              letterSpacing: '5px',
-              fontFamily: 'var(--font-playfair), Georgia, serif',
-              lineHeight: 1.05,
-              textTransform: 'uppercase'
-            }}>
-              BRITSYNC
-            </span>
-            <span style={{
-              color: 'var(--accent)',
-              fontSize: '0.52rem',
-              letterSpacing: '3px',
-              textTransform: 'uppercase',
-              fontWeight: 700,
-              marginTop: '0.15rem'
-            }}>
-              MANAGED COMMERCE
-            </span>
-          </div>
+          <ThemeLogo height="44px" style={{ filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))' }} />
         </Link>
 
         {/* Desktop Links */}
-        <div className="desktop-nav-links" style={{ display: 'flex', gap: '2.2rem', alignItems: 'center' }}>
+        <div className="desktop-nav-links" style={{
+          display: 'flex',
+          gap: scrolled ? '1.4rem' : '2.2rem',
+          alignItems: 'center',
+          transition: 'gap 0.3s ease'
+        }}>
           {navLinks.map((link) => {
             const isActive = pathname === link.path;
             return (
@@ -229,11 +202,12 @@ export default function Navbar() {
                 color: isActive ? 'var(--accent)' : 'var(--text)',
                 textDecoration: 'none',
                 fontWeight: isActive ? '700' : '400',
-                fontSize: '0.72rem',
+                fontSize: scrolled ? '0.68rem' : '0.72rem',
                 textTransform: 'uppercase',
-                letterSpacing: '2.5px',
+                letterSpacing: scrolled ? '2px' : '2.5px',
+                whiteSpace: 'nowrap',
                 position: 'relative',
-                opacity: isActive ? 1 : 0.8,
+                opacity: isActive ? 1 : 0.85,
                 transition: 'all var(--transition-fast)'
               }}
               onMouseEnter={(e) => (e.currentTarget.style.color = 'var(--accent)')}
@@ -256,8 +230,13 @@ export default function Navbar() {
         </div>
 
         {/* Desktop Actions */}
-        <div className="desktop-nav-actions" style={{ display: 'flex', gap: '1.3rem', alignItems: 'center' }}>
-          <Link href="/search" aria-label="Search" style={{ color: 'var(--text)', opacity: 0.85, transition: 'opacity 0.2s' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}><SearchIcon /></Link>
+        <div className="desktop-nav-actions" style={{
+          display: 'flex',
+          gap: scrolled ? '0.75rem' : '1.1rem',
+          alignItems: 'center',
+          transition: 'gap 0.3s ease'
+        }}>
+          <Link href="/search" aria-label="Search" style={{ color: 'var(--text)', opacity: 0.85, transition: 'opacity 0.2s', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}><SearchIcon /></Link>
           
           <Link href="/wishlist" aria-label="Wishlist" style={{ color: 'var(--text)', opacity: 0.85, position: 'relative', display: 'flex', alignItems: 'center' }} onMouseEnter={(e) => e.currentTarget.style.opacity = '1'} onMouseLeave={(e) => e.currentTarget.style.opacity = '0.85'}>
             <WishlistIcon />
@@ -309,7 +288,7 @@ export default function Navbar() {
             <ProfileIcon />
           </Link>
 
-          <span style={{ width: '1px', height: '20px', backgroundColor: 'var(--glass-border)' }} />
+          <span style={{ width: '1px', height: '18px', backgroundColor: 'var(--glass-border)', margin: '0 0.1rem' }} />
 
           {/* Theme Toggle Button */}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
@@ -318,12 +297,14 @@ export default function Navbar() {
             color: 'var(--text)',
             backgroundColor: 'transparent',
             textDecoration: 'none',
-            fontSize: '0.68rem',
+            fontSize: scrolled ? '0.62rem' : '0.66rem',
             textTransform: 'uppercase',
-            letterSpacing: '2px',
+            letterSpacing: '1.5px',
             fontWeight: 600,
-            padding: '0.65rem 1rem',
+            whiteSpace: 'nowrap',
+            padding: scrolled ? '0.5rem 0.8rem' : '0.6rem 0.95rem',
             border: '1px solid var(--glass-border)',
+            borderRadius: '2px',
             transition: 'all 0.3s ease'
           }}
           onMouseEnter={(e) => {
@@ -342,12 +323,14 @@ export default function Navbar() {
             color: '#0A0A0C',
             backgroundColor: 'var(--accent)',
             textDecoration: 'none',
-            fontSize: '0.68rem',
+            fontSize: scrolled ? '0.62rem' : '0.66rem',
             textTransform: 'uppercase',
-            letterSpacing: '2.5px',
+            letterSpacing: '1.8px',
             fontWeight: 700,
-            padding: '0.65rem 1.4rem',
+            whiteSpace: 'nowrap',
+            padding: scrolled ? '0.5rem 1rem' : '0.6rem 1.25rem',
             border: '1px solid var(--accent)',
+            borderRadius: '2px',
             boxShadow: 'var(--shadow-sm)',
             transition: 'all 0.3s ease'
           }}
@@ -438,7 +421,7 @@ export default function Navbar() {
       </div>
       
       <style dangerouslySetInnerHTML={{__html: `
-        @media (max-width: 1024px) {
+        @media (max-width: 1200px) {
           .desktop-nav-links, .desktop-nav-actions {
             display: none !important;
           }

@@ -8,17 +8,22 @@ import { startGlobalFramePreload, onGlobalPreloadProgress, PRELOADER_QUARTER_FRA
 
 export default function TransitionProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [stage, setStage] = useState<'blank' | 'preloader' | 'ready'>('blank');
+  const [stage, setStage] = useState<'preloader' | 'ready'>('preloader');
   const [displayCount, setDisplayCount] = useState(0);
 
   useEffect(() => {
-    // If preloader has already run once in this session, skip preloader immediately on page changes
-    if (typeof window !== 'undefined' && sessionStorage.getItem('nobleshop_has_preloaded')) {
-      if (typeof document !== 'undefined') {
-        document.body.style.overflow = '';
+    if (typeof window !== 'undefined') {
+      const isReload = (performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming)?.type === 'reload';
+      const hasPreloaded = sessionStorage.getItem('nobleshop_preloaded');
+
+      // If already preloaded in this tab session and NOT a page refresh, skip preloader on page navigation
+      if (hasPreloaded && !isReload) {
+        setStage('ready');
+        if (typeof document !== 'undefined') {
+          document.body.style.overflow = '';
+        }
+        return;
       }
-      setStage('ready');
-      return;
     }
 
     if (typeof document !== 'undefined') {
@@ -26,9 +31,8 @@ export default function TransitionProvider({ children }: { children: React.React
     }
 
     startGlobalFramePreload();
-    setStage('preloader');
 
-    const MIN_PRELOAD_TIME = 20000; // 20 seconds minimum luxury preloader dwell time on initial load
+    const MIN_PRELOAD_TIME = 50000; // 50 seconds preloader duration as requested
     const startTime = Date.now();
     let actualLoaded = 0;
     const TOTAL_FRAMES = PRELOADER_QUARTER_FRAMES; // 1852 frames
@@ -42,24 +46,24 @@ export default function TransitionProvider({ children }: { children: React.React
       const timeRatio = Math.min(1, elapsed / MIN_PRELOAD_TIME);
       const actualRatio = Math.min(1, actualLoaded / TOTAL_FRAMES);
 
-      // Smooth progress tracks whichever is higher (time ratio or actual load ratio)
+      // Smooth progress fills up over the full 50 seconds
       const currentRatio = Math.max(timeRatio, actualRatio);
       const currentCount = Math.round(currentRatio * TOTAL_FRAMES);
 
       setDisplayCount(currentCount);
 
-      // Transition to ready stage when 20 seconds elapsed AND 100% progress achieved
-      if (currentRatio >= 1 && elapsed >= MIN_PRELOAD_TIME) {
+      // Transition to ready stage after 50 seconds (50000 ms)
+      if (elapsed >= MIN_PRELOAD_TIME) {
         clearInterval(interval);
-        if (typeof window !== 'undefined') {
-          sessionStorage.setItem('nobleshop_has_preloaded', 'true');
-        }
         if (typeof document !== 'undefined') {
           document.body.style.overflow = '';
         }
-        setTimeout(() => setStage('ready'), 800);
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('nobleshop_preloaded', 'true');
+        }
+        setTimeout(() => setStage('ready'), 500);
       }
-    }, 50);
+    }, 40);
 
     return () => {
       clearInterval(interval);
@@ -75,24 +79,8 @@ export default function TransitionProvider({ children }: { children: React.React
   return (
     <>
       <AnimatePresence mode="wait">
-        {stage === 'blank' && (
-          <motion.div
-            key="blank-stage"
-            initial={{ opacity: 1 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.35 }}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              backgroundColor: '#070608',
-              zIndex: 999999,
-            }}
-          />
-        )}
-
         {stage === 'preloader' && (
-          <LoadingScreen key="preloader" loadedCount={displayCount} totalCount={PRELOADER_QUARTER_FRAMES} />
+          <LoadingScreen key="preloader" />
         )}
       </AnimatePresence>
       
@@ -102,7 +90,7 @@ export default function TransitionProvider({ children }: { children: React.React
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: stage === 'ready' ? 1 : 0, y: 0 }}
           exit={{ opacity: 0, y: -10 }}
-          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{ display: 'flex', flexDirection: 'column', flex: 1, visibility: stage === 'ready' ? 'visible' : 'hidden' }}
         >
           {children}

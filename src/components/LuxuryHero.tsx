@@ -266,8 +266,8 @@ export default function LuxuryHero() {
     const onWheel = (e: WheelEvent) => {
       if (!heroActiveRef.current) return;
       e.preventDefault();
-      // Slow, majestic velocity impulse (0.008 speed for unhurried luxury pacing)
-      velocityRef.current += e.deltaY * 0.008;
+      // Slow, majestic velocity impulse (0.0035 speed for unhurried luxury pacing)
+      velocityRef.current += e.deltaY * 0.0035;
     };
 
     /* ── TOUCH ── */
@@ -692,37 +692,10 @@ export default function LuxuryHero() {
           <p style={{
             fontFamily:"var(--font-inter,system-ui,sans-serif)",
             fontSize:"clamp(.78rem,1vw,.9rem)", lineHeight:1.65,
-            color:"rgba(245,240,232,.55)", margin:"0 0 1.4rem", maxWidth:"380px",
+            color:"rgba(245,240,232,.55)", margin:"0 0 1.8rem", maxWidth:"380px",
           }}>
             Heritage masterpieces. Cryptographic provenance. Direct to artisan.
           </p>
-
-          {/* Search Field with Category Pop-up trigger */}
-          <form onSubmit={handleSearchSubmit} style={{ position:"relative", maxWidth:"380px", marginBottom:"1.4rem" }}>
-            <input
-              className="lh-search"
-              placeholder="Search master artisans &amp; makers…"
-              value={searchQ}
-              onChange={e => setSearchQ(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  handleSearchSubmit();
-                }
-              }}
-            />
-            <button
-              type="button"
-              onClick={() => handleSearchSubmit()}
-              style={{
-                position:"absolute",right:"6px",top:"50%",transform:"translateY(-50%)",
-                width:"34px",height:"34px",borderRadius:"50%",border:"none",cursor:"pointer",
-                backgroundColor:"#C9A84C",
-                display:"flex",alignItems:"center",justifyContent:"center",
-                color:"#1A1408",fontSize:".9rem",
-              }}
-            >→</button>
-          </form>
 
           {/* CTAs */}
           <div style={{ display:"flex", gap:".7rem", flexWrap:"wrap", marginBottom:"1.8rem" }}>

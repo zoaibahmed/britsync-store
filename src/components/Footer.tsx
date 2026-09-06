@@ -1,10 +1,11 @@
 'use client';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import ThemeLogo from '@/components/ThemeLogo';
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === '/login' || pathname?.startsWith('/dashboard')) return null;
+  if (pathname?.startsWith('/dashboard') || pathname === '/login' || pathname === '/register') return null;
   return (
     <footer style={{
       backgroundColor: 'var(--surface)',
@@ -22,35 +23,8 @@ export default function Footer() {
       }}>
         {/* Brand Section */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.85rem', marginBottom: '1.5rem' }}>
-            <img 
-              src="/logo.png" 
-              alt="Britsync Logo Emblem" 
-              style={{ 
-                height: '42px', 
-                width: 'auto', 
-                objectFit: 'contain',
-                filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))' 
-              }} 
-            />
-            <div style={{ display: 'flex', flexDirection: 'column' }}>
-              <span style={{ 
-                color: 'var(--text)', 
-                fontSize: '1.25rem',
-                fontFamily: 'var(--font-playfair), Georgia, serif',
-                letterSpacing: '5px',
-                fontWeight: 400,
-                lineHeight: 1
-              }}>BRITSYNC</span>
-              <span style={{
-                color: 'var(--accent)',
-                fontSize: '0.5rem',
-                letterSpacing: '2.5px',
-                textTransform: 'uppercase',
-                fontWeight: 700,
-                marginTop: '0.15rem'
-              }}>MANAGED COMMERCE</span>
-            </div>
+          <div style={{ display: 'flex', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <ThemeLogo height="46px" style={{ filter: 'drop-shadow(0 2px 8px rgba(212,175,55,0.3))' }} />
           </div>
 
           <p style={{ opacity: 0.8, lineHeight: 1.8, fontSize: '0.88rem', maxWidth: '320px', marginBottom: '2.2rem', fontWeight: 300 }}>

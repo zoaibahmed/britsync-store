@@ -7,6 +7,7 @@ import CookieBanner from "@/components/CookieBanner";
 import ToastContainer from "@/components/ToastContainer";
 import ChatAssistant from "@/components/ChatAssistant";
 import TransitionProvider from "@/components/TransitionProvider";
+import CustomCursor from "@/components/CustomCursor";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter", display: "swap" });
 const outfit = Outfit({ subsets: ["latin"], variable: "--font-outfit", display: "swap" });
@@ -51,6 +52,7 @@ export default function RootLayout({
         />
       </head>
       <body style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+        <CustomCursor />
         <Navbar />
         <TransitionProvider>
           {children}
