@@ -23,14 +23,6 @@ interface Props {
   categories: CategoryData[];
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// 3D MUSEUM DEPTH LAYOUT
-//   Slot 0 = Outer Left  (far depth, smallest)
-//   Slot 1 = Inner Left  (mid depth)
-//   Slot 2 = CENTER HERO (foreground, largest)
-//   Slot 3 = Inner Right (mid depth)
-//   Slot 4 = Outer Right (far depth, smallest)
-// ─────────────────────────────────────────────────────────────────────────────
 const SLOTS = [
   { leftVw: 27, bottomVh: 22, discW: 120, isHero: false, opacity: 0.88, z: 10, blur: '0.6px', delay: 0.06 },
   { leftVw: 38, bottomVh: 14, discW: 175, isHero: false, opacity: 0.95, z: 15, blur: '0.2px', delay: 0.03 },
@@ -51,11 +43,12 @@ export default function CollectionExperience({ categories }: Props) {
   const [idx,       setIdx]       = useState(0);
   const [dir,       setDir]       = useState<1 | -1>(1);
   const [done,      setDone]      = useState(false);
-  // blurPhase: 'idle' | 'blurring' | 'unblurring'
   const [blurPhase, setBlurPhase] = useState<'idle' | 'blurring' | 'unblurring'>('idle');
-  const [pendingIdx,setPendingIdx]= useState<number | null>(null);
+  const [itemSlots, setItemSlots] = useState<number[]>([0, 1, 2, 3, 4]);
+  const [tilt,      setTilt]      = useState({ x: 0, y: 0 });
 
-  const busy  = useRef(false);
+  const busyRef     = useRef(false);
+  const navigateRef = useRef<(d: 1 | -1) => void>(() => {});
   const total = categories.length;
   const cat   = categories[idx];
 
@@ -67,22 +60,43 @@ export default function CollectionExperience({ categories }: Props) {
     cat.supporting[3] ?? cat.hero,
   ];
 
-  const [itemSlots, setItemSlots] = useState<number[]>([0, 1, 2, 3, 4]);
+  useEffect(() => { setItemSlots([0, 1, 2, 3, 4]); }, [idx]);
 
-  useEffect(() => {
-    setItemSlots([0, 1, 2, 3, 4]);
-  }, [idx]);
+  // ── CORE TRANSITION ──────────────────────────────────────────────────────
+  const transitionTo = useCallback((nextIdx: number, direction: 1 | -1) => {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    setDir(direction);
+    setBlurPhase('blurring');
+    setTimeout(() => {
+      setIdx(nextIdx);
+      setBlurPhase('unblurring');
+      setTimeout(() => {
+        setBlurPhase('idle');
+        busyRef.current = false;
+      }, 450);
+    }, 320);
+  }, []);
 
-  // Parallax tilt
-  const [tilt, setTilt] = useState({ x: 0, y: 0 });
-  const onMouseMove = (e: React.MouseEvent) => {
-    if (blurPhase !== 'idle') return;
-    const x = (e.clientX / window.innerWidth  - 0.5) * 2;
-    const y = (e.clientY / window.innerHeight - 0.5) * 2;
-    setTilt({ x, y });
-  };
+  // navigate is rebuilt when idx/total changes but we expose it via ref
+  const navigate = useCallback((d: 1 | -1) => {
+    if (busyRef.current) return;
+    const next = idx + d;
+    if (next < 0) return;
+    if (next >= total) { setDone(true); return; }
+    setDone(false);
+    transitionTo(next, d);
+  }, [idx, total, transitionTo]);
 
-  // Handle product click → carousel rotation
+  // Keep ref always up-to-date so event handlers never go stale
+  useEffect(() => { navigateRef.current = navigate; }, [navigate]);
+
+  const directJump = useCallback((i: number) => {
+    if (i === idx || busyRef.current) return;
+    setDone(false);
+    transitionTo(i, i > idx ? 1 : -1);
+  }, [idx, transitionTo]);
+
   const handleProductClick = (itemIdx: number) => {
     if (blurPhase !== 'idle') return;
     const currentSlot = itemSlots[itemIdx];
@@ -91,134 +105,81 @@ export default function CollectionExperience({ categories }: Props) {
     setItemSlots(prev => prev.map(slot => (slot - shift + 5) % 5));
   };
 
-  // ── BLUR CROSSFADE NAVIGATION ──────────────────────────────────────────────
-  // Phase 1: blur out (300ms)
-  // Phase 2: swap category, unblur (400ms)
-  // Phase 3: idle
-  const navigate = useCallback((d: 1 | -1) => {
-    if (busy.current || blurPhase !== 'idle') return;
-    const next = idx + d;
-    if (next < 0) return;
-    if (next >= total) { setDone(true); return; }
-
-    busy.current = true;
-    setDir(d);
-    setBlurPhase('blurring');
-    setPendingIdx(next);
-    setDone(false);
-
-    // After blur-out finishes → swap content → begin unblur
-    setTimeout(() => {
-      setIdx(next);
-      setBlurPhase('unblurring');
-
-      // After unblur finishes → idle
-      setTimeout(() => {
-        setBlurPhase('idle');
-        busy.current = false;
-      }, 450);
-    }, 320);
-  }, [idx, total, blurPhase]);
-
-  const jumpTo = (i: number) => {
-    if (i === idx || busy.current || blurPhase !== 'idle') return;
-    navigate(i > idx ? 1 : -1);
-    // Simplified: just navigate one step visually, direct jump
-    setTimeout(() => {
-      if (i !== idx) {
-        busy.current = true;
-        setBlurPhase('blurring');
-        setPendingIdx(i);
-        setTimeout(() => {
-          setIdx(i);
-          setDir(i > idx ? 1 : -1);
-          setBlurPhase('unblurring');
-          setTimeout(() => {
-            setBlurPhase('idle');
-            busy.current = false;
-          }, 450);
-        }, 320);
-      }
-    }, 0);
+  const onMouseMove = (e: React.MouseEvent) => {
+    if (blurPhase !== 'idle') return;
+    setTilt({
+      x: (e.clientX / window.innerWidth  - 0.5) * 2,
+      y: (e.clientY / window.innerHeight - 0.5) * 2,
+    });
   };
 
-  // Direct jump (for dot nav)
-  const directJump = (i: number) => {
-    if (i === idx || busy.current || blurPhase !== 'idle') return;
-    busy.current = true;
-    setDir(i > idx ? 1 : -1);
-    setBlurPhase('blurring');
-    setPendingIdx(i);
-    setDone(false);
-    setTimeout(() => {
-      setIdx(i);
-      setBlurPhase('unblurring');
-      setTimeout(() => {
-        setBlurPhase('idle');
-        busy.current = false;
-      }, 450);
-    }, 320);
-  };
-
-  // Lock scroll while in showcase
+  // ── SCROLL LOCK ──────────────────────────────────────────────────────────
+  // Lock html + body so no ancestor can scroll under us
   useEffect(() => {
-    if (done) return;
-    const prev = document.body.style.overflow;
+    if (done) {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overscrollBehavior = '';
+      return;
+    }
+    document.documentElement.style.overflow = 'hidden';
     document.body.style.overflow = 'hidden';
-    return () => { document.body.style.overflow = prev; };
+    document.documentElement.style.overscrollBehavior = 'none';
+    return () => {
+      document.documentElement.style.overflow = '';
+      document.body.style.overflow = '';
+      document.documentElement.style.overscrollBehavior = '';
+    };
   }, [done]);
 
-  // Wheel navigation
+  // ── WHEEL — stable handler, ONLY re-registers when done changes ──────────
+  // navigate lives in navigateRef so this effect never needs navigate in deps.
+  // This eliminates the detach/reattach gap that caused scroll leaks.
   useEffect(() => {
     if (done) return;
-    const h = (e: WheelEvent) => {
+    const handler = (e: WheelEvent) => {
       e.preventDefault();
-      if (e.deltaY >  20) navigate(1);
-      if (e.deltaY < -20) navigate(-1);
+      e.stopPropagation();
+      if (e.deltaY >  20) navigateRef.current(1);
+      if (e.deltaY < -20) navigateRef.current(-1);
     };
-    window.addEventListener('wheel', h, { passive: false });
-    return () => window.removeEventListener('wheel', h);
-  }, [navigate, done]);
+    window.addEventListener('wheel', handler, { passive: false });
+    return () => window.removeEventListener('wheel', handler);
+  }, [done]); // ← only done — NO navigate in deps
 
-  // Touch navigation
+  // ── TOUCH ────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (done) return;
-    let ty = 0;
-    const ts = (e: TouchEvent) => { ty = e.touches[0].clientY; };
-    const te = (e: TouchEvent) => {
-      const dy = ty - e.changedTouches[0].clientY;
-      if (Math.abs(dy) > 35) navigate(dy > 0 ? 1 : -1);
+    let startY = 0;
+    const onStart = (e: TouchEvent) => { startY = e.touches[0].clientY; };
+    const onEnd   = (e: TouchEvent) => {
+      const dy = startY - e.changedTouches[0].clientY;
+      if (Math.abs(dy) > 35) navigateRef.current(dy > 0 ? 1 : -1);
     };
-    window.addEventListener('touchstart', ts, { passive: true });
-    window.addEventListener('touchend',   te, { passive: true });
+    window.addEventListener('touchstart', onStart, { passive: true });
+    window.addEventListener('touchend',   onEnd,   { passive: true });
     return () => {
-      window.removeEventListener('touchstart', ts);
-      window.removeEventListener('touchend',   te);
+      window.removeEventListener('touchstart', onStart);
+      window.removeEventListener('touchend',   onEnd);
     };
-  }, [navigate, done]);
+  }, [done]);
 
-  // Keyboard navigation
+  // ── KEYBOARD ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    const h = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowDown' || e.key === 'PageDown') navigate(1);
-      if (e.key === 'ArrowUp'   || e.key === 'PageUp')   navigate(-1);
+    const handler = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowDown' || e.key === 'PageDown') navigateRef.current(1);
+      if (e.key === 'ArrowUp'   || e.key === 'PageUp')   navigateRef.current(-1);
     };
-    window.addEventListener('keydown', h);
-    return () => window.removeEventListener('keydown', h);
-  }, [navigate]);
-
-  // Blur filter value for the overlay
-  const blurAmount   = blurPhase === 'blurring' ? '18px' : '0px';
-  const blurOpacity  = blurPhase === 'blurring' ? 0 : 1;
-  const blurDuration = blurPhase === 'blurring' ? 0.30 : 0.42;
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, []); // Stable — reads from ref
 
   return (
     <div
       onMouseMove={onMouseMove}
       style={{
-        position:           'relative',
-        height:             '100vh',
-        width:              '100vw',
+        position:           'fixed',   // fixed prevents ANY ancestor scroll
+        inset:              0,
         overflow:           'hidden',
         backgroundImage:    'url(/collections/studio_bg.png)',
         backgroundSize:     'cover',
@@ -227,49 +188,45 @@ export default function CollectionExperience({ categories }: Props) {
         color:              '#1C160E',
       }}
     >
-      {/* Subtle inner vignette */}
+      {/* Subtle vignette */}
       <div style={{ position: 'absolute', inset: 0, boxShadow: 'inset 0 0 180px rgba(0,0,0,0.04)', pointerEvents: 'none', zIndex: 1 }} />
 
-      {/* ── BLURABLE CONTENT LAYER ──────────────────────────────────────────── */}
-      {/* Everything except navbar sits in here and gets blurred on transition  */}
+      {/* ── BLURABLE CONTENT ─────────────────────────────────────────────── */}
       <motion.div
         animate={{
           filter:  blurPhase !== 'idle' ? 'blur(18px)' : 'blur(0px)',
           opacity: blurPhase === 'blurring' ? 0.3 : 1,
         }}
-        transition={{ duration: blurDuration, ease: [0.4, 0, 0.2, 1] }}
+        transition={{ duration: blurPhase === 'blurring' ? 0.30 : 0.42, ease: [0.4, 0, 0.2, 1] }}
         style={{ position: 'absolute', inset: 0, zIndex: 5 }}
       >
-        {/* ── 3D SHOWCASE CAROUSEL ──────────────────────────────────────────── */}
+
+        {/* ── 3D PRODUCT CAROUSEL ────────────────────────────────────────── */}
         <div style={{ position: 'absolute', inset: 0, zIndex: 10 }}>
           {products.map((product, pIdx) => {
             const slotIdx = itemSlots[pIdx];
             const s = SLOTS[slotIdx];
-
             const ry = tilt.x * (s.isHero ? 2.2 : 1.1);
             const rx = -tilt.y * (s.isHero ? 2.2 : 1.1);
-
-            const discH          = Math.round(s.discW * (320 / 854));
+            const discH            = Math.round(s.discW * (320 / 854));
             const productBottomPos = discH - Math.round(s.discW * 0.041);
+
+            // Detect if this is a jpg (white bg) vs png (transparent)
+            const isJpg = product.image.toLowerCase().endsWith('.jpg');
 
             return (
               <motion.div
                 key={`prod-${pIdx}`}
                 animate={{
-                  left:    `${s.leftVw}vw`,
-                  bottom:  `${s.bottomVh}vh`,
+                  left:   `${s.leftVw}vw`,
+                  bottom: `${s.bottomVh}vh`,
                   zIndex:  s.z,
                   opacity: s.opacity,
                 }}
                 transition={{ duration: 0.65, ease: [0.16, 1, 0.3, 1] }}
                 onClick={() => handleProductClick(pIdx)}
-                style={{
-                  position:  'absolute',
-                  transform: 'translateX(-50%)',
-                  cursor:    s.isHero ? 'default' : 'pointer',
-                }}
+                style={{ position: 'absolute', transform: 'translateX(-50%)', cursor: s.isHero ? 'default' : 'pointer' }}
               >
-                {/* 3D Tilt Wrapper */}
                 <div
                   style={{
                     transform:     `rotateX(${rx}deg) rotateY(${ry}deg)`,
@@ -281,7 +238,7 @@ export default function CollectionExperience({ categories }: Props) {
                     alignItems:    'center',
                   }}
                 >
-                  {/* Marble Pedestal Stand */}
+                  {/* Marble Pedestal */}
                   <div
                     style={{
                       width:         `${s.discW}px`,
@@ -299,7 +256,7 @@ export default function CollectionExperience({ categories }: Props) {
                     />
                   </div>
 
-                  {/* Product Image — positioned on top of marble surface */}
+                  {/* Product Image */}
                   <div
                     style={{
                       position:       'absolute',
@@ -326,6 +283,9 @@ export default function CollectionExperience({ categories }: Props) {
                         height:           'auto',
                         objectFit:        'contain',
                         objectPosition:   'bottom center',
+                        // mix-blend-mode: multiply makes white pixels transparent
+                        // on the light studio background — works for all JPGs with white bg
+                        mixBlendMode:     isJpg ? 'multiply' : 'normal',
                         filter:           `drop-shadow(0 12px 24px rgba(0,0,0,0.18)) blur(${s.blur})`,
                         cursor:           'pointer',
                         userSelect:       'none',
@@ -340,7 +300,7 @@ export default function CollectionExperience({ categories }: Props) {
           })}
         </div>
 
-        {/* ── LEFT PANEL ──────────────────────────────────────────────────────── */}
+        {/* ── LEFT TEXT PANEL ──────────────────────────────────────────────── */}
         <div
           style={{
             position:  'absolute',
@@ -380,7 +340,7 @@ export default function CollectionExperience({ categories }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* ── BOTTOM BAR ──────────────────────────────────────────────────────── */}
+        {/* ── BOTTOM BAR ───────────────────────────────────────────────────── */}
         <div style={{ position: 'absolute', bottom: '3vh', left: '4vw', right: '4.5vw', zIndex: 30, display: 'flex', alignItems: 'center' }}>
           {/* Counter */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -399,22 +359,18 @@ export default function CollectionExperience({ categories }: Props) {
           <div style={{ flex: 1 }} />
 
           {/* Scroll hint */}
-          {blurPhase === 'idle' && !done && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1.5rem' }}
-            >
+          {!done && blurPhase === 'idle' && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1.5rem' }}>
               <motion.div
                 animate={{ y: [0, 5, 0] }}
                 transition={{ duration: 1.4, ease: 'easeInOut', repeat: Infinity }}
                 style={{ width: 1, height: 20, backgroundColor: '#C5A059', borderRadius: 1 }}
               />
               <span style={{ fontSize: '0.52rem', color: '#A89878', letterSpacing: '2px', textTransform: 'uppercase' }}>Scroll</span>
-            </motion.div>
+            </div>
           )}
 
-          {/* Next / Home */}
+          {/* Next / Return */}
           <AnimatePresence mode="wait">
             {!done ? (
               <motion.button
@@ -442,7 +398,7 @@ export default function CollectionExperience({ categories }: Props) {
           </AnimatePresence>
         </div>
 
-        {/* ── DOT NAVIGATION ──────────────────────────────────────────────────── */}
+        {/* ── DOT NAVIGATION ───────────────────────────────────────────────── */}
         <div style={{ position: 'absolute', right: '1.8vw', top: '50%', transform: 'translateY(-50%)', zIndex: 30, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px' }}>
           {categories.map((_, i) => (
             <motion.button
@@ -460,15 +416,14 @@ export default function CollectionExperience({ categories }: Props) {
         </div>
       </motion.div>
 
-      {/* ── BLUR VEIL OVERLAY ───────────────────────────────────────────────────
-          A frosted glass overlay that appears during transitions.
-          Stays above the content but below the navbar.                         */}
+      {/* ── BLUR VEIL OVERLAY ────────────────────────────────────────────────
+          Cream wash that bridges the blur-out → blur-in gap visually         */}
       <AnimatePresence>
         {blurPhase !== 'idle' && (
           <motion.div
             key="veil"
             initial={{ opacity: 0 }}
-            animate={{ opacity: blurPhase === 'blurring' ? 0.45 : 0 }}
+            animate={{ opacity: blurPhase === 'blurring' ? 0.5 : 0 }}
             exit={{ opacity: 0 }}
             transition={{ duration: blurPhase === 'blurring' ? 0.30 : 0.42, ease: [0.4, 0, 0.2, 1] }}
             style={{
