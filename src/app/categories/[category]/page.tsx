@@ -171,7 +171,6 @@ export default async function CategoryPage({
       shortIntro:
         m.heritageOriginStory ||
         m.founderBiography ||
-        m.businessStory ||
         'Preserving generations of artisanal heritage with authenticated provenance.',
       heroImage,
       logo,

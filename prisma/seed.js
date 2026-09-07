@@ -154,7 +154,7 @@ async function main() {
       { code: 'FINANCE', description: 'Finance administrator' },
       { code: 'STORY_TEAM', description: 'Editorial copywriter and photographer' }
     ]
-  });
+  }).catch(() => {});
 
   await prisma.verificationTierLookup.createMany({
     data: [
@@ -163,7 +163,7 @@ async function main() {
       { code: 'ELITE', description: 'Physical GPS geofenced audit passed' },
       { code: 'GI', description: 'Legally certified Protected Appellation' }
     ]
-  });
+  }).catch(() => {});
 
   await prisma.productStatusLookup.createMany({
     data: [
@@ -174,7 +174,7 @@ async function main() {
       { code: 'PUBLISHED', description: 'Visible and purchaseable' },
       { code: 'ARCHIVED', description: 'Removed from public catalogue' }
     ]
-  });
+  }).catch(() => {});
 
   await prisma.orderStatusLookup.createMany({
     data: [
@@ -187,7 +187,7 @@ async function main() {
       { code: 'REFUNDED', description: 'Reversed payment' },
       { code: 'CANCELLED', description: 'Order cancelled before shipping' }
     ]
-  });
+  }).catch(() => {});
 
   // 2. Seed Geography Location Tree (Materialized path ltree alternative)
   const rootLoc = await prisma.location.create({
