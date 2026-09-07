@@ -19,10 +19,10 @@ const categories = [
       image: '/collections/ceramics_hero.png',
     },
     supporting: [
-      { name: 'Ceramic Tea Bowl', image: '/collections/ceramics_sm1.png' },
-      { name: 'Floral Lidded Jar', image: '/collections/ceramics_sm2.png' },
-      { name: 'Slender Porcelain Vase', image: '/collections/ceramics_sm3.png' },
-      { name: 'Artisan Teacup', image: '/collections/ceramics_sm4.png' },
+      { name: 'Ceramic Tea Bowl',      image: '/collections/ceramics_sm1.png' },
+      { name: 'Floral Lidded Jar',     image: '/collections/ceramics_sm2.png' },
+      { name: 'Slender Porcelain Vase',image: '/collections/ceramics_sm3.png' },
+      { name: 'Artisan Teacup',        image: '/collections/ceramics_sm4.png' },
     ],
   },
   {
@@ -37,10 +37,10 @@ const categories = [
       image: '/collections/jewelry_hero.png',
     },
     supporting: [
-      { name: 'Diamond Ring', image: '/collections/jewelry_sm1.png' },
-      { name: 'Gold Bangle Bracelet', image: '/collections/jewelry_sm2.png' },
+      { name: 'Diamond Ring',           image: '/collections/jewelry_sm1.png' },
+      { name: 'Gold Bangle Bracelet',   image: '/collections/jewelry_sm2.png' },
       { name: 'Sapphire Drop Earrings', image: '/collections/jewelry_sm3.png' },
-      { name: 'Pearl Strand Necklace', image: '/collections/jewelry_hero.png' },
+      { name: 'Pearl Strand Necklace',  image: '/collections/jewelry_hero.png' },
     ],
   },
   {
@@ -55,10 +55,10 @@ const categories = [
       image: '/collections/textiles_hero.png',
     },
     supporting: [
-      { name: 'Silk Scarf', image: '/collections/textiles_hero.png' },
-      { name: 'Pashmina Wrap', image: '/collections/textiles_hero.png' },
-      { name: 'Handwoven Throw', image: '/collections/textiles_hero.png' },
-      { name: 'Embroidered Silk', image: '/collections/textiles_hero.png' },
+      { name: 'Embroidered Silk Scarf', image: '/collections/textiles_sm1.jpg' },
+      { name: 'Ivory Pashmina Wrap',    image: '/collections/textiles_sm2.jpg' },
+      { name: 'Ikat Throw Blanket',     image: '/collections/textiles_sm3.jpg' },
+      { name: 'Saffron Cushion Cover',  image: '/collections/textiles_sm4.jpg' },
     ],
   },
   {
@@ -73,10 +73,10 @@ const categories = [
       image: '/collections/leather_hero.png',
     },
     supporting: [
-      { name: 'Leather Tote', image: '/collections/leather_hero.png' },
-      { name: 'Handcrafted Purse', image: '/collections/leather_hero.png' },
-      { name: 'Travel Wallet', image: '/collections/leather_hero.png' },
-      { name: 'Artisan Belt', image: '/collections/leather_hero.png' },
+      { name: 'Structured Leather Bag',  image: '/collections/leather_sm1.jpg' },
+      { name: 'Hand-Tooled Wallet',      image: '/collections/leather_sm2.jpg' },
+      { name: 'Leather Duffle Bag',      image: '/collections/leather_sm3.jpg' },
+      { name: 'Artisan Leather Belt',    image: '/collections/leather_sm4.jpg' },
     ],
   },
   {
@@ -91,10 +91,10 @@ const categories = [
       image: '/collections/metalcraft_hero.png',
     },
     supporting: [
-      { name: 'Engraved Brass Bowl', image: '/collections/metalcraft_hero.png' },
-      { name: 'Hammered Copper Pot', image: '/collections/metalcraft_hero.png' },
-      { name: 'Decorative Steel Vessel', image: '/collections/metalcraft_hero.png' },
-      { name: 'Brass Candelabrum', image: '/collections/metalcraft_hero.png' },
+      { name: 'Engraved Brass Bowl',    image: '/collections/metalcraft_sm1.jpg' },
+      { name: 'Hammered Copper Teapot', image: '/collections/metalcraft_sm2.jpg' },
+      { name: 'Steel Geometric Tray',   image: '/collections/metalcraft_sm3.jpg' },
+      { name: 'Brass Candelabrum',      image: '/collections/metalcraft_sm4.jpg' },
     ],
   },
   {
@@ -109,10 +109,10 @@ const categories = [
       image: '/collections/homedecor_hero.png',
     },
     supporting: [
-      { name: 'Handcrafted Lantern', image: '/collections/homedecor_hero.png' },
-      { name: 'Brass Desk Lamp', image: '/collections/homedecor_hero.png' },
-      { name: 'Sculptural Vessel', image: '/collections/homedecor_hero.png' },
-      { name: 'Carved Wood Box', image: '/collections/homedecor_hero.png' },
+      { name: 'Pierced Brass Lantern',  image: '/collections/homedecor_sm1.jpg' },
+      { name: 'Walnut Wooden Bowl',     image: '/collections/homedecor_sm2.jpg' },
+      { name: 'Blue Arabesque Tile',    image: '/collections/homedecor_hero.png' },
+      { name: 'Carved Elephant Figure', image: '/collections/homedecor_hero.png' },
     ],
   },
 ];
