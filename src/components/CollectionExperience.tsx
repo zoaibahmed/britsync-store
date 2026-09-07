@@ -211,9 +211,6 @@ export default function CollectionExperience({ categories }: Props) {
             const discH            = Math.round(s.discW * (320 / 854));
             const productBottomPos = discH - Math.round(s.discW * 0.041);
 
-            // Detect if this is a jpg (white bg) vs png (transparent)
-            const isJpg = product.image.toLowerCase().endsWith('.jpg');
-
             return (
               <motion.div
                 key={`prod-${pIdx}`}
@@ -273,8 +270,7 @@ export default function CollectionExperience({ categories }: Props) {
                       pointerEvents:  'auto',
                       zIndex:         2,
                       transition:     'bottom 0.65s cubic-bezier(0.16,1,0.3,1)',
-                      // blend mode on wrapper so filter on img doesn't break it
-                      mixBlendMode:   isJpg ? 'multiply' : 'normal',
+
                     }}
                   >
                     <motion.img

@@ -55,10 +55,10 @@ const categories = [
       image: '/collections/textiles_hero.png',
     },
     supporting: [
-      { name: 'Embroidered Silk Scarf', image: '/collections/textiles_sm1.jpg' },
-      { name: 'Ivory Pashmina Wrap',    image: '/collections/textiles_sm2.jpg' },
-      { name: 'Ikat Throw Blanket',     image: '/collections/textiles_sm3.jpg' },
-      { name: 'Saffron Cushion Cover',  image: '/collections/textiles_sm4.jpg' },
+      { name: 'Embroidered Silk Scarf', image: '/collections/textiles_sm1.png' },
+      { name: 'Ivory Pashmina Wrap',    image: '/collections/textiles_sm2.png' },
+      { name: 'Ikat Throw Blanket',     image: '/collections/textiles_sm3.png' },
+      { name: 'Saffron Cushion Cover',  image: '/collections/textiles_sm4.png' },
     ],
   },
   {
@@ -73,10 +73,10 @@ const categories = [
       image: '/collections/leather_hero.png',
     },
     supporting: [
-      { name: 'Structured Leather Bag',  image: '/collections/leather_sm1.jpg' },
-      { name: 'Hand-Tooled Wallet',      image: '/collections/leather_sm2.jpg' },
-      { name: 'Leather Duffle Bag',      image: '/collections/leather_sm3.jpg' },
-      { name: 'Artisan Leather Belt',    image: '/collections/leather_sm4.jpg' },
+      { name: 'Structured Leather Bag',  image: '/collections/leather_sm1.png' },
+      { name: 'Hand-Tooled Wallet',      image: '/collections/leather_sm2.png' },
+      { name: 'Leather Duffle Bag',      image: '/collections/leather_sm3.png' },
+      { name: 'Artisan Leather Belt',    image: '/collections/leather_sm4.png' },
     ],
   },
   {
@@ -91,10 +91,10 @@ const categories = [
       image: '/collections/metalcraft_hero.png',
     },
     supporting: [
-      { name: 'Engraved Brass Bowl',    image: '/collections/metalcraft_sm1.jpg' },
-      { name: 'Hammered Copper Teapot', image: '/collections/metalcraft_sm2.jpg' },
-      { name: 'Steel Geometric Tray',   image: '/collections/metalcraft_sm3.jpg' },
-      { name: 'Brass Candelabrum',      image: '/collections/metalcraft_sm4.jpg' },
+      { name: 'Engraved Brass Bowl',    image: '/collections/metalcraft_sm1.png' },
+      { name: 'Hammered Copper Teapot', image: '/collections/metalcraft_sm2.png' },
+      { name: 'Steel Geometric Tray',   image: '/collections/metalcraft_sm3.png' },
+      { name: 'Brass Candelabrum',      image: '/collections/metalcraft_sm4.png' },
     ],
   },
   {
@@ -109,8 +109,8 @@ const categories = [
       image: '/collections/homedecor_hero.png',
     },
     supporting: [
-      { name: 'Pierced Brass Lantern',  image: '/collections/homedecor_sm1.jpg' },
-      { name: 'Walnut Wooden Bowl',     image: '/collections/homedecor_sm2.jpg' },
+      { name: 'Pierced Brass Lantern',  image: '/collections/homedecor_sm1.png' },
+      { name: 'Walnut Wooden Bowl',     image: '/collections/homedecor_sm2.png' },
       { name: 'Blue Arabesque Tile',    image: '/collections/homedecor_hero.png' },
       { name: 'Carved Elephant Figure', image: '/collections/homedecor_hero.png' },
     ],
