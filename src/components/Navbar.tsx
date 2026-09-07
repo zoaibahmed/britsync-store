@@ -293,57 +293,69 @@ export default function Navbar() {
           {/* Theme Toggle Button */}
           <ThemeToggle theme={theme} onToggle={toggleTheme} />
 
-          <Link href="/login" style={{
-            color: 'var(--text)',
-            backgroundColor: 'transparent',
-            textDecoration: 'none',
-            fontSize: scrolled ? '0.62rem' : '0.66rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1.5px',
-            fontWeight: 600,
-            whiteSpace: 'nowrap',
-            padding: scrolled ? '0.5rem 0.8rem' : '0.6rem 0.95rem',
-            border: '1px solid var(--glass-border)',
-            borderRadius: '2px',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--accent)';
-            e.currentTarget.style.color = 'var(--accent)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--glass-border)';
-            e.currentTarget.style.color = 'var(--text)';
-          }}
+          {/* Sign In Button */}
+          <Link
+            href="/login"
+            style={{
+              color: 'var(--text)',
+              backgroundColor: 'transparent',
+              textDecoration: 'none',
+              fontSize: scrolled ? '0.64rem' : '0.68rem',
+              textTransform: 'uppercase',
+              letterSpacing: '1.8px',
+              fontWeight: 500,
+              whiteSpace: 'nowrap',
+              padding: scrolled ? '0.5rem 0.95rem' : '0.6rem 1.15rem',
+              border: '1px solid var(--glass-border)',
+              transition: 'all 0.25s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.borderColor = 'var(--text)';
+              e.currentTarget.style.backgroundColor = 'var(--surface-muted)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.borderColor = 'var(--glass-border)';
+              e.currentTarget.style.backgroundColor = 'transparent';
+            }}
           >
             Sign In
           </Link>
 
-          <Link href="/become-a-maker" style={{
-            color: '#0A0A0C',
-            backgroundColor: 'var(--accent)',
-            textDecoration: 'none',
-            fontSize: scrolled ? '0.62rem' : '0.66rem',
-            textTransform: 'uppercase',
-            letterSpacing: '1.8px',
-            fontWeight: 700,
-            whiteSpace: 'nowrap',
-            padding: scrolled ? '0.5rem 1rem' : '0.6rem 1.25rem',
-            border: '1px solid var(--accent)',
-            borderRadius: '2px',
-            boxShadow: 'var(--shadow-sm)',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.backgroundColor = '#0A0A0C';
-            e.currentTarget.style.color = '#D4AF37';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.backgroundColor = 'var(--accent)';
-            e.currentTarget.style.color = '#0A0A0C';
-          }}
+          {/* Apply for Registry (Direct to Sign Up) */}
+          <Link
+            href="/register"
+            style={{
+              color: '#0A0A0C',
+              backgroundColor: 'var(--accent)',
+              textDecoration: 'none',
+              fontSize: scrolled ? '0.64rem' : '0.68rem',
+              textTransform: 'uppercase',
+              letterSpacing: '2px',
+              fontWeight: 700,
+              whiteSpace: 'nowrap',
+              padding: scrolled ? '0.5rem 1.15rem' : '0.6rem 1.35rem',
+              border: '1px solid var(--accent)',
+              boxShadow: 'var(--shadow-sm)',
+              transition: 'all 0.25s ease',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.35rem',
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.backgroundColor = '#0A0A0C';
+              e.currentTarget.style.color = 'var(--accent)';
+              e.currentTarget.style.borderColor = 'var(--accent)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.backgroundColor = 'var(--accent)';
+              e.currentTarget.style.color = '#0A0A0C';
+              e.currentTarget.style.borderColor = 'var(--accent)';
+            }}
           >
-            Apply to Registry
+            <span>Apply to Registry</span>
+            <span style={{ fontSize: '0.8rem', lineHeight: 1 }}>→</span>
           </Link>
         </div>
 
@@ -416,7 +428,7 @@ export default function Navbar() {
 
           <div style={{ width: '100%', height: '1px', backgroundColor: 'var(--glass-border)', margin: '1rem 0' }}></div>
           
-          <Link href="/become-a-maker" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700 }}>Apply to Registry &rarr;</Link>
+          <Link href="/register" onClick={() => setMobileMenuOpen(false)} style={{ color: 'var(--accent)', textDecoration: 'none', fontWeight: 700, letterSpacing: '2px', textTransform: 'uppercase', fontSize: '0.9rem' }}>Apply to Registry &rarr;</Link>
         </div>
       </div>
       
