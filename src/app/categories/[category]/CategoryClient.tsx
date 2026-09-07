@@ -25,15 +25,6 @@ interface CategoryClientProps {
   studios: AtelierStudioItem[];
 }
 
-const DISCIPLINES = [
-  { slug: 'Metal Craft', label: 'Metal Craft' },
-  { slug: 'Ceramics', label: 'Ceramics' },
-  { slug: 'Jewelry', label: 'Jewellery' },
-  { slug: 'Textiles', label: 'Textiles' },
-  { slug: 'Leather', label: 'Leather' },
-  { slug: 'Home Decor', label: 'Living Spaces' },
-];
-
 export default function CategoryClient({
   disciplineTitle,
   tagline,
@@ -72,99 +63,19 @@ export default function CategoryClient({
         backgroundColor: 'var(--background)',
         color: 'var(--text)',
         minHeight: '100vh',
-        paddingBottom: '8rem',
+        paddingBottom: '9rem',
       }}
     >
-      {/* ── SINGLE CLEAN DISCIPLINE BAR (NO DOUBLE BARS, NO CLUTTER) ── */}
-      <nav
-        aria-label="Craft Disciplines"
-        style={{
-          backgroundColor: 'var(--surface)',
-          borderBottom: '1px solid var(--glass-border)',
-          position: 'sticky',
-          top: '72px',
-          zIndex: 40,
-          padding: '0.6rem 2rem',
-        }}
-      >
-        <div
-          style={{
-            maxWidth: '1400px',
-            margin: '0 auto',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            gap: '1rem',
-            overflowX: 'auto',
-            scrollbarWidth: 'none',
-          }}
-        >
-          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
-            {DISCIPLINES.map((disc) => {
-              const isActive =
-                disc.slug.toLowerCase() === disciplineTitle.toLowerCase() ||
-                (disc.slug === 'Home Decor' && disciplineTitle === 'Living Spaces') ||
-                (disc.slug === 'Jewelry' && disciplineTitle === 'Jewellery');
-
-              return (
-                <Link
-                  key={disc.slug}
-                  href={`/categories/${encodeURIComponent(disc.slug)}`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    padding: '0.55rem 1.25rem',
-                    fontSize: '0.72rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    fontWeight: isActive ? 700 : 500,
-                    textDecoration: 'none',
-                    backgroundColor: isActive ? 'var(--primary)' : 'transparent',
-                    color: isActive ? 'var(--secondary)' : 'var(--text)',
-                    border: isActive
-                      ? '1px solid var(--primary)'
-                      : '1px solid transparent',
-                    transition: 'all 0.2s ease',
-                  }}
-                >
-                  {disc.label}
-                </Link>
-              );
-            })}
-          </div>
-
-          <Link
-            href="/collections"
-            style={{
-              fontSize: '0.7rem',
-              letterSpacing: '1.8px',
-              textTransform: 'uppercase',
-              color: 'var(--accent)',
-              textDecoration: 'none',
-              fontWeight: 600,
-              flexShrink: 0,
-              padding: '0.45rem 1rem',
-              border: '1px solid var(--glass-border)',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '0.4rem',
-            }}
-          >
-            <span>3D Studio Flythrough</span>
-            <span>→</span>
-          </Link>
-        </div>
-      </nav>
-
       {/* ── SPACIOUS LUXURY EDITORIAL HERO ── */}
       <section
         style={{
-          padding: '5.5rem 2rem 4.5rem',
+          padding: '7rem 2rem 5rem',
           backgroundColor: 'var(--surface)',
           borderBottom: '1px solid var(--glass-border)',
+          textAlign: 'center',
         }}
       >
-        <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
+        <div style={{ maxWidth: '880px', margin: '0 auto' }}>
           {/* Subtle Provenance Breadcrumb */}
           <div
             style={{
@@ -172,11 +83,12 @@ export default function CategoryClient({
               justifyContent: 'center',
               alignItems: 'center',
               gap: '0.6rem',
-              fontSize: '0.72rem',
-              letterSpacing: '2.5px',
+              fontSize: '0.68rem',
+              letterSpacing: '3px',
               textTransform: 'uppercase',
-              opacity: 0.6,
-              marginBottom: '1.8rem',
+              opacity: 0.5,
+              marginBottom: '2rem',
+              fontWeight: 600,
             }}
           >
             <Link href="/" style={{ color: 'inherit', textDecoration: 'none' }}>
@@ -196,40 +108,51 @@ export default function CategoryClient({
           <h1
             style={{
               fontFamily: 'var(--font-playfair), Georgia, serif',
-              fontSize: 'clamp(2.8rem, 6vw, 4.6rem)',
+              fontSize: 'clamp(2.8rem, 5.5vw, 4.6rem)',
               fontWeight: 300,
-              lineHeight: 1.08,
-              margin: '0 0 1.2rem 0',
+              lineHeight: 1.1,
+              margin: '0 0 1.4rem 0',
               letterSpacing: '-0.02em',
               color: 'var(--text)',
             }}
           >
-            Certified <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{disciplineTitle}</em> Ateliers
+            {disciplineTitle} <em style={{ color: 'var(--accent)', fontStyle: 'italic', fontWeight: 300 }}>Ateliers</em>
           </h1>
 
-          {/* Subtitle / Tagline */}
+          {/* Subtle Gold Accent Divider */}
+          <div
+            style={{
+              width: '48px',
+              height: '1px',
+              backgroundColor: 'var(--accent)',
+              margin: '0 auto 1.8rem',
+              opacity: 0.8,
+            }}
+          />
+
+          {/* Tagline */}
           <p
             style={{
-              fontSize: '1.18rem',
+              fontSize: '1.14rem',
               color: 'var(--text)',
-              lineHeight: 1.6,
-              margin: '0 auto 1.4rem',
+              lineHeight: 1.65,
+              margin: '0 auto 1.2rem',
               fontWeight: 400,
-              maxWidth: '750px',
+              maxWidth: '720px',
               opacity: 0.9,
             }}
           >
             {tagline}
           </p>
 
-          {/* Quiet Narrative */}
+          {/* Description */}
           <p
             style={{
-              fontSize: '0.96rem',
-              lineHeight: 1.85,
-              opacity: 0.72,
+              fontSize: '0.94rem',
+              lineHeight: 1.8,
+              opacity: 0.65,
               margin: '0 auto',
-              maxWidth: '700px',
+              maxWidth: '660px',
               fontWeight: 300,
             }}
           >
@@ -238,9 +161,9 @@ export default function CategoryClient({
         </div>
       </section>
 
-      {/* ── ATELIERS & STUDIOS DIRECTORY GRID ── */}
-      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: '4rem 2rem 0' }}>
-        {/* Count Bar */}
+      {/* ── ATELIERS & STUDIOS DIRECTORY ── */}
+      <section style={{ maxWidth: '1360px', margin: '0 auto', padding: '4.5rem 2rem 0' }}>
+        {/* Subtle Registry Header Line */}
         <div
           style={{
             display: 'flex',
@@ -248,32 +171,32 @@ export default function CategoryClient({
             alignItems: 'center',
             borderBottom: '1px solid var(--glass-border)',
             paddingBottom: '1.2rem',
-            marginBottom: '3rem',
+            marginBottom: '3.5rem',
           }}
         >
-          <div
+          <span
             style={{
-              fontSize: '0.74rem',
+              fontSize: '0.72rem',
               letterSpacing: '2px',
               textTransform: 'uppercase',
               fontWeight: 600,
-              opacity: 0.7,
+              opacity: 0.6,
             }}
           >
-            Showing {studios.length} Certified Master Studios
-          </div>
+            {studios.length} Certified Master Ateliers
+          </span>
 
-          <div
+          <span
             style={{
-              fontSize: '0.7rem',
-              letterSpacing: '1.5px',
+              fontSize: '0.68rem',
+              letterSpacing: '2px',
               textTransform: 'uppercase',
               color: 'var(--accent)',
               fontWeight: 600,
             }}
           >
-            Provenance Audited • Direct Artisan Escrow
-          </div>
+            GPS Audited • 95% Direct Patron Escrow
+          </span>
         </div>
 
         {/* Studio Cards Grid */}
@@ -281,7 +204,7 @@ export default function CategoryClient({
           style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
-            gap: '2.5rem',
+            gap: '3rem',
           }}
         >
           {studios.map((studio) => {
@@ -294,14 +217,14 @@ export default function CategoryClient({
                   border: '1px solid var(--glass-border)',
                   display: 'flex',
                   flexDirection: 'column',
-                  transition: 'border-color 0.25s ease, transform 0.25s ease',
+                  transition: 'border-color 0.25s ease',
                 }}
               >
                 {/* Studio Hero Image Container */}
                 <div
                   style={{
                     position: 'relative',
-                    height: '270px',
+                    height: '280px',
                     backgroundColor: 'var(--background)',
                     overflow: 'hidden',
                   }}
@@ -314,7 +237,7 @@ export default function CategoryClient({
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
-                      transition: 'transform 0.5s ease',
+                      display: 'block',
                     }}
                   />
 
@@ -327,10 +250,10 @@ export default function CategoryClient({
                       backgroundColor: badge.bg,
                       color: badge.color,
                       border: badge.border,
-                      fontSize: '0.62rem',
+                      fontSize: '0.6rem',
                       fontWeight: 700,
                       letterSpacing: '1.8px',
-                      padding: '0.4rem 0.85rem',
+                      padding: '0.4rem 0.8rem',
                       textTransform: 'uppercase',
                     }}
                   >
@@ -345,10 +268,10 @@ export default function CategoryClient({
                       left: '1.2rem',
                       backgroundColor: 'var(--primary)',
                       color: 'var(--secondary)',
-                      fontSize: '0.65rem',
+                      fontSize: '0.64rem',
                       fontWeight: 600,
                       letterSpacing: '1.2px',
-                      padding: '0.35rem 0.8rem',
+                      padding: '0.35rem 0.75rem',
                       textTransform: 'uppercase',
                     }}
                   >
@@ -373,7 +296,7 @@ export default function CategoryClient({
                         display: 'flex',
                         alignItems: 'center',
                         gap: '1rem',
-                        marginBottom: '1.2rem',
+                        marginBottom: '1rem',
                       }}
                     >
                       {studio.logo && (
@@ -398,7 +321,7 @@ export default function CategoryClient({
                         <h2
                           style={{
                             fontFamily: 'var(--font-playfair), Georgia, serif',
-                            fontSize: '1.5rem',
+                            fontSize: '1.45rem',
                             fontWeight: 400,
                             margin: 0,
                             lineHeight: 1.2,
@@ -409,7 +332,7 @@ export default function CategoryClient({
                         </h2>
                         <span
                           style={{
-                            fontSize: '0.76rem',
+                            fontSize: '0.74rem',
                             color: 'var(--accent)',
                             fontWeight: 600,
                             letterSpacing: '0.5px',
@@ -426,12 +349,12 @@ export default function CategoryClient({
                     {studio.specialty && (
                       <div
                         style={{
-                          fontSize: '0.72rem',
+                          fontSize: '0.7rem',
                           letterSpacing: '1.5px',
                           textTransform: 'uppercase',
                           opacity: 0.6,
                           fontWeight: 600,
-                          marginBottom: '0.9rem',
+                          marginBottom: '0.8rem',
                         }}
                       >
                         Specialty: {studio.specialty}
@@ -441,10 +364,10 @@ export default function CategoryClient({
                     {/* Studio Story */}
                     <p
                       style={{
-                        fontSize: '0.9rem',
+                        fontSize: '0.88rem',
                         lineHeight: 1.75,
-                        opacity: 0.8,
-                        margin: '0 0 1.8rem 0',
+                        opacity: 0.75,
+                        margin: '0 0 1.6rem 0',
                         fontWeight: 300,
                       }}
                     >
@@ -465,9 +388,9 @@ export default function CategoryClient({
                     <div
                       style={{
                         display: 'flex',
-                        gap: '0.9rem',
-                        fontSize: '0.74rem',
-                        opacity: 0.7,
+                        gap: '0.8rem',
+                        fontSize: '0.72rem',
+                        opacity: 0.65,
                         fontWeight: 500,
                       }}
                     >
@@ -482,7 +405,7 @@ export default function CategoryClient({
                         backgroundColor: 'var(--primary)',
                         color: 'var(--secondary)',
                         padding: '0.65rem 1.25rem',
-                        fontSize: '0.7rem',
+                        fontSize: '0.68rem',
                         letterSpacing: '1.8px',
                         fontWeight: 700,
                         textTransform: 'uppercase',
