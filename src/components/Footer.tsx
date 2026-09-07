@@ -5,7 +5,7 @@ import ThemeLogo from '@/components/ThemeLogo';
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname?.startsWith('/dashboard') || pathname === '/login' || pathname === '/register') return null;
+  if (pathname?.startsWith('/dashboard') || pathname === '/login' || pathname === '/register' || pathname?.startsWith('/collections')) return null;
   return (
     <footer style={{
       backgroundColor: 'var(--surface)',

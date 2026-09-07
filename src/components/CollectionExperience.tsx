@@ -256,7 +256,11 @@ export default function CollectionExperience({ categories }: Props) {
                     />
                   </div>
 
-                  {/* Product Image */}
+                  {/* Product Image
+                      mix-blend-mode and filter CANNOT live on the same element —
+                      filter creates a new compositing group that breaks blend mode.
+                      Fix: mixBlendMode goes on the outer wrapper div,
+                           drop-shadow/blur filter goes on the img.              */}
                   <div
                     style={{
                       position:       'absolute',
@@ -269,6 +273,8 @@ export default function CollectionExperience({ categories }: Props) {
                       pointerEvents:  'auto',
                       zIndex:         2,
                       transition:     'bottom 0.65s cubic-bezier(0.16,1,0.3,1)',
+                      // blend mode on wrapper so filter on img doesn't break it
+                      mixBlendMode:   isJpg ? 'multiply' : 'normal',
                     }}
                   >
                     <motion.img
@@ -283,10 +289,8 @@ export default function CollectionExperience({ categories }: Props) {
                         height:           'auto',
                         objectFit:        'contain',
                         objectPosition:   'bottom center',
-                        // mix-blend-mode: multiply makes white pixels transparent
-                        // on the light studio background — works for all JPGs with white bg
-                        mixBlendMode:     isJpg ? 'multiply' : 'normal',
-                        filter:           `drop-shadow(0 12px 24px rgba(0,0,0,0.18)) blur(${s.blur})`,
+                        // filter on img only — no mixBlendMode here
+                        filter:           `blur(${s.blur})`,
                         cursor:           'pointer',
                         userSelect:       'none',
                         WebkitUserSelect: 'none',
