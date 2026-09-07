@@ -1,27 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 
-export interface CategoryProductItem {
-  id: string;
-  title: string;
-  maker: string;
-  makerId?: string;
-  price: number;
-  country: string;
-  region?: string;
-  materials?: string;
-  craftingTimeWeeks?: number;
-  isReadyToShip: boolean;
-  verificationStatus: string;
-  imageUrl: string;
-  images: string[];
-  dimensions?: string;
-  weight?: string;
-}
-
-export interface CategoryMakerItem {
+export interface AtelierStudioItem {
   id: string;
   businessName: string;
   founderName: string;
@@ -29,32 +11,21 @@ export interface CategoryMakerItem {
   city?: string;
   verificationStatus: string;
   yearsInBusiness: number;
-  productCount: number;
+  registeredWorksCount: number;
+  specialty?: string;
   shortIntro: string;
   heroImage: string;
   logo: string;
 }
 
-export interface CraftHeritageData {
-  ancestralEra: string;
-  primaryMaterials: string[];
-  techniques: { name: string; description: string }[];
-  auditStandard: string;
-}
-
 interface CategoryClientProps {
-  disciplineKey: string;
   disciplineTitle: string;
   tagline: string;
   description: string;
-  provenanceHubs: string[];
-  heritage: CraftHeritageData;
-  products: CategoryProductItem[];
-  makers: CategoryMakerItem[];
-  initialSearch?: string;
+  studios: AtelierStudioItem[];
 }
 
-const DISCIPLINES_NAV = [
+const DISCIPLINES = [
   { slug: 'Metal Craft', label: 'Metal Craft' },
   { slug: 'Ceramics', label: 'Ceramics' },
   { slug: 'Jewelry', label: 'Jewellery' },
@@ -64,36 +35,30 @@ const DISCIPLINES_NAV = [
 ];
 
 export default function CategoryClient({
-  disciplineKey,
   disciplineTitle,
   tagline,
   description,
-  heritage,
-  products,
-  makers,
+  studios,
 }: CategoryClientProps) {
-  const [activeTab, setActiveTab] = useState<'works' | 'ateliers' | 'heritage'>('works');
-  const [selectedProduct, setSelectedProduct] = useState<CategoryProductItem | null>(null);
-
-  const getBadgeConfig = (status: string) => {
+  const getBadgeStyle = (status: string) => {
     switch (status) {
       case 'ELITE':
         return {
-          label: 'Atelier Elite',
+          label: 'Atelier Elite Master',
           bg: 'var(--surface-muted)',
           color: 'var(--accent)',
           border: '1px solid var(--accent)',
         };
       case 'GI':
         return {
-          label: 'Protected GI',
+          label: 'Protected Appellation (GI)',
           bg: 'var(--surface-muted)',
           color: 'var(--accent)',
           border: '1px solid var(--accent)',
         };
       default:
         return {
-          label: 'Verified',
+          label: 'Certified Heritage Studio',
           bg: 'var(--surface)',
           color: 'var(--text)',
           border: '1px solid var(--glass-border)',
@@ -110,16 +75,16 @@ export default function CategoryClient({
         paddingBottom: '8rem',
       }}
     >
-      {/* ── CLEAN DISCIPLINE NAVIGATOR (NO "REGISTRY ARCHIVES") ── */}
+      {/* ── SINGLE CLEAN DISCIPLINE BAR (NO DOUBLE BARS, NO CLUTTER) ── */}
       <nav
-        aria-label="Disciplines Navigator"
+        aria-label="Craft Disciplines"
         style={{
           backgroundColor: 'var(--surface)',
           borderBottom: '1px solid var(--glass-border)',
           position: 'sticky',
           top: '72px',
           zIndex: 40,
-          padding: '0.4rem 1.5rem',
+          padding: '0.6rem 2rem',
         }}
       >
         <div
@@ -134,8 +99,8 @@ export default function CategoryClient({
             scrollbarWidth: 'none',
           }}
         >
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexShrink: 0 }}>
-            {DISCIPLINES_NAV.map((disc) => {
+          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
+            {DISCIPLINES.map((disc) => {
               const isActive =
                 disc.slug.toLowerCase() === disciplineTitle.toLowerCase() ||
                 (disc.slug === 'Home Decor' && disciplineTitle === 'Living Spaces') ||
@@ -148,9 +113,9 @@ export default function CategoryClient({
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
-                    padding: '0.5rem 1.1rem',
+                    padding: '0.55rem 1.25rem',
                     fontSize: '0.72rem',
-                    letterSpacing: '1.8px',
+                    letterSpacing: '2px',
                     textTransform: 'uppercase',
                     fontWeight: isActive ? 700 : 500,
                     textDecoration: 'none',
@@ -178,7 +143,7 @@ export default function CategoryClient({
               textDecoration: 'none',
               fontWeight: 600,
               flexShrink: 0,
-              padding: '0.4rem 0.9rem',
+              padding: '0.45rem 1rem',
               border: '1px solid var(--glass-border)',
               display: 'inline-flex',
               alignItems: 'center',
@@ -191,16 +156,16 @@ export default function CategoryClient({
         </div>
       </nav>
 
-      {/* ── REFINED EDITORIAL HERO (CLEAN, SPACIOUS, UNCLUTTERED) ── */}
+      {/* ── SPACIOUS LUXURY EDITORIAL HERO ── */}
       <section
         style={{
-          padding: '5rem 2rem 4.5rem',
+          padding: '5.5rem 2rem 4.5rem',
           backgroundColor: 'var(--surface)',
           borderBottom: '1px solid var(--glass-border)',
         }}
       >
-        <div style={{ maxWidth: '1000px', margin: '0 auto', textAlign: 'center' }}>
-          {/* Breadcrumb Line */}
+        <div style={{ maxWidth: '960px', margin: '0 auto', textAlign: 'center' }}>
+          {/* Subtle Provenance Breadcrumb */}
           <div
             style={{
               display: 'flex',
@@ -219,7 +184,7 @@ export default function CategoryClient({
             </Link>
             <span>/</span>
             <Link href="/collections" style={{ color: 'inherit', textDecoration: 'none' }}>
-              Collections
+              Ateliers
             </Link>
             <span>/</span>
             <span style={{ color: 'var(--accent)', fontWeight: 700 }}>
@@ -227,7 +192,7 @@ export default function CategoryClient({
             </span>
           </div>
 
-          {/* Large Editorial Headline */}
+          {/* Mastercraft Heading */}
           <h1
             style={{
               fontFamily: 'var(--font-playfair), Georgia, serif',
@@ -239,16 +204,16 @@ export default function CategoryClient({
               color: 'var(--text)',
             }}
           >
-            The Mastercraft of <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{disciplineTitle}</em>
+            Certified <em style={{ color: 'var(--accent)', fontStyle: 'italic' }}>{disciplineTitle}</em> Ateliers
           </h1>
 
-          {/* Tagline */}
+          {/* Subtitle / Tagline */}
           <p
             style={{
               fontSize: '1.18rem',
               color: 'var(--text)',
               lineHeight: 1.6,
-              margin: '0 auto 1.5rem',
+              margin: '0 auto 1.4rem',
               fontWeight: 400,
               maxWidth: '750px',
               opacity: 0.9,
@@ -257,14 +222,14 @@ export default function CategoryClient({
             {tagline}
           </p>
 
-          {/* Description */}
+          {/* Quiet Narrative */}
           <p
             style={{
-              fontSize: '0.98rem',
+              fontSize: '0.96rem',
               lineHeight: 1.85,
               opacity: 0.72,
               margin: '0 auto',
-              maxWidth: '720px',
+              maxWidth: '700px',
               fontWeight: 300,
             }}
           >
@@ -273,797 +238,267 @@ export default function CategoryClient({
         </div>
       </section>
 
-      {/* ── MAIN CONTENT CONTAINER ── */}
-      <div style={{ maxWidth: '1400px', margin: '0 auto', padding: '3rem 2rem 0' }}>
-        {/* ── CLEAN THREE PILLAR VIEW TABS (NO SEARCH BAR, NO FILTERS) ── */}
+      {/* ── ATELIERS & STUDIOS DIRECTORY GRID ── */}
+      <section style={{ maxWidth: '1400px', margin: '0 auto', padding: '4rem 2rem 0' }}>
+        {/* Count Bar */}
         <div
           style={{
             display: 'flex',
-            justifyContent: 'center',
+            justifyContent: 'space-between',
             alignItems: 'center',
             borderBottom: '1px solid var(--glass-border)',
-            paddingBottom: '1.4rem',
+            paddingBottom: '1.2rem',
             marginBottom: '3rem',
           }}
         >
-          <div style={{ display: 'flex', gap: '0.6rem' }}>
-            {[
-              { id: 'works', label: `Masterworks (${products.length})` },
-              { id: 'ateliers', label: `Certified Ateliers (${makers.length})` },
-              { id: 'heritage', label: 'Techniques & Standards' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                style={{
-                  padding: '0.65rem 1.6rem',
-                  fontSize: '0.74rem',
-                  letterSpacing: '1.8px',
-                  textTransform: 'uppercase',
-                  fontWeight: activeTab === tab.id ? 700 : 500,
-                  border: activeTab === tab.id ? '1px solid var(--primary)' : '1px solid var(--glass-border)',
-                  backgroundColor: activeTab === tab.id ? 'var(--primary)' : 'transparent',
-                  color: activeTab === tab.id ? 'var(--secondary)' : 'var(--text)',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                }}
-              >
-                {tab.label}
-              </button>
-            ))}
+          <div
+            style={{
+              fontSize: '0.74rem',
+              letterSpacing: '2px',
+              textTransform: 'uppercase',
+              fontWeight: 600,
+              opacity: 0.7,
+            }}
+          >
+            Showing {studios.length} Certified Master Studios
+          </div>
+
+          <div
+            style={{
+              fontSize: '0.7rem',
+              letterSpacing: '1.5px',
+              textTransform: 'uppercase',
+              color: 'var(--accent)',
+              fontWeight: 600,
+            }}
+          >
+            Provenance Audited • Direct Artisan Escrow
           </div>
         </div>
 
-        {/* ── TAB 1: MASTERWORKS CATALOG (CLEAN, NO FILTER PILLS) ── */}
-        {activeTab === 'works' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-              gap: '2.5rem',
-            }}
-          >
-            {products.map((p) => {
-              const badge = getBadgeConfig(p.verificationStatus);
-              return (
-                <article
-                  key={p.id}
-                  style={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--glass-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    transition: 'border-color 0.2s ease, transform 0.2s ease',
-                  }}
-                >
-                  {/* Product Image Stage */}
-                  <div
-                    style={{
-                      position: 'relative',
-                      height: '340px',
-                      backgroundColor: 'var(--background)',
-                      overflow: 'hidden',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                    }}
-                  >
-                    <img
-                      src={p.imageUrl}
-                      alt={p.title}
-                      loading="lazy"
-                      style={{
-                        maxWidth: '90%',
-                        maxHeight: '90%',
-                        objectFit: 'contain',
-                        transition: 'transform 0.4s ease',
-                      }}
-                    />
-
-                    {/* Top Badges */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        left: '1rem',
-                        backgroundColor: badge.bg,
-                        color: badge.color,
-                        border: badge.border,
-                        fontSize: '0.6rem',
-                        letterSpacing: '1.5px',
-                        fontWeight: 700,
-                        padding: '0.35rem 0.65rem',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {badge.label}
-                    </div>
-
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        right: '1rem',
-                        backgroundColor: 'var(--surface)',
-                        border: '1px solid var(--glass-border)',
-                        color: 'var(--text)',
-                        fontSize: '0.6rem',
-                        letterSpacing: '1.5px',
-                        fontWeight: 600,
-                        padding: '0.35rem 0.65rem',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {p.isReadyToShip ? 'Ready to Ship' : `${p.craftingTimeWeeks} Wks Craft`}
-                    </div>
-
-                    {/* Bottom Region */}
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '1rem',
-                        left: '1rem',
-                        backgroundColor: 'var(--primary)',
-                        color: 'var(--secondary)',
-                        fontSize: '0.62rem',
-                        letterSpacing: '1.5px',
-                        fontWeight: 600,
-                        padding: '0.3rem 0.65rem',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      📍 {p.region || p.country}
-                    </div>
-                  </div>
-
-                  {/* Content Area */}
-                  <div
-                    style={{
-                      padding: '1.8rem',
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div
-                        style={{
-                          fontSize: '0.68rem',
-                          letterSpacing: '2px',
-                          textTransform: 'uppercase',
-                          color: 'var(--accent)',
-                          fontWeight: 700,
-                          marginBottom: '0.4rem',
-                        }}
-                      >
-                        {p.maker}
-                      </div>
-
-                      <h2
-                        style={{
-                          fontFamily: 'var(--font-playfair), Georgia, serif',
-                          fontSize: '1.45rem',
-                          fontWeight: 400,
-                          margin: '0 0 0.8rem 0',
-                          lineHeight: 1.25,
-                          color: 'var(--text)',
-                        }}
-                      >
-                        {p.title}
-                      </h2>
-
-                      {p.materials && (
-                        <p
-                          style={{
-                            fontSize: '0.82rem',
-                            lineHeight: 1.6,
-                            opacity: 0.7,
-                            margin: '0 0 1.2rem 0',
-                            fontWeight: 300,
-                          }}
-                        >
-                          {p.materials}
-                        </p>
-                      )}
-                    </div>
-
-                    <div
-                      style={{
-                        borderTop: '1px solid var(--glass-border)',
-                        paddingTop: '1.2rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div>
-                        <span
-                          style={{
-                            fontSize: '0.6rem',
-                            letterSpacing: '1.5px',
-                            textTransform: 'uppercase',
-                            opacity: 0.6,
-                            display: 'block',
-                          }}
-                        >
-                          Audited Value
-                        </span>
-                        <span
-                          style={{
-                            fontFamily: 'var(--font-playfair), Georgia, serif',
-                            fontSize: '1.6rem',
-                            color: 'var(--text)',
-                            fontWeight: 400,
-                          }}
-                        >
-                          £{p.price.toLocaleString('en-GB')}
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          onClick={() => setSelectedProduct(p)}
-                          style={{
-                            backgroundColor: 'transparent',
-                            color: 'var(--text)',
-                            border: '1px solid var(--glass-border)',
-                            padding: '0.6rem 0.9rem',
-                            fontSize: '0.68rem',
-                            letterSpacing: '1.5px',
-                            textTransform: 'uppercase',
-                            fontWeight: 600,
-                            cursor: 'pointer',
-                          }}
-                        >
-                          Inspect
-                        </button>
-
-                        <Link
-                          href={`/products/${p.id}`}
-                          style={{
-                            backgroundColor: 'var(--primary)',
-                            color: 'var(--secondary)',
-                            padding: '0.6rem 1.1rem',
-                            fontSize: '0.68rem',
-                            letterSpacing: '1.5px',
-                            textTransform: 'uppercase',
-                            fontWeight: 700,
-                            textDecoration: 'none',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            transition: 'opacity 0.2s ease',
-                          }}
-                        >
-                          Acquire →
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ── TAB 2: CERTIFIED ATELIERS ── */}
-        {activeTab === 'ateliers' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))',
-              gap: '2.5rem',
-            }}
-          >
-            {makers.map((maker) => {
-              const badge = getBadgeConfig(maker.verificationStatus);
-              return (
-                <article
-                  key={maker.id}
-                  style={{
-                    backgroundColor: 'var(--surface)',
-                    border: '1px solid var(--glass-border)',
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}
-                >
-                  {/* Atelier Cover */}
-                  <div
-                    style={{
-                      position: 'relative',
-                      height: '240px',
-                      backgroundColor: 'var(--background)',
-                      overflow: 'hidden',
-                    }}
-                  >
-                    <img
-                      src={maker.heroImage}
-                      alt={maker.businessName}
-                      loading="lazy"
-                      style={{
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                      }}
-                    />
-                    <div
-                      style={{
-                        position: 'absolute',
-                        top: '1rem',
-                        left: '1rem',
-                        backgroundColor: badge.bg,
-                        color: badge.color,
-                        border: badge.border,
-                        fontSize: '0.62rem',
-                        fontWeight: 700,
-                        letterSpacing: '1.5px',
-                        padding: '0.35rem 0.75rem',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      {badge.label}
-                    </div>
-
-                    <div
-                      style={{
-                        position: 'absolute',
-                        bottom: '1rem',
-                        left: '1rem',
-                        backgroundColor: 'var(--primary)',
-                        color: 'var(--secondary)',
-                        fontSize: '0.65rem',
-                        fontWeight: 600,
-                        letterSpacing: '1px',
-                        padding: '0.3rem 0.7rem',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      📍 {maker.city ? `${maker.city}, ${maker.country}` : maker.country}
-                    </div>
-                  </div>
-
-                  {/* Atelier Content */}
-                  <div
-                    style={{
-                      padding: '2rem',
-                      flex: 1,
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                    }}
-                  >
-                    <div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.9rem', marginBottom: '1rem' }}>
-                        {maker.logo && (
-                          <div
-                            style={{
-                              width: '44px',
-                              height: '44px',
-                              borderRadius: '50%',
-                              border: '1px solid var(--accent)',
-                              overflow: 'hidden',
-                              flexShrink: 0,
-                            }}
-                          >
-                            <img
-                              src={maker.logo}
-                              alt={maker.founderName}
-                              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                            />
-                          </div>
-                        )}
-                        <div>
-                          <h2
-                            style={{
-                              fontFamily: 'var(--font-playfair), Georgia, serif',
-                              fontSize: '1.4rem',
-                              fontWeight: 400,
-                              margin: 0,
-                              lineHeight: 1.2,
-                              color: 'var(--text)',
-                            }}
-                          >
-                            {maker.businessName}
-                          </h2>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--accent)', fontWeight: 600 }}>
-                            Custodian: {maker.founderName}
-                          </span>
-                        </div>
-                      </div>
-
-                      <p
-                        style={{
-                          fontSize: '0.88rem',
-                          lineHeight: 1.7,
-                          opacity: 0.8,
-                          margin: '0 0 1.5rem 0',
-                          fontWeight: 300,
-                        }}
-                      >
-                        {maker.shortIntro}
-                      </p>
-                    </div>
-
-                    <div
-                      style={{
-                        borderTop: '1px solid var(--glass-border)',
-                        paddingTop: '1.2rem',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                      }}
-                    >
-                      <div style={{ display: 'flex', gap: '1rem', fontSize: '0.74rem', opacity: 0.7 }}>
-                        <span>{maker.productCount} Registered Works</span>
-                        <span>•</span>
-                        <span>{maker.yearsInBusiness} Yrs Lineage</span>
-                      </div>
-
-                      <Link
-                        href={`/makers/${maker.id}`}
-                        style={{
-                          backgroundColor: 'var(--primary)',
-                          color: 'var(--secondary)',
-                          padding: '0.6rem 1.1rem',
-                          fontSize: '0.68rem',
-                          letterSpacing: '1.5px',
-                          fontWeight: 700,
-                          textTransform: 'uppercase',
-                          textDecoration: 'none',
-                        }}
-                      >
-                        Explore Atelier →
-                      </Link>
-                    </div>
-                  </div>
-                </article>
-              );
-            })}
-          </div>
-        )}
-
-        {/* ── TAB 3: CRAFT HERITAGE & TECHNIQUES ── */}
-        {activeTab === 'heritage' && (
-          <div
-            style={{
-              display: 'grid',
-              gridTemplateColumns: 'minmax(0, 1.3fr) minmax(0, 1.7fr)',
-              gap: '4rem',
-            }}
-          >
-            {/* Left Column: Era & Materials */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-              <div
+        {/* Studio Cards Grid */}
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))',
+            gap: '2.5rem',
+          }}
+        >
+          {studios.map((studio) => {
+            const badge = getBadgeStyle(studio.verificationStatus);
+            return (
+              <article
+                key={studio.id}
                 style={{
                   backgroundColor: 'var(--surface)',
                   border: '1px solid var(--glass-border)',
-                  padding: '2.5rem',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  transition: 'border-color 0.25s ease, transform 0.25s ease',
                 }}
               >
-                <span
-                  style={{
-                    fontSize: '0.68rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    color: 'var(--accent)',
-                    fontWeight: 700,
-                    display: 'block',
-                    marginBottom: '0.8rem',
-                  }}
-                >
-                  Ancestral Era & Lineage
-                </span>
-                <h3
-                  style={{
-                    fontFamily: 'var(--font-playfair), Georgia, serif',
-                    fontSize: '1.6rem',
-                    margin: '0 0 1rem',
-                    color: 'var(--text)',
-                  }}
-                >
-                  {heritage.ancestralEra}
-                </h3>
-                <p style={{ fontSize: '0.92rem', lineHeight: 1.8, opacity: 0.8, fontWeight: 300, margin: 0 }}>
-                  This craft tradition has been handed down through direct master-apprentice lineages,
-                  preserving metallurgical, chemical, and physical knowledge without automated machinery.
-                </p>
-              </div>
-
-              <div
-                style={{
-                  backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--glass-border)',
-                  padding: '2.5rem',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '0.68rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    color: 'var(--accent)',
-                    fontWeight: 700,
-                    display: 'block',
-                    marginBottom: '1rem',
-                  }}
-                >
-                  Primary Raw Materials
-                </span>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-                  {heritage.primaryMaterials.map((mat, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.8rem',
-                        fontSize: '0.88rem',
-                        padding: '0.75rem 1rem',
-                        backgroundColor: 'var(--background)',
-                        border: '1px solid var(--glass-border)',
-                      }}
-                    >
-                      <span style={{ color: 'var(--accent)', fontWeight: 700 }}>0{idx + 1}.</span>
-                      <span>{mat}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Techniques & Verification Standard */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-              <div
-                style={{
-                  backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--glass-border)',
-                  padding: '2.5rem',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '0.68rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    color: 'var(--accent)',
-                    fontWeight: 700,
-                    display: 'block',
-                    marginBottom: '1.5rem',
-                  }}
-                >
-                  Documented Ancestral Techniques
-                </span>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1.8rem' }}>
-                  {heritage.techniques.map((tech, idx) => (
-                    <div
-                      key={idx}
-                      style={{
-                        borderLeft: '2px solid var(--accent)',
-                        paddingLeft: '1.4rem',
-                      }}
-                    >
-                      <h4
-                        style={{
-                          fontFamily: 'var(--font-playfair), Georgia, serif',
-                          fontSize: '1.25rem',
-                          margin: '0 0 0.5rem',
-                          color: 'var(--text)',
-                        }}
-                      >
-                        {tech.name}
-                      </h4>
-                      <p style={{ fontSize: '0.9rem', lineHeight: 1.7, opacity: 0.8, margin: 0, fontWeight: 300 }}>
-                        {tech.description}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              {/* Security & Audit Standard */}
-              <div
-                style={{
-                  backgroundColor: 'var(--surface)',
-                  border: '1px solid var(--glass-border)',
-                  padding: '2.5rem',
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: '0.68rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    color: 'var(--accent)',
-                    fontWeight: 700,
-                    display: 'block',
-                    marginBottom: '0.8rem',
-                  }}
-                >
-                  Britsync Audit & Physical Provenance
-                </span>
-                <p style={{ fontSize: '0.95rem', lineHeight: 1.8, opacity: 0.85, margin: '0 0 1.5rem', fontWeight: 300 }}>
-                  {heritage.auditStandard}
-                </p>
+                {/* Studio Hero Image Container */}
                 <div
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '1.5rem',
-                    fontSize: '0.74rem',
-                    letterSpacing: '1.5px',
-                    textTransform: 'uppercase',
-                    opacity: 0.7,
+                    position: 'relative',
+                    height: '270px',
+                    backgroundColor: 'var(--background)',
+                    overflow: 'hidden',
                   }}
                 >
-                  <span>✓ Physical Micro-Seal</span>
-                  <span>✓ Immutable Registry Passport</span>
-                  <span>✓ Fair Trade Escrow</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* ── INSPECT MODAL (LIGHTWEIGHT & ZERO LAG) ── */}
-      {selectedProduct && (
-        <div
-          role="dialog"
-          aria-modal="true"
-          style={{
-            position: 'fixed',
-            inset: 0,
-            zIndex: 100,
-            backgroundColor: 'rgba(10, 10, 12, 0.75)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '2rem',
-          }}
-          onClick={() => setSelectedProduct(null)}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              backgroundColor: 'var(--surface)',
-              border: '1px solid var(--glass-border)',
-              maxWidth: '850px',
-              width: '100%',
-              display: 'grid',
-              gridTemplateColumns: '1fr 1.2fr',
-              overflow: 'hidden',
-              boxShadow: 'var(--shadow-luxury)',
-            }}
-          >
-            {/* Modal Image */}
-            <div
-              style={{
-                backgroundColor: 'var(--background)',
-                padding: '2rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <img
-                src={selectedProduct.imageUrl}
-                alt={selectedProduct.title}
-                style={{ maxWidth: '100%', maxHeight: '350px', objectFit: 'contain' }}
-              />
-            </div>
-
-            {/* Modal Info */}
-            <div style={{ padding: '2.5rem', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
-              <div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                  <span style={{ fontSize: '0.68rem', letterSpacing: '2px', textTransform: 'uppercase', color: 'var(--accent)', fontWeight: 700 }}>
-                    {selectedProduct.maker}
-                  </span>
-                  <button
-                    onClick={() => setSelectedProduct(null)}
+                  <img
+                    src={studio.heroImage}
+                    alt={studio.businessName}
+                    loading="lazy"
                     style={{
-                      backgroundColor: 'transparent',
-                      border: 'none',
-                      color: 'var(--text)',
-                      fontSize: '1.2rem',
-                      cursor: 'pointer',
-                      opacity: 0.6,
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.5s ease',
+                    }}
+                  />
+
+                  {/* Verification Status Badge */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      top: '1.2rem',
+                      left: '1.2rem',
+                      backgroundColor: badge.bg,
+                      color: badge.color,
+                      border: badge.border,
+                      fontSize: '0.62rem',
+                      fontWeight: 700,
+                      letterSpacing: '1.8px',
+                      padding: '0.4rem 0.85rem',
+                      textTransform: 'uppercase',
                     }}
                   >
-                    ✕
-                  </button>
+                    {badge.label}
+                  </div>
+
+                  {/* Location Tag */}
+                  <div
+                    style={{
+                      position: 'absolute',
+                      bottom: '1.2rem',
+                      left: '1.2rem',
+                      backgroundColor: 'var(--primary)',
+                      color: 'var(--secondary)',
+                      fontSize: '0.65rem',
+                      fontWeight: 600,
+                      letterSpacing: '1.2px',
+                      padding: '0.35rem 0.8rem',
+                      textTransform: 'uppercase',
+                    }}
+                  >
+                    📍 {studio.city ? `${studio.city}, ${studio.country}` : studio.country}
+                  </div>
                 </div>
 
-                <h3
+                {/* Studio Details Content */}
+                <div
                   style={{
-                    fontFamily: 'var(--font-playfair), Georgia, serif',
-                    fontSize: '1.8rem',
-                    margin: '0 0 1rem',
-                    color: 'var(--text)',
-                    lineHeight: 1.2,
+                    padding: '2.2rem',
+                    flex: 1,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
                   }}
                 >
-                  {selectedProduct.title}
-                </h3>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.5rem', fontSize: '0.78rem' }}>
                   <div>
-                    <span style={{ opacity: 0.5, display: 'block', textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '1px' }}>
-                      Region of Origin
-                    </span>
-                    <strong>{selectedProduct.region || selectedProduct.country}</strong>
-                  </div>
-                  <div>
-                    <span style={{ opacity: 0.5, display: 'block', textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '1px' }}>
-                      Lead Time
-                    </span>
-                    <strong>{selectedProduct.isReadyToShip ? 'Ready to Ship' : `${selectedProduct.craftingTimeWeeks} Weeks`}</strong>
-                  </div>
-                  {selectedProduct.dimensions && (
-                    <div>
-                      <span style={{ opacity: 0.5, display: 'block', textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '1px' }}>
-                        Dimensions
-                      </span>
-                      <strong>{selectedProduct.dimensions}</strong>
+                    {/* Header with Logo and Studio Name */}
+                    <div
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '1rem',
+                        marginBottom: '1.2rem',
+                      }}
+                    >
+                      {studio.logo && (
+                        <div
+                          style={{
+                            width: '46px',
+                            height: '46px',
+                            borderRadius: '50%',
+                            border: '1px solid var(--accent)',
+                            overflow: 'hidden',
+                            flexShrink: 0,
+                          }}
+                        >
+                          <img
+                            src={studio.logo}
+                            alt={studio.founderName}
+                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                          />
+                        </div>
+                      )}
+                      <div>
+                        <h2
+                          style={{
+                            fontFamily: 'var(--font-playfair), Georgia, serif',
+                            fontSize: '1.5rem',
+                            fontWeight: 400,
+                            margin: 0,
+                            lineHeight: 1.2,
+                            color: 'var(--text)',
+                          }}
+                        >
+                          {studio.businessName}
+                        </h2>
+                        <span
+                          style={{
+                            fontSize: '0.76rem',
+                            color: 'var(--accent)',
+                            fontWeight: 600,
+                            letterSpacing: '0.5px',
+                            display: 'block',
+                            marginTop: '0.2rem',
+                          }}
+                        >
+                          Master Custodian: {studio.founderName}
+                        </span>
+                      </div>
                     </div>
-                  )}
-                  {selectedProduct.weight && (
-                    <div>
-                      <span style={{ opacity: 0.5, display: 'block', textTransform: 'uppercase', fontSize: '0.62rem', letterSpacing: '1px' }}>
-                        Weight
-                      </span>
-                      <strong>{selectedProduct.weight}</strong>
+
+                    {/* Specialty Line */}
+                    {studio.specialty && (
+                      <div
+                        style={{
+                          fontSize: '0.72rem',
+                          letterSpacing: '1.5px',
+                          textTransform: 'uppercase',
+                          opacity: 0.6,
+                          fontWeight: 600,
+                          marginBottom: '0.9rem',
+                        }}
+                      >
+                        Specialty: {studio.specialty}
+                      </div>
+                    )}
+
+                    {/* Studio Story */}
+                    <p
+                      style={{
+                        fontSize: '0.9rem',
+                        lineHeight: 1.75,
+                        opacity: 0.8,
+                        margin: '0 0 1.8rem 0',
+                        fontWeight: 300,
+                      }}
+                    >
+                      {studio.shortIntro}
+                    </p>
+                  </div>
+
+                  {/* Footer Line: Stats & Explore Button */}
+                  <div
+                    style={{
+                      borderTop: '1px solid var(--glass-border)',
+                      paddingTop: '1.4rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                    }}
+                  >
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.9rem',
+                        fontSize: '0.74rem',
+                        opacity: 0.7,
+                        fontWeight: 500,
+                      }}
+                    >
+                      <span>{studio.registeredWorksCount} Registered Works</span>
+                      <span>•</span>
+                      <span>{studio.yearsInBusiness} Yrs Lineage</span>
                     </div>
-                  )}
+
+                    <Link
+                      href={`/makers/${studio.id}`}
+                      style={{
+                        backgroundColor: 'var(--primary)',
+                        color: 'var(--secondary)',
+                        padding: '0.65rem 1.25rem',
+                        fontSize: '0.7rem',
+                        letterSpacing: '1.8px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        textDecoration: 'none',
+                        transition: 'opacity 0.2s ease',
+                      }}
+                    >
+                      Enter Atelier →
+                    </Link>
+                  </div>
                 </div>
-
-                {selectedProduct.materials && (
-                  <p style={{ fontSize: '0.85rem', lineHeight: 1.6, opacity: 0.8, margin: 0, fontWeight: 300 }}>
-                    {selectedProduct.materials}
-                  </p>
-                )}
-              </div>
-
-              <div
-                style={{
-                  borderTop: '1px solid var(--glass-border)',
-                  paddingTop: '1.5rem',
-                  marginTop: '1.5rem',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                }}
-              >
-                <div>
-                  <span style={{ fontSize: '0.65rem', letterSpacing: '1.5px', textTransform: 'uppercase', opacity: 0.5, display: 'block' }}>
-                    Authentic Price
-                  </span>
-                  <span style={{ fontFamily: 'var(--font-playfair), Georgia, serif', fontSize: '1.8rem', color: 'var(--text)' }}>
-                    £{selectedProduct.price.toLocaleString('en-GB')}
-                  </span>
-                </div>
-
-                <Link
-                  href={`/products/${selectedProduct.id}`}
-                  style={{
-                    backgroundColor: 'var(--primary)',
-                    color: 'var(--secondary)',
-                    padding: '0.75rem 1.6rem',
-                    fontSize: '0.72rem',
-                    letterSpacing: '2px',
-                    textTransform: 'uppercase',
-                    fontWeight: 700,
-                    textDecoration: 'none',
-                  }}
-                >
-                  Acquire Work →
-                </Link>
-              </div>
-            </div>
-          </div>
+              </article>
+            );
+          })}
         </div>
-      )}
+      </section>
     </main>
   );
 }
